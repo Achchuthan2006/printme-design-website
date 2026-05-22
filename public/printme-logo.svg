@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 110" role="img" aria-labelledby="title">
+  <title id="title">PrintMe</title>
+  <text
+    x="6"
+    y="78"
+    fill="#4a4a4a"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-size="78"
+    font-style="italic"
+    font-weight="900"
+    letter-spacing="-5"
+  >Print</text>
+  <text
+    x="242"
+    y="78"
+    fill="#e77b58"
+    font-family="Segoe Script, Brush Script MT, Lucida Handwriting, cursive"
+    font-size="72"
+    font-style="italic"
+    font-weight="700"
+    letter-spacing="-6"
+  >Me</text>
+</svg>

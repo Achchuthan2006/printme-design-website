@@ -1,0 +1,68 @@
+"use client";
+
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/features/cart/cart-context";
+
+export function CheckoutResult({
+  status,
+  orderNumber,
+  demo,
+}: {
+  status: "success" | "cancel" | "failure";
+  orderNumber?: string;
+  demo?: boolean;
+}) {
+  const { clearCart } = useCart();
+
+  useEffect(() => {
+    if (status === "success") clearCart();
+  }, [clearCart, status]);
+
+  const copy = {
+    success: {
+      eyebrow: demo ? "Demo checkout" : "Payment received",
+      title: "Your PrintMe order has been received.",
+      body:
+        "We will review artwork, production details, pickup or delivery requirements, and follow up if anything needs attention before production begins.",
+    },
+    cancel: {
+      eyebrow: "Checkout cancelled",
+      title: "Your payment was not completed.",
+      body:
+        "No payment was taken. Your cart is still available so you can review details, adjust products, or try checkout again.",
+    },
+    failure: {
+      eyebrow: "Payment issue",
+      title: "Something went wrong with checkout.",
+      body:
+        "Please try again or contact PrintMe for help completing your order.",
+    },
+  }[status];
+
+  return (
+    <div className="rounded-lg border border-line bg-white p-8 text-center shadow-soft">
+      <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">{copy.eyebrow}</p>
+      <h1 className="mt-3 text-4xl font-black text-ink">{copy.title}</h1>
+      {orderNumber ? (
+        <p className="mt-4 rounded-lg bg-canvas px-4 py-3 text-sm font-black text-ink">
+          Order reference: {orderNumber}
+        </p>
+      ) : null}
+      <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate">{copy.body}</p>
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        {status === "success" ? (
+          <>
+            <Button href="/account">View Account</Button>
+            <Button href="/products" variant="secondary">Continue Shopping</Button>
+          </>
+        ) : (
+          <>
+            <Button href="/checkout">Return to Checkout</Button>
+            <Button href="/support" variant="secondary">Get Help</Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

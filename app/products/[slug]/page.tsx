@@ -1,0 +1,141 @@
+import { notFound } from "next/navigation";
+import { ProductConfigurator } from "@/components/commerce/product-configurator";
+import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
+import { FaqAccordion } from "@/components/catalog/faq-accordion";
+import { FinalCta } from "@/components/catalog/final-cta";
+import { ProductActions } from "@/components/catalog/product-actions";
+import { RelatedServices } from "@/components/catalog/related-services";
+import { SpecList } from "@/components/catalog/spec-list";
+import { TrustStrip } from "@/components/catalog/trust-strip";
+import { Badge } from "@/components/ui/badge";
+import { Icon } from "@/components/ui/icon";
+import { ServiceProductVisual } from "@/components/sections/print-product-visual";
+import { buildMetadata } from "@/lib/metadata";
+import { getCategoryBySlug, getProductBySlug, getRelatedProducts, products } from "@/data/products";
+
+export function generateStaticParams() {
+  return products.map((product) => ({ slug: product.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
+  if (!product) return {};
+  return buildMetadata({
+    title: product.title,
+    description: product.description,
+    path: `/products/${product.slug}`,
+  });
+}
+
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
+  if (!product) notFound();
+
+  const category = getCategoryBySlug(product.categorySlug);
+  const related = getRelatedProducts(product.related);
+
+  return (
+    <>
+      <section className="bg-white section-space">
+        <div className="container-shell">
+          <Breadcrumbs
+            items={[
+              { label: "Products", href: "/products" },
+              ...(category ? [{ label: category.title, href: `/products/category/${category.slug}` }] : []),
+              { label: product.title },
+            ]}
+          />
+          <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">{product.category}</p>
+              <h1 className="mt-4 text-balance text-5xl font-black leading-tight text-ink">{product.title}</h1>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{product.longDescription}</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {product.badges?.map((badge) => <Badge key={badge}>{badge}</Badge>)}
+              </div>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <ProductActions product={product} />
+              </div>
+            </div>
+            <ServiceProductVisual slug={product.slug} />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-line bg-canvas section-space">
+        <div className="container-shell grid gap-8 lg:grid-cols-[1fr_420px]">
+          <div className="space-y-8">
+            <TrustStrip items={["Local Scarborough pickup", "Clear file guidance", "Quote support for custom specs"]} />
+            <div className="grid gap-5 md:grid-cols-3">
+              <article className="rounded-lg border border-line bg-white p-5 shadow-soft">
+                <p className="text-sm font-bold text-slate">Starting price</p>
+                <p className="mt-3 text-3xl font-black text-ink">{product.startingPrice ? `$${product.startingPrice}` : "Quote"}</p>
+              </article>
+              <article className="rounded-lg border border-line bg-white p-5 shadow-soft">
+                <p className="text-sm font-bold text-slate">Turnaround</p>
+                <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.turnaround}</p>
+              </article>
+              <article className="rounded-lg border border-line bg-white p-5 shadow-soft">
+                <p className="text-sm font-bold text-slate">Order path</p>
+                <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.ctaMode.replace("-", " ")}</p>
+              </article>
+            </div>
+          </div>
+          <div id="order-builder" className="lg:sticky lg:top-24 lg:self-start">
+            <ProductConfigurator product={product} />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white section-space">
+        <div className="container-shell grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Overview</p>
+            <h2 className="mt-2 text-3xl font-black text-ink">What this service is for</h2>
+            <p className="mt-5 text-sm leading-7 text-slate">{product.overview}</p>
+            <div className="mt-6 grid gap-3">
+              {product.idealFor.map((item) => (
+                <div key={item} className="flex items-center gap-3 rounded-lg border border-line bg-canvas p-3">
+                  <Icon name="check" className="h-4 w-4 text-brand" />
+                  <p className="text-sm font-bold text-ink">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            <SpecList title="Specifications and options" items={product.specs} />
+            <SpecList title="Artwork requirements" items={product.fileRequirements} icon="document" muted />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-line bg-canvas section-space">
+        <div className="container-shell grid gap-8 lg:grid-cols-3">
+          <article className="rounded-lg border border-line bg-white p-6 shadow-soft">
+            <h2 className="text-2xl font-black text-ink">Standard turnaround</h2>
+            <p className="mt-3 text-sm leading-7 text-slate">{product.turnaround}</p>
+          </article>
+          <article className="rounded-lg border border-line bg-white p-6 shadow-soft">
+            <h2 className="text-2xl font-black text-ink">Rush note</h2>
+            <p className="mt-3 text-sm leading-7 text-slate">{product.rushNote ?? "Rush timing is reviewed after artwork, quantity, and finishing are confirmed."}</p>
+          </article>
+          <article className="rounded-lg border border-line bg-white p-6 shadow-soft">
+            <h2 className="text-2xl font-black text-ink">Pickup and delivery</h2>
+            <p className="mt-3 text-sm leading-7 text-slate">{product.pickupDeliveryNote}</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="bg-white section-space">
+        <div className="container-shell">
+          <FaqAccordion items={product.faqs} />
+        </div>
+      </section>
+
+      <RelatedServices products={related} />
+      <FinalCta product={product} />
+    </>
+  );
+}
