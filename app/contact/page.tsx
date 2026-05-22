@@ -1,5 +1,6 @@
 import { PageHero } from "@/components/ui/page-hero";
 import { Button } from "@/components/ui/button";
+import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { buildMetadata } from "@/lib/metadata";
 import { siteConfig } from "@/lib/site";
 
@@ -13,8 +14,9 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
-        title="Contact PrintMe Design"
-        description="Visit our Scarborough location, call with quick questions, fax business details, or request a quote online for your next print project."
+        title="Talk to PrintMe before your deadline gets tight"
+        description="Call, visit our Scarborough shop, or send a quote request so we can help you choose the right print path before production starts."
+        ctaLabel="Get My Quote"
       />
       <section className="section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
@@ -49,14 +51,14 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button href="/quote-request">Request a Quote</Button>
+              <Button href="/quote-request">Get My Quote</Button>
               <Button href={siteConfig.phoneHref} variant="secondary">
-                Call Now
+                Call PrintMe
               </Button>
             </div>
             <div className="mt-8 rounded-3xl border border-line bg-canvas p-5 text-sm leading-6 text-slate">
               <p className="font-bold text-ink">Service highlights</p>
-              <p className="mt-2">Document printing, passport photos, flyers, banners, envelopes, engineering drawing prints, manual cheques, and custom orders.</p>
+              <p className="mt-2">Bring us your file, deadline, or print idea. We support document printing, passport photos, flyers, banners, envelopes, engineering drawing prints, manual cheques, and custom orders.</p>
             </div>
           </div>
 
@@ -73,6 +75,14 @@ export default function ContactPage() {
               <p className="mt-2">Use the map for directions to PrintMe at 1585 Markham Road Unit 103 in Scarborough.</p>
             </div>
           </div>
+        </div>
+        <div className="container-shell mt-8">
+          <LeadCtaPanel
+            title="Not sure what to ask for yet?"
+            description="Send the file, size, deadline, or rough idea. PrintMe can help you clarify the right service before production."
+            primaryLabel="Get My Quote"
+            secondaryLabel="Call PrintMe"
+          />
         </div>
       </section>
     </>

@@ -7,9 +7,11 @@ import { ProductActions } from "@/components/catalog/product-actions";
 import { RelatedServices } from "@/components/catalog/related-services";
 import { SpecList } from "@/components/catalog/spec-list";
 import { TrustStrip } from "@/components/catalog/trust-strip";
+import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
+import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { buildMetadata } from "@/lib/metadata";
 import { getCategoryBySlug, getProductBySlug, getRelatedProducts, products } from "@/data/products";
 
@@ -38,8 +40,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <>
-      <section className="bg-white section-space">
-        <div className="container-shell">
+      <section className="relative overflow-hidden bg-white section-space">
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-brand-soft/45 to-transparent" aria-hidden="true" />
+        <div className="container-shell relative">
           <Breadcrumbs
             items={[
               { label: "Products", href: "/products" },
@@ -50,8 +53,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">{product.category}</p>
-              <h1 className="mt-4 text-balance text-5xl font-black leading-tight text-ink">{product.title}</h1>
+              <h1 className="mt-4 text-balance text-5xl font-black leading-[1.02] tracking-[-0.04em] text-ink">{product.title}</h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{product.longDescription}</p>
+              <p className="mt-4 max-w-2xl rounded-2xl border border-brand/15 bg-brand-soft px-4 py-3 text-sm font-bold leading-6 text-brand">
+                Send artwork when you have it. PrintMe reviews files and specs before production so your order starts with fewer unknowns.
+              </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {product.badges?.map((badge) => <Badge key={badge}>{badge}</Badge>)}
               </div>
@@ -68,6 +74,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="container-shell grid gap-8 lg:grid-cols-[1fr_420px]">
           <div className="space-y-8">
             <TrustStrip items={["Local Scarborough pickup", "Clear file guidance", "Quote support for custom specs"]} />
+            <LocalTrustStrip />
             <div className="grid gap-5 md:grid-cols-3">
               <article className="rounded-lg border border-line bg-white p-5 shadow-soft">
                 <p className="text-sm font-bold text-slate">Starting price</p>
@@ -108,6 +115,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <SpecList title="Specifications and options" items={product.specs} />
             <SpecList title="Artwork requirements" items={product.fileRequirements} icon="document" muted />
           </div>
+        </div>
+        <div className="container-shell mt-8">
+          <PrintReadyChecklist compact />
         </div>
       </section>
 

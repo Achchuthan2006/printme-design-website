@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { CartItem, OrderSnapshot } from "@/types";
+import { env } from "@/lib/env";
 
 export interface CheckoutSessionInput {
   order: OrderSnapshot;
@@ -9,8 +10,8 @@ export interface CheckoutSessionInput {
 }
 
 function getStripeClient() {
-  if (!process.env.STRIPE_SECRET_KEY) return null;
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
+  if (!env.stripeSecretKey) return null;
+  return new Stripe(env.stripeSecretKey);
 }
 
 function buildLineItems(

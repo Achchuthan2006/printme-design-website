@@ -20,7 +20,7 @@ export const siteConfig = {
     "Sun: By appointment",
   ],
   description:
-    "A Scarborough one-stop print partner with 20+ years of industry experience, custom solutions, fast turnaround, and attentive local service.",
+    "A Scarborough one-stop print partner for sharp print work, practical guidance, fast turnarounds, and customer-first service from quote to pickup.",
 };
 
 export const navigation = [
@@ -51,85 +51,85 @@ export const services: ServiceItem[] = [
   {
     slug: "business-cards",
     title: "Business Cards",
-    description: "Professional cards with crisp detail, clean finishes, and a strong first impression.",
+    description: "Confident first impressions with crisp cards, clean finishes, and local print support.",
     icon: "card",
     badge: "Popular",
   },
   {
     slug: "document-printing",
     title: "Document Printing",
-    description: "Reliable black-and-white and colour documents for reports, forms, manuals, and daily work.",
+    description: "Clean reports, forms, manuals, and everyday documents printed without the guesswork.",
     icon: "document",
     badge: "In store",
   },
   {
     slug: "flyers",
     title: "Flyers",
-    description: "Sharp promotional flyers for menus, events, local campaigns, and business offers.",
+    description: "Turn promotions, menus, and local campaigns into handouts people actually keep.",
     icon: "flyer",
     badge: "Rush available",
   },
   {
     slug: "brochures",
     title: "Brochures",
-    description: "Folded marketing pieces for services, product details, pricing, and brand stories.",
+    description: "Organized folded pieces that explain your offer clearly and make your business easier to trust.",
     icon: "brochure",
   },
   {
     slug: "posters",
     title: "Posters",
-    description: "Bold poster prints for storefronts, schools, promotions, launches, and announcements.",
+    description: "High-visibility posters for announcements, storefronts, launches, and event promotion.",
     icon: "poster",
   },
   {
     slug: "banners",
     title: "Banners",
-    description: "Durable banners for openings, booths, sales, events, and outdoor visibility.",
+    description: "Durable banners that help your offer get noticed at openings, booths, sales, and events.",
     icon: "banner",
     badge: "Large format",
   },
   {
     slug: "envelopes",
     title: "Envelopes",
-    description: "Custom printed envelopes for business stationery, invoices, mailouts, and branded packages.",
+    description: "Branded envelopes that make invoices, mailouts, and business stationery feel complete.",
     icon: "envelope",
   },
   {
     slug: "signs",
     title: "Signs",
-    description: "Retail, office, event, and directional signage with clear material guidance.",
+    description: "Clear signage for retail, office, event, and wayfinding needs with material guidance.",
     icon: "sign",
   },
   {
     slug: "stickers",
     title: "Stickers",
-    description: "Custom labels and stickers for packaging, product runs, branding, and promotions.",
+    description: "Custom stickers and labels that add polish to packaging, products, and promotions.",
     icon: "sticker",
   },
   {
     slug: "passport-photos",
     title: "Passport Photos",
-    description: "Quick in-store passport and ID photo service with a simple, efficient process.",
+    description: "Quick in-store passport and ID photos with a simple local service experience.",
     icon: "passport",
     badge: "Same day",
   },
   {
     slug: "engineering-drawings",
     title: "Engineering Drawing Prints",
-    description: "Large-format plan and technical drawing prints for contractors, offices, and project teams.",
+    description: "Large-format plans and technical drawings printed clearly for contractors and project teams.",
     icon: "ruler",
     badge: "Large format",
   },
   {
     slug: "manual-cheques",
     title: "Manual Cheques",
-    description: "Manual cheque printing support for businesses that need accurate, professional stationery.",
+    description: "Careful cheque printing support for businesses that need accurate stationery and setup review.",
     icon: "cheque",
   },
   {
     slug: "custom-orders",
     title: "Custom Orders",
-    description: "Custom print and design support for packaging, stationery, marketing, and specialty jobs.",
+    description: "Not sure what category fits? Bring the idea and we will help shape the right print path.",
     icon: "custom",
     badge: "Custom",
   },
@@ -164,12 +164,12 @@ export const faqs: FaqItem[] = [
   {
     question: "How do I request a quote?",
     answer:
-      "Use the quote request page, tell us what you need, and include your quantity, deadline, and project details. We will follow up with pricing and next steps.",
+      "Use the quote request page, tell us what you need, and include quantity, deadline, artwork status, and pickup or delivery preference. We will review the details and follow up with the clearest next step.",
   },
   {
     question: "Can I send my files online?",
     answer:
-      "File upload will be added in a future release. For now, use the quote form and we can confirm the best way to send artwork after reviewing your request.",
+      "Yes. You can attach artwork through the quote request, checkout, product upload prompts, or your account files area. We review files before production begins.",
   },
   {
     question: "What areas do you serve?",
@@ -202,47 +202,47 @@ export const testimonials: TestimonialItem[] = [
 export const whyChooseUs: WhyChooseItem[] = [
   {
     title: "High-Quality Printing",
-    description: "Sharp colour, clean details, and careful production for business materials that feel ready to use.",
+    description: "Print work that looks clean, feels professional, and is checked before it reaches your customer.",
     icon: "check",
   },
   {
     title: "Custom Solutions",
-    description: "From stationery to packaging and specialty jobs, we help shape the right print solution.",
+    description: "If the job is not standard, we help clarify size, stock, finish, artwork, and production options.",
     icon: "custom",
   },
   {
     title: "Fast Turnaround",
-    description: "Rush-friendly service and practical timelines for projects that need to move quickly.",
+    description: "Rush-friendly review for ready artwork, with honest timing before you commit.",
     icon: "clock",
   },
   {
     title: "Attention to Detail",
-    description: "We check files, finishes, quantities, and instructions so small details do not get missed.",
+    description: "Files, finishes, quantities, and instructions are reviewed so avoidable issues are caught early.",
     icon: "inspect",
   },
   {
     title: "Innovative Techniques",
-    description: "Modern print methods and practical production knowledge built from 20+ years of experience.",
+    description: "Modern print methods backed by practical production judgment from 20+ years in the industry.",
     icon: "spark",
   },
   {
     title: "Personalized Service",
-    description: "You can speak with a local team that understands your project, deadline, and expectations.",
+    description: "Talk to a local team that understands your deadline, budget, file concerns, and final goal.",
     icon: "store",
   },
 ];
 
 export const processSteps = [
   {
-    title: "Send Your Request",
-    description: "Tell us what you need, upload or share files, and include your deadline.",
+    title: "Send the Details",
+    description: "Choose the service, share quantity and timing, and upload artwork if you have it.",
   },
   {
-    title: "We Print It",
-    description: "We review, print, and check your order to make sure the results are clean.",
+    title: "Approve the Plan",
+    description: "We review the files and specs, then confirm pricing, timing, and production details.",
   },
   {
-    title: "Pickup or Delivery",
-    description: "Collect in-store or ask about local delivery for a smooth handoff.",
+    title: "Get It Printed",
+    description: "Your order moves into production, then you pick up in Scarborough or discuss local delivery.",
   },
 ];

@@ -1,5 +1,6 @@
 import { AccountShell } from "@/components/account/account-shell";
 import { buildMetadata } from "@/lib/metadata";
+import { ProtectedAccount } from "@/components/account/protected-account";
 
 export const metadata = buildMetadata({
   title: "Account",
@@ -11,7 +12,9 @@ export default function AccountPage() {
   return (
     <section className="section-space bg-canvas">
       <div className="container-shell">
-        <AccountShell />
+        <ProtectedAccount>
+          <AccountShell />
+        </ProtectedAccount>
       </div>
     </section>
   );

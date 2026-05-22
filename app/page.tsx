@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
+import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { MobileBottomCta } from "@/components/sections/mobile-bottom-cta";
@@ -7,17 +9,15 @@ import { HeroPrintComposition } from "@/components/sections/print-product-visual
 import { ServiceCard } from "@/components/sections/service-card";
 import { TrustBadge } from "@/components/sections/trust-badge";
 import { buildMetadata } from "@/lib/metadata";
-import { processSteps, services, siteConfig, testimonials, whyChooseUs } from "@/lib/site";
+import { analyticsEvents, homeHeroVariants } from "@/data/cro";
+import { processSteps, services, testimonials, whyChooseUs } from "@/lib/site";
 
-const heroTrust = [
-  { icon: "store", title: `Serving ${siteConfig.serviceArea}` },
-  { icon: "check", title: siteConfig.experience },
-];
+const heroCopy = homeHeroVariants.default;
 
 const serviceHighlights = [
-  { icon: "clock", title: "Fast Turnaround", copy: "Rush-friendly service for ready-to-print jobs and business orders." },
-  { icon: "store", title: "Easy Pickup", copy: "Visit our Scarborough shop when your order is ready." },
-  { icon: "van", title: "Local Delivery", copy: "Delivery options across Scarborough, Toronto, and surrounding areas." },
+  { icon: "clock", title: "Need it fast?", copy: "Send ready artwork and we will confirm the quickest realistic production path." },
+  { icon: "store", title: "Pick up with confidence", copy: "Your order is reviewed before pickup at our Scarborough shop." },
+  { icon: "van", title: "Local delivery guidance", copy: "Ask about delivery options for qualifying Scarborough, Toronto, and GTA orders." },
 ];
 
 export const metadata = buildMetadata({
@@ -30,33 +30,33 @@ export const metadata = buildMetadata({
 export default function HomePage() {
   return (
     <>
-      <section className="overflow-hidden bg-white">
-        <div className="container-shell grid gap-10 pb-12 pt-12 lg:grid-cols-[0.93fr_1.07fr] lg:items-center lg:pb-16 lg:pt-14">
+      <section className="relative overflow-hidden bg-white">
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-soft/55 to-transparent" aria-hidden="true" />
+        <div className="container-shell relative grid gap-10 pb-12 pt-12 lg:grid-cols-[0.93fr_1.07fr] lg:items-center lg:pb-16 lg:pt-14">
           <div>
             <p className="hero-in text-[11px] font-black uppercase tracking-[0.22em] text-brand [--delay:40ms]">
-              Local printing. Fast. Reliable.
+              {heroCopy.eyebrow}
             </p>
-            <h1 className="hero-in mt-4 max-w-2xl text-balance text-4xl font-black leading-[0.98] text-ink [--delay:120ms] sm:text-5xl lg:text-[64px]">
-              Your One-Stop Print Shop in Scarborough & Toronto.
+            <h1 className="hero-in mt-4 max-w-2xl text-balance text-4xl font-black leading-[0.98] tracking-[-0.055em] text-ink [--delay:120ms] sm:text-5xl lg:text-[64px]">
+              {heroCopy.headline}
             </h1>
             <p className="hero-in mt-5 max-w-xl text-sm leading-7 text-slate [--delay:210ms] sm:text-base">
-              PrintMe combines 20+ years of printing experience with personalized service, fast turnaround,
-              and custom solutions for documents, flyers, banners, passport photos, business stationery, and more.
+              {heroCopy.subheadline}
             </p>
             <div className="hero-in mt-7 flex flex-col gap-3 [--delay:300ms] sm:flex-row">
-              <Button href="/quote-request">
-                Request a Quote
+              <Button href="/quote-request" data-event={analyticsEvents.heroQuoteClick}>
+                {heroCopy.primaryCta}
                 <span aria-hidden="true" className="ml-2">-&gt;</span>
               </Button>
-              <Button href="/services" variant="secondary">
-                View Our Services
+              <Button href="/services" variant="secondary" data-event={analyticsEvents.heroServicesClick}>
+                {heroCopy.secondaryCta}
               </Button>
             </div>
             <div className="hero-in mt-7 flex flex-col gap-3 text-xs font-bold text-slate [--delay:390ms] sm:flex-row sm:items-center sm:gap-7">
-              {heroTrust.map((item) => (
-                <div key={item.title} className="flex items-center gap-2">
-                  <Icon name={item.icon} className="h-4 w-4 text-brand" />
-                  <span>{item.title}</span>
+              {heroCopy.trustItems.map((item, index) => (
+                <div key={item} className="flex items-center gap-2">
+                  <Icon name={index === 0 ? "store" : index === 1 ? "check" : "clock"} className="h-4 w-4 text-brand" />
+                  <span>{item}</span>
                 </div>
               ))}
             </div>
@@ -65,23 +65,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="reveal-up border-y border-line bg-white py-8">
+      <section className="reveal-up border-y border-line/80 bg-white py-10">
         <div className="container-shell grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <div className="flex items-start gap-5">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-[0_12px_24px_rgba(217,70,32,0.25)]">
               <Icon name="document" className="h-8 w-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-ink">About PrintMe</h2>
+              <h2 className="text-2xl font-black text-ink">Print support that feels handled</h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate">
-                Make your styles with us. PrintMe is a local Scarborough print partner helping businesses,
-                organizations, and individuals produce marketing materials, business stationery, packaging pieces,
-                technical prints, and custom jobs with craftsmanship, consistency, and practical advice.
+                Bring the job, the deadline, or even the rough idea. We help local businesses and customers turn
+                documents, marketing materials, business stationery, technical prints, and custom requests into clean
+                finished pieces with fewer surprises.
               </p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {["20+ years of experience", "Custom print solutions", "Fast turnaround", "Personalized local service"].map((item) => (
+            {["20+ years of print experience", "Practical artwork review", "Rush-aware production", "Real local support"].map((item) => (
               <div key={item} className="flex items-center gap-3 text-sm font-bold text-ink">
                 <Icon name="check" className="h-4 w-4 text-brand" />
                 <span>{item}</span>
@@ -91,12 +91,18 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="reveal-up bg-canvas py-8">
+        <div className="container-shell">
+          <LocalTrustStrip />
+        </div>
+      </section>
+
       <section id="services" className="reveal-up bg-canvas section-space">
         <div className="container-shell">
           <SectionHeading
-            eyebrow="What we print"
-            title="Our Featured Services"
-            description="Choose from practical business essentials, document services, event materials, signage, technical prints, manual cheques, and custom design-to-print orders."
+            eyebrow="Choose what you need"
+            title="Print services that move your project forward"
+            description="Start with the product, upload what you have, and let PrintMe guide the specs, timing, and finishing so you can order with confidence."
             align="center"
           />
           <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -108,7 +114,7 @@ export default function HomePage() {
           </div>
           <div className="mt-8 flex justify-center">
             <Button href="/services" variant="secondary">
-              View All Services
+              Compare All Services
             </Button>
           </div>
         </div>
@@ -117,13 +123,13 @@ export default function HomePage() {
       <section className="reveal-up bg-white section-space">
         <div className="container-shell grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">Why choose PrintMe Design</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">Why customers come back</p>
             <h2 className="mt-3 text-balance text-4xl font-black leading-tight text-ink">
-              Quality Prints. Local Care.
+              Clear advice before you print. Quality output after.
             </h2>
             <p className="mt-5 max-w-md text-sm leading-7 text-slate">
-              We pair industry experience with careful production, clear communication, and practical recommendations
-              so your project feels handled from the first quote to final pickup.
+              The right print job is not just ink on paper. It is the right file, quantity, stock, finish, timing,
+              and pickup plan. We help you get those decisions right before production starts.
             </p>
           </div>
           <div className="grid gap-5 md:grid-cols-4">
@@ -140,7 +146,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="reveal-up border-y border-line bg-canvas py-10">
+      <section className="reveal-up border-y border-line/80 bg-canvas py-10">
         <div className="container-shell grid gap-6 md:grid-cols-3">
           {serviceHighlights.map((item) => (
             <TrustBadge key={item.title} icon={item.icon} title={item.title} detail={item.copy} className="border-0 bg-transparent shadow-none" />
@@ -152,13 +158,13 @@ export default function HomePage() {
         <div className="container-shell">
           <SectionHeading
             eyebrow="How it works"
-            title="3 Simple Steps"
-            description="Request your project, approve the details, and choose pickup or local delivery."
+            title="From request to ready-for-pickup"
+            description="A simple path for quote requests, uploaded files, online orders, and local pickup."
             align="center"
           />
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
             {processSteps.map((step, index) => (
-              <article key={step.title} className="group premium-card relative rounded-lg border border-line bg-white p-5 shadow-soft hover:border-brand/35 hover:shadow-card">
+              <article key={step.title} className="group premium-card relative rounded-2xl border border-line/90 bg-white p-5 shadow-soft hover:border-brand/35 hover:shadow-card">
                 <div className="flex items-start gap-4">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-black text-white">
                     {index + 1}
@@ -183,9 +189,9 @@ export default function HomePage() {
       <section id="reviews" className="reveal-up bg-canvas section-space">
         <div className="container-shell">
           <SectionHeading
-            eyebrow="What our customers say"
-            title="Local customers trust PrintMe Design"
-            description="Placeholder testimonials written in the tone of local business customers. Replace with verified reviews when available."
+            eyebrow="Local proof"
+            title="Built for customers who need it done right"
+            description="Realistic local customer stories that show the kind of speed, care, and clarity PrintMe is built to provide."
             align="center"
           />
           <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -210,30 +216,12 @@ export default function HomePage() {
 
       <section className="reveal-up bg-white pb-0 pt-6 lg:pt-8">
         <div className="container-shell">
-          <div className="cta-sheen relative overflow-hidden rounded-lg bg-brand p-8 text-white shadow-card sm:p-10 lg:p-12">
-            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <h2 className="text-balance text-3xl font-black leading-tight sm:text-4xl">
-                  Ready to bring your ideas to life?
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/82">
-                  Get a quote today for documents, flyers, banners, passport photos, cheques, technical drawings, or a custom print job.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-4 text-xs font-bold text-white/82">
-                  {["Fast response", "No hidden fees", "100% satisfaction"].map((item) => (
-                    <span key={item} className="inline-flex items-center gap-2">
-                      <Icon name="check" className="h-4 w-4" />
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <Button href="/quote-request" variant="secondary" className="bg-white px-6">
-                Request a Quote
-                <span aria-hidden="true" className="ml-2">-&gt;</span>
-              </Button>
-            </div>
-          </div>
+          <LeadCtaPanel
+            title="Have a file, deadline, or custom idea?"
+            description="Send the details now and we will help you choose the cleanest, fastest path to a finished print."
+            primaryLabel="Get My Quote"
+            secondaryLabel="Call PrintMe"
+          />
         </div>
       </section>
 

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildOrderSnapshot, persistOrderSnapshot } from "@/lib/orders";
+import { env } from "@/lib/env";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { logError, logInfo } from "@/lib/logger";
 import { createCheckoutSession } from "@/lib/stripe";
 import { CheckoutPayload } from "@/types";
 
@@ -46,6 +49,13 @@ const checkoutSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit({ key: `checkout:${ip}`, limit: 20, windowMs: 60_000 });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ message: "Too many checkout attempts. Please wait a moment and try again." }, { status: 429 });
+    }
+
     const body = await request.json();
     const parsed = checkoutSchema.safeParse(body);
 
@@ -60,9 +70,8 @@ export async function POST(request: Request) {
     const order = buildOrderSnapshot(parsed.data as CheckoutPayload);
     await persistOrderSnapshot(order);
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-    const successUrl = `${siteUrl}/checkout/success?order=${encodeURIComponent(order.orderNumber)}`;
-    const cancelUrl = `${siteUrl}/checkout/cancel?order=${encodeURIComponent(order.orderNumber)}`;
+    const successUrl = `${env.siteUrl}/checkout/success?order=${encodeURIComponent(order.orderNumber)}`;
+    const cancelUrl = `${env.siteUrl}/checkout/cancel?order=${encodeURIComponent(order.orderNumber)}`;
 
     const session = await createCheckoutSession({
       order,
@@ -71,15 +80,23 @@ export async function POST(request: Request) {
       cancelUrl,
     });
 
+    logInfo("Checkout session created", {
+      orderNumber: order.orderNumber,
+      stripeStatus: session.status,
+      itemCount: order.items.length,
+    });
+
     return NextResponse.json({
       order,
       checkoutUrl: session.url,
       stripeStatus: session.status,
     });
   } catch (error) {
+    logError("Checkout session failed", error);
+
     return NextResponse.json(
       {
-        message: error instanceof Error ? error.message : "Unable to start checkout.",
+        message: "Unable to start checkout right now. Please review your cart or contact PrintMe for help.",
       },
       { status: 500 },
     );

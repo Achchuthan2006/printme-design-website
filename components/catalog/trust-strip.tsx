@@ -4,8 +4,8 @@ export function TrustStrip({ items }: { items: string[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       {items.map((item) => (
-        <div key={item} className="flex items-center gap-3 rounded-lg border border-line bg-white p-4 shadow-soft">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand">
+        <div key={item} className="flex items-center gap-3 rounded-2xl border border-line/90 bg-white p-4 shadow-soft transition hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-card">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-brand/15 bg-brand-soft text-brand">
             <Icon name="check" className="h-4 w-4" />
           </span>
           <p className="text-sm font-bold text-ink">{item}</p>

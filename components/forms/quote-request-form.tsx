@@ -4,6 +4,9 @@ import { useState, useTransition } from "react";
 import { serviceOptions } from "@/lib/site";
 import { quoteRequestSchema } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
+import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
+import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
+import { ArtworkUploadMetadata } from "@/types";
 
 const initialState = {
   fullName: "",
@@ -24,7 +27,7 @@ export function QuoteRequestForm() {
   const [status, setStatus] = useState<{ type: "idle" | "success" | "error"; message?: string }>({
     type: "idle",
   });
-  const [files, setFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<ArtworkUploadMetadata[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
 
@@ -45,7 +48,7 @@ export function QuoteRequestForm() {
         if (typeof field === "string") nextErrors[field] = issue.message;
       });
       setFieldErrors(nextErrors);
-      setStatus({ type: "error", message: "Please fix the highlighted fields and try again." });
+      setStatus({ type: "error", message: "Please fix the highlighted fields so we can quote accurately." });
       return;
     }
 
@@ -68,9 +71,10 @@ export function QuoteRequestForm() {
         }
 
         setForm(initialState);
+        setUploadedFiles([]);
         setStatus({
           type: "success",
-          message: "Your request has been sent. We will follow up shortly with next steps.",
+          message: "Your quote request is in. PrintMe will review the details and follow up with pricing, timing, and the best next step.",
         });
       } catch (error) {
         setStatus({
@@ -99,6 +103,10 @@ export function QuoteRequestForm() {
   return (
     <div className="surface-card p-6 sm:p-8">
       <form onSubmit={onSubmit} className="space-y-6" noValidate>
+        <div className="rounded-2xl border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
+          <span className="font-black text-ink">Quick quote tip:</span> add your deadline and upload artwork if available. The more detail you share now, the faster we can confirm price and production timing.
+        </div>
+
         <div className="grid gap-5 md:grid-cols-2">
           {fields.map((field) => (
             <label key={field.name} className="block">
@@ -108,8 +116,10 @@ export function QuoteRequestForm() {
                 value={form[field.name]}
                 onChange={(event) => updateField(field.name, event.target.value)}
                 placeholder={field.placeholder}
+                required={field.required}
+                autoComplete={field.name === "email" ? "email" : field.name === "phone" ? "tel" : field.name === "fullName" ? "name" : "on"}
                 aria-invalid={Boolean(fieldErrors[field.name])}
-                className="w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition-all duration-200 placeholder:text-slate/60 hover:border-brand/35 focus:border-brand focus:ring-2 focus:ring-brand/15"
+                className="premium-input w-full"
               />
               {fieldErrors[field.name] ? <p className="mt-2 text-sm text-brand">{fieldErrors[field.name]}</p> : null}
             </label>
@@ -120,8 +130,9 @@ export function QuoteRequestForm() {
             <select
               value={form.serviceNeeded}
               onChange={(event) => updateField("serviceNeeded", event.target.value)}
+              required
               aria-invalid={Boolean(fieldErrors.serviceNeeded)}
-              className="w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition-all duration-200 hover:border-brand/35 focus:border-brand focus:ring-2 focus:ring-brand/15"
+              className="premium-input w-full"
             >
               <option value="">Select a service</option>
               {serviceOptions.map((service) => (
@@ -138,8 +149,9 @@ export function QuoteRequestForm() {
             <select
               value={form.fulfillmentMethod}
               onChange={(event) => updateField("fulfillmentMethod", event.target.value)}
+              required
               aria-invalid={Boolean(fieldErrors.fulfillmentMethod)}
-              className="w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition-all duration-200 hover:border-brand/35 focus:border-brand focus:ring-2 focus:ring-brand/15"
+              className="premium-input w-full"
             >
               <option value="">Choose one</option>
               <option value="In-store pickup">In-store pickup</option>
@@ -153,42 +165,34 @@ export function QuoteRequestForm() {
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-bold text-ink">Message / project details</span>
+          <span className="mb-2 block text-sm font-bold text-ink">Tell us what success looks like</span>
           <textarea
             value={form.projectDetails}
             onChange={(event) => updateField("projectDetails", event.target.value)}
             rows={6}
-            placeholder="Share size, finish, artwork status, turnaround needs, or anything we should know."
+            placeholder="Example: 500 double-sided flyers for pickup Friday. Artwork is ready but please check bleed and colour."
             aria-invalid={Boolean(fieldErrors.projectDetails)}
-            className="w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition-all duration-200 placeholder:text-slate/60 hover:border-brand/35 focus:border-brand focus:ring-2 focus:ring-brand/15"
+            required
+            className="premium-input w-full"
           />
           {fieldErrors.projectDetails ? <p className="mt-2 text-sm text-brand">{fieldErrors.projectDetails}</p> : null}
         </label>
 
-        <div className="rounded-lg border border-dashed border-line bg-canvas px-5 py-5 transition duration-300 hover:border-brand/35 hover:bg-brand-soft/30">
-          <p className="text-sm font-bold text-ink">Artwork files</p>
-          <p className="mt-2 text-sm leading-6 text-slate">
-            Upload-ready UI for PDFs, images, and artwork files. Supabase Storage connection is scaffolded for secure production uploads.
-          </p>
-          <label className="mt-4 block cursor-pointer rounded-lg bg-white px-4 py-3 text-center text-sm font-bold text-ink ring-1 ring-inset ring-line transition hover:text-brand hover:ring-brand/40">
-            Select files
-            <input
-              type="file"
-              multiple
-              className="sr-only"
-              onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
-            />
-          </label>
-          {files.length > 0 ? (
-            <div className="mt-4 space-y-2">
-              {files.map((file) => (
-                <p key={`${file.name}-${file.size}`} className="rounded-md bg-white px-3 py-2 text-xs text-slate">
-                  {file.name} ({Math.ceil(file.size / 1024)} KB)
-                </p>
-              ))}
-            </div>
-          ) : null}
+        <div className="grid gap-5 lg:grid-cols-[1fr_0.85fr]">
+          <ArtworkUploadZone
+            context={{ scope: "quote", productSlug: form.serviceNeeded || undefined, relatedLabel: "Quote request" }}
+            title="Upload artwork for a more accurate quote"
+            description="Attach your files now so PrintMe can review size, quality, bleed, turnaround, and finishing details before quoting."
+            onUploaded={(files) => setUploadedFiles(files)}
+          />
+          <PrintReadyChecklist compact className="shadow-none" />
         </div>
+
+        {uploadedFiles.length > 0 ? (
+          <p className="rounded-lg bg-brand-soft px-4 py-3 text-sm font-bold text-brand">
+            {uploadedFiles.length} file{uploadedFiles.length === 1 ? "" : "s"} attached. Good move - artwork review helps us quote with more confidence.
+          </p>
+        ) : null}
 
         {status.message ? (
           <div
@@ -204,10 +208,10 @@ export function QuoteRequestForm() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate">
-            By submitting, you agree that our team may contact you about your print request.
+            No payment is taken here. We will only contact you about this print request and the next production step.
           </p>
           <Button type="submit" disabled={isPending} className="min-w-44 disabled:cursor-not-allowed disabled:opacity-70">
-            {isPending ? "Sending..." : "Submit Request"}
+            {isPending ? "Sending..." : "Get My Quote"}
           </Button>
         </div>
       </form>

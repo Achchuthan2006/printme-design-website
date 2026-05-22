@@ -22,21 +22,21 @@ export function CheckoutResult({
   const copy = {
     success: {
       eyebrow: demo ? "Demo checkout" : "Payment received",
-      title: "Your PrintMe order has been received.",
+      title: "Your print order is in.",
       body:
-        "We will review artwork, production details, pickup or delivery requirements, and follow up if anything needs attention before production begins.",
+        "PrintMe will review artwork, production details, pickup or delivery requirements, and follow up if anything needs attention before production begins.",
     },
     cancel: {
       eyebrow: "Checkout cancelled",
-      title: "Your payment was not completed.",
+      title: "Checkout was paused - your cart is still safe.",
       body:
-        "No payment was taken. Your cart is still available so you can review details, adjust products, or try checkout again.",
+        "No payment was taken. Your cart is still available so you can review details, adjust products, or try secure checkout again.",
     },
     failure: {
       eyebrow: "Payment issue",
-      title: "Something went wrong with checkout.",
+      title: "Checkout needs another try.",
       body:
-        "Please try again or contact PrintMe for help completing your order.",
+        "Please try again or contact PrintMe and we will help you complete the order safely.",
     },
   }[status];
 
@@ -53,13 +53,13 @@ export function CheckoutResult({
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         {status === "success" ? (
           <>
-            <Button href="/account">View Account</Button>
-            <Button href="/products" variant="secondary">Continue Shopping</Button>
+            <Button href="/account">View My Account</Button>
+            <Button href="/products" variant="secondary">Order More Prints</Button>
           </>
         ) : (
           <>
-            <Button href="/checkout">Return to Checkout</Button>
-            <Button href="/support" variant="secondary">Get Help</Button>
+            <Button href="/checkout">Try Secure Checkout Again</Button>
+            <Button href="/support" variant="secondary">Talk to PrintMe</Button>
           </>
         )}
       </div>

@@ -171,7 +171,7 @@ export const products: PrintProduct[] = [
     faqs: [
       { question: "Can PrintMe help clean up my card design?", answer: "Yes. Add notes during checkout or request a quote if the artwork needs design cleanup before printing." },
       { question: "Can I order custom paper or premium finishes?", answer: "Yes. Specialty paper, rounded corners, and premium finishes should go through the quote path so details can be confirmed." },
-      { question: "Can I reorder later?", answer: "The platform is prepared for saved order history and quick reorders once customer accounts are fully connected." },
+      { question: "Can I reorder later?", answer: "Yes. Customer accounts are structured so saved order history and quick reorders can become easier as the platform grows." },
     ],
     related: ["envelopes", "flyers", "brochures"],
   },

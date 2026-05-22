@@ -25,42 +25,42 @@ export function CartDrawer() {
 
       <div
         className={cn(
-          "fixed inset-0 z-[70] bg-ink/30 transition-opacity duration-300",
+          "fixed inset-0 z-[70] bg-ink/35 backdrop-blur-sm transition-opacity duration-300",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={() => setOpen(false)}
       />
       <aside
         className={cn(
-          "fixed right-0 top-0 z-[80] flex h-dvh w-full max-w-md flex-col bg-white shadow-card transition-transform duration-300",
+          "fixed right-0 top-0 z-[80] flex h-dvh w-full max-w-md flex-col border-l border-line/80 bg-white shadow-card transition-transform duration-300",
           open ? "translate-x-0" : "translate-x-full",
         )}
         aria-label="Mini cart"
       >
         <div className="flex items-center justify-between border-b border-line p-5">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Cart</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Print cart</p>
             <h2 className="text-2xl font-black text-ink">{itemCount} item(s)</h2>
           </div>
-          <button type="button" onClick={() => setOpen(false)} className="rounded-md border border-line px-3 py-2 text-sm font-bold">
+          <button type="button" onClick={() => setOpen(false)} className="rounded-xl border border-line px-3 py-2 text-sm font-bold transition hover:border-brand/35 hover:bg-brand-soft">
             Close
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
           {items.length === 0 ? (
-            <div className="rounded-lg bg-canvas p-5 text-sm text-slate">
-              Your cart is empty. Browse products to configure a print order.
+            <div className="rounded-2xl border border-dashed border-line bg-canvas p-5 text-sm text-slate">
+              Your cart is empty. Start with a product or request a quote for custom print work.
             </div>
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <article key={item.id} className="rounded-lg border border-line p-4">
+                <article key={item.id} className="rounded-2xl border border-line/90 p-4 transition hover:border-brand/25 hover:bg-brand-soft/20">
                   <div className="flex justify-between gap-4">
                     <div>
                       <p className="font-black text-ink">{item.title}</p>
                       <p className="mt-1 text-xs text-slate">
-                        {item.optionLabels.slice(0, 3).map((option) => option.value).join(" | ") || "Configured print item"}
+                        {item.optionLabels.slice(0, 3).map((option) => option.value).join(" / ") || "Configured print item"}
                       </p>
                     </div>
                     <button type="button" onClick={() => removeItem(item.id)} className="text-xs font-bold text-brand">
@@ -82,10 +82,10 @@ export function CartDrawer() {
             <span className="font-black text-ink">${subtotal}</span>
           </div>
           <Button href="/cart" className="w-full" onClick={() => setOpen(false)}>
-            View Cart
+            Review My Order
           </Button>
           <Link href="/checkout" onClick={() => setOpen(false)} className="mt-3 block text-center text-sm font-bold text-brand">
-            Checkout
+            Go to Secure Checkout
           </Link>
         </div>
       </aside>

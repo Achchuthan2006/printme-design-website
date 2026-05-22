@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase";
 import { sendQuoteEmails } from "@/lib/sendgrid";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { logError, logInfo } from "@/lib/logger";
 import { quoteRequestSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit({ key: `quote:${ip}`, limit: 8, windowMs: 60_000 });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ message: "Too many quote requests. Please wait a moment and try again." }, { status: 429 });
+    }
+
     const body = await request.json();
     const parsed = quoteRequestSchema.safeParse(body);
 
@@ -36,6 +45,11 @@ export async function POST(request: Request) {
     }
 
     const emailResult = await sendQuoteEmails(parsed.data);
+    logInfo("Quote request received", {
+      service: parsed.data.serviceNeeded,
+      storageConfigured: Boolean(supabase),
+      emailSkipped: Boolean(emailResult.skipped),
+    });
 
     return NextResponse.json({
       message: "Quote request submitted successfully.",
@@ -43,12 +57,11 @@ export async function POST(request: Request) {
       storageConfigured: Boolean(supabase),
     });
   } catch (error) {
+    logError("Quote request submission failed", error);
+
     return NextResponse.json(
       {
-        message:
-          error instanceof Error
-            ? error.message
-            : "We could not submit your request right now. Please try again later.",
+        message: "We could not submit your request right now. Please try again later or call PrintMe directly.",
       },
       { status: 500 },
     );

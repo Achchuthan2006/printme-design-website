@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { env } from "@/lib/env";
 import { siteConfig } from "@/lib/site";
 
 export function buildMetadata({
@@ -10,12 +11,12 @@ export function buildMetadata({
   description: string;
   path?: string;
 }): Metadata {
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}${path}`;
+  const url = `${env.siteUrl}${path}`;
 
   return {
     title,
     description,
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    metadataBase: new URL(env.siteUrl),
     alternates: { canonical: path || "/" },
     openGraph: {
       title,

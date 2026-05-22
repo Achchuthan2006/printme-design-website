@@ -24,12 +24,12 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur transition-all duration-300 supports-[backdrop-filter]:bg-white/88",
-        scrolled ? "shadow-[0_10px_30px_rgba(20,20,20,0.08)]" : "shadow-[0_4px_18px_rgba(20,20,20,0.04)]",
+        "sticky top-0 z-50 border-b border-line/80 bg-white/95 backdrop-blur-xl transition-all duration-300 supports-[backdrop-filter]:bg-white/88",
+        scrolled ? "shadow-[0_14px_34px_rgba(22,19,17,0.08)]" : "shadow-[0_4px_18px_rgba(22,19,17,0.04)]",
       )}
     >
       <div className="container-shell">
-        <div className="flex h-16 items-center justify-between gap-6">
+        <div className={cn("flex items-center justify-between gap-6 transition-[height] duration-300", scrolled ? "h-[60px]" : "h-[68px]")}>
           <BrandLogo />
 
           <nav className="hidden items-center gap-8 lg:flex">
@@ -37,7 +37,7 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative text-xs font-extrabold text-ink transition-colors duration-200 after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-brand after:transition-transform after:duration-300 hover:text-brand hover:after:scale-x-100"
+                className="relative rounded-full px-1 py-2 text-xs font-extrabold text-ink transition-colors duration-200 after:absolute after:bottom-0 after:left-1 after:h-0.5 after:w-[calc(100%-0.5rem)] after:origin-left after:scale-x-0 after:rounded-full after:bg-brand after:transition-transform after:duration-300 hover:text-brand hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25"
               >
                 {item.label}
               </Link>
@@ -50,7 +50,7 @@ export function Header() {
             </a>
             <CartDrawer />
             <Button href="/quote-request" className="px-5 py-2.5 text-xs">
-              Request a Quote
+              Get My Quote
               <span aria-hidden="true" className="ml-2">-&gt;</span>
             </Button>
           </div>
@@ -60,7 +60,7 @@ export function Header() {
             aria-expanded={open}
             aria-label="Toggle menu"
             onClick={() => setOpen((value) => !value)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-line bg-white transition hover:border-brand/50 hover:bg-brand-soft lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white shadow-soft transition hover:border-brand/50 hover:bg-brand-soft lg:hidden"
           >
             <span className="sr-only">Menu</span>
             <div className="space-y-1.5">
@@ -84,14 +84,14 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-md px-4 py-3 text-sm font-bold text-ink transition hover:bg-canvas hover:text-brand"
+                  className="rounded-xl px-4 py-3 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand"
                   onClick={() => setOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
               <Button href="/quote-request" className="mt-2 w-full justify-center">
-                Request a Quote
+                Get My Quote
               </Button>
               <Button href="/cart" variant="secondary" className="w-full justify-center">
                 Cart {itemCount > 0 ? `(${itemCount})` : ""}

@@ -1,33 +1,42 @@
 import sgMail from "@sendgrid/mail";
 import { QuoteRequestInput } from "@/lib/validation";
 import { siteConfig } from "@/lib/site";
+import { env, isSendGridConfigured } from "@/lib/env";
 
-const fromEmail = process.env.SENDGRID_FROM_EMAIL;
-const adminEmail = process.env.SENDGRID_ADMIN_EMAIL;
-
-function isSendGridConfigured() {
-  return Boolean(process.env.SENDGRID_API_KEY && fromEmail && adminEmail);
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 export function configureSendGrid() {
-  if (process.env.SENDGRID_API_KEY) {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  if (env.sendGridApiKey) {
+    sgMail.setApiKey(env.sendGridApiKey);
   }
 }
 
 export function buildCustomerConfirmationEmail(data: QuoteRequestInput) {
+  const fullName = escapeHtml(data.fullName);
+  const serviceNeeded = escapeHtml(data.serviceNeeded);
+  const preferredDeadline = escapeHtml(data.preferredDeadline);
+  const fulfillmentMethod = escapeHtml(data.fulfillmentMethod);
+  const quantity = escapeHtml(data.quantity);
+
   return {
     to: data.email,
-    from: fromEmail ?? "quotes@printmedesign.com",
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
     subject: `We received your quote request | ${siteConfig.name}`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
         <h2 style="margin-bottom: 12px;">Thanks for contacting ${siteConfig.name}</h2>
-        <p>Hi ${data.fullName},</p>
-        <p>We received your quote request for <strong>${data.serviceNeeded}</strong>. Our team will review your details and follow up with pricing, turnaround, and next steps.</p>
-        <p><strong>Requested deadline:</strong> ${data.preferredDeadline}<br />
-        <strong>Fulfillment:</strong> ${data.fulfillmentMethod}<br />
-        <strong>Quantity:</strong> ${data.quantity}</p>
+        <p>Hi ${fullName},</p>
+        <p>We received your quote request for <strong>${serviceNeeded}</strong>. Our team will review your details and follow up with pricing, turnaround, and next steps.</p>
+        <p><strong>Requested deadline:</strong> ${preferredDeadline}<br />
+        <strong>Fulfillment:</strong> ${fulfillmentMethod}<br />
+        <strong>Quantity:</strong> ${quantity}</p>
         <p>If you need to add more details before we reply, call us at ${siteConfig.phone}.</p>
         <p>Thanks,<br />${siteConfig.name}</p>
       </div>
@@ -36,22 +45,24 @@ export function buildCustomerConfirmationEmail(data: QuoteRequestInput) {
 }
 
 export function buildAdminNotificationEmail(data: QuoteRequestInput) {
+  const projectDetails = escapeHtml(data.projectDetails).replace(/\n/g, "<br />");
+
   return {
-    to: adminEmail ?? "hello@printmedesign.com",
-    from: fromEmail ?? "quotes@printmedesign.com",
-    subject: `New quote request from ${data.fullName}`,
+    to: env.sendGridAdminEmail ?? "hello@printmedesign.com",
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `New quote request from ${escapeHtml(data.fullName)}`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
         <h2 style="margin-bottom: 12px;">New quote request submitted</h2>
-        <p><strong>Name:</strong> ${data.fullName}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Phone:</strong> ${data.phone}</p>
-        <p><strong>Company:</strong> ${data.companyName || "Not provided"}</p>
-        <p><strong>Service:</strong> ${data.serviceNeeded}</p>
-        <p><strong>Quantity:</strong> ${data.quantity}</p>
-        <p><strong>Deadline:</strong> ${data.preferredDeadline}</p>
-        <p><strong>Fulfillment:</strong> ${data.fulfillmentMethod}</p>
-        <p><strong>Project details:</strong><br />${data.projectDetails.replace(/\n/g, "<br />")}</p>
+        <p><strong>Name:</strong> ${escapeHtml(data.fullName)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(data.phone)}</p>
+        <p><strong>Company:</strong> ${data.companyName ? escapeHtml(data.companyName) : "Not provided"}</p>
+        <p><strong>Service:</strong> ${escapeHtml(data.serviceNeeded)}</p>
+        <p><strong>Quantity:</strong> ${escapeHtml(data.quantity)}</p>
+        <p><strong>Deadline:</strong> ${escapeHtml(data.preferredDeadline)}</p>
+        <p><strong>Fulfillment:</strong> ${escapeHtml(data.fulfillmentMethod)}</p>
+        <p><strong>Project details:</strong><br />${projectDetails}</p>
       </div>
     `,
   };
@@ -76,12 +87,12 @@ export async function sendQuoteEmails(data: QuoteRequestInput) {
 export function buildOrderConfirmationEmail(orderNumber: string, email: string) {
   return {
     to: email,
-    from: fromEmail ?? "quotes@printmedesign.com",
-    subject: `PrintMe order received | ${orderNumber}`,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `PrintMe order received | ${escapeHtml(orderNumber)}`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
         <h2>Your PrintMe order has been received</h2>
-        <p>Thanks for ordering with PrintMe. Your order number is <strong>${orderNumber}</strong>.</p>
+        <p>Thanks for ordering with PrintMe. Your order number is <strong>${escapeHtml(orderNumber)}</strong>.</p>
         <p>We will review artwork, timing, pickup or delivery details, and follow up if anything needs attention.</p>
       </div>
     `,
@@ -91,12 +102,12 @@ export function buildOrderConfirmationEmail(orderNumber: string, email: string) 
 export function buildStatusUpdateEmail(orderNumber: string, email: string, status: string) {
   return {
     to: email,
-    from: fromEmail ?? "quotes@printmedesign.com",
-    subject: `PrintMe order update | ${orderNumber}`,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `PrintMe order update | ${escapeHtml(orderNumber)}`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
         <h2>Order status update</h2>
-        <p>Your order <strong>${orderNumber}</strong> is now marked as <strong>${status}</strong>.</p>
+        <p>Your order <strong>${escapeHtml(orderNumber)}</strong> is now marked as <strong>${escapeHtml(status)}</strong>.</p>
       </div>
     `,
   };

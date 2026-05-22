@@ -148,10 +148,10 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
   return (
     <div className="rounded-lg border border-line bg-white shadow-soft">
       <div className="border-b border-line p-5">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Order builder</p>
-        <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Build your order</p>
+        <h2 className="mt-2 text-2xl font-black text-ink">Choose options for {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
-          Select common print options and review the live summary before adding to cart or requesting help.
+          Select the basics now. PrintMe can still review files, timing, and special instructions before production.
         </p>
       </div>
 
@@ -168,15 +168,15 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
             ))
           ) : (
             <div className="rounded-lg bg-canvas p-5">
-              <p className="text-sm font-bold text-ink">This service is handled in store or by quote.</p>
-              <p className="mt-2 text-sm leading-6 text-slate">Call PrintMe or request support and we will confirm the best next step.</p>
+              <p className="text-sm font-bold text-ink">This service is best handled by quote or in store.</p>
+              <p className="mt-2 text-sm leading-6 text-slate">Send the details and we will confirm the safest production path before you commit.</p>
             </div>
           )}
         </div>
 
         <aside className="border-t border-line bg-canvas p-5 lg:border-l lg:border-t-0">
           <div className="lg:sticky lg:top-24">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Live summary</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Live print summary</p>
             <h3 className="mt-2 text-xl font-black text-ink">{product.title}</h3>
             <div className="mt-5 space-y-3">
               {optionLabels.length > 0 ? (
@@ -202,24 +202,24 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
               </div>
               <p className="mt-2 text-xs leading-5 text-slate">
                 {price.pricingMode === "quote-only"
-                  ? "This product needs review before pricing can be confirmed."
-                  : "Estimate before tax, delivery, artwork setup, or specialty finishing."}
+                  ? "This product needs PrintMe review before pricing can be confirmed."
+                  : "Estimate before tax, delivery, artwork setup, or specialty finishing. We will review files before production."}
               </p>
             </div>
 
             {error ? <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
             {status === "added" ? (
               <p className="hero-in mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                Added to cart. You can continue shopping or review checkout details.
+                Added to cart. Review your order when you are ready, or keep building your print list.
               </p>
             ) : null}
 
             <div className="mt-5 grid gap-3">
               <Button type="button" onClick={addToCart} disabled={!canAddToCart}>
-                {canAddToCart ? "Add Configured Item" : "Quote Required"}
+                {canAddToCart ? "Add to My Cart" : "Quote Required"}
               </Button>
               <Button href={`/quote-request?service=${product.slug}`} variant="secondary">
-                Request Quote Instead
+                Get a Quote Instead
               </Button>
             </div>
 

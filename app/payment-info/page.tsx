@@ -10,13 +10,13 @@ export const metadata = buildMetadata({
 export default function PaymentInfoPage() {
   return (
     <>
-      <PageHero title="Payment information" description="PrintMe is prepared for online payment, deposits, full payment, invoices, and payment confirmations." />
+      <PageHero title="Pay securely when your print order is ready" description="Online-payable items can move through secure checkout, while custom jobs can be reviewed by PrintMe before payment is confirmed." />
       <section className="section-space bg-canvas">
         <div className="container-shell grid gap-5 md:grid-cols-3">
-          {["Stripe checkout", "Deposit payments", "Invoice downloads"].map((item) => (
+          {["Secure checkout", "Deposit-ready workflows", "Invoice records"].map((item) => (
             <article key={item} className="rounded-lg border border-line bg-white p-6 shadow-soft">
               <h2 className="text-xl font-black text-ink">{item}</h2>
-              <p className="mt-3 text-sm leading-7 text-slate">Integration scaffold is ready for production payment rules and admin review.</p>
+              <p className="mt-3 text-sm leading-7 text-slate">PrintMe can support clear payment steps for online orders, reviewed custom jobs, and future account invoice access.</p>
             </article>
           ))}
         </div>

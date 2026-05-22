@@ -12,11 +12,11 @@ export function TrustBadge({ icon, title, detail, className }: TrustBadgeProps) 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-md border border-line bg-white px-4 py-3 shadow-soft transition duration-300 hover:border-brand/30 hover:bg-white hover:shadow-card",
+        "flex items-center gap-3 rounded-2xl border border-line/90 bg-white px-4 py-4 shadow-soft transition duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-white hover:shadow-card",
         className,
       )}
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brand/15 bg-brand-soft text-brand">
         <Icon name={icon} className="h-5 w-5" />
       </span>
       <span>

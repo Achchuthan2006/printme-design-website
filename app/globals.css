@@ -12,6 +12,10 @@ html {
 
 body {
   @apply bg-canvas text-ink antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(217, 70, 32, 0.055), transparent 34rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(248, 246, 243, 0.9));
+  text-rendering: optimizeLegibility;
 }
 
 * {
@@ -23,11 +27,11 @@ body {
 }
 
 .section-space {
-  @apply py-14 sm:py-16 lg:py-20;
+  @apply py-16 sm:py-20 lg:py-24;
 }
 
 .surface-card {
-  @apply rounded-lg border border-line bg-panel shadow-soft;
+  @apply rounded-2xl border border-line/90 bg-panel shadow-soft;
 }
 
 .text-balance {
@@ -40,6 +44,18 @@ body {
 
 ::selection {
   @apply bg-brand text-white;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  @apply rounded-xl;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+select:focus,
+textarea:focus {
+  @apply ring-4 ring-brand/10;
 }
 
 @keyframes hero-rise {
@@ -83,6 +99,16 @@ body {
   }
 }
 
+@keyframes soft-pulse {
+  0%,
+  100% {
+    box-shadow: 0 18px 48px rgba(217, 70, 32, 0.18);
+  }
+  50% {
+    box-shadow: 0 22px 58px rgba(217, 70, 32, 0.26);
+  }
+}
+
 .hero-in {
   opacity: 0;
   animation: hero-rise 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -102,11 +128,27 @@ body {
 }
 
 .premium-card {
-  @apply transition duration-300 ease-out;
+  @apply transition duration-300 ease-out will-change-transform;
 }
 
 .premium-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
+}
+
+.premium-surface {
+  @apply rounded-2xl border border-line/90 bg-white shadow-soft;
+}
+
+.premium-focus {
+  @apply outline-none transition duration-200 focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
+}
+
+.premium-input {
+  @apply rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] outline-none transition duration-200 placeholder:text-slate/55 hover:border-brand/35 focus:border-brand focus:ring-4 focus:ring-brand/10;
+}
+
+.premium-cta {
+  animation: soft-pulse 5s ease-in-out infinite;
 }
 
 @supports (animation-timeline: view()) {
