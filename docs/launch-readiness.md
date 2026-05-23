@@ -1,0 +1,92 @@
+# PrintMe Launch Readiness
+
+This checklist translates the current PrintMe codebase into concrete deployment and operations rules.
+
+## Environment model
+
+Use two environment layers for staff access while the admin portal is still frontend-driven:
+
+- `ADMIN_PORTAL_ENABLED`
+  Enables or disables the internal admin surface entirely.
+- `ADMIN_USER_EMAILS`
+  Server-side allowlist for staff-only backend checks and future server enforcement.
+- `NEXT_PUBLIC_ADMIN_USER_EMAILS`
+  Client-side allowlist for the current admin portal gate. Keep it identical to `ADMIN_USER_EMAILS` until Supabase role claims replace this temporary step.
+
+Recommended production rule:
+
+1. Keep `ADMIN_PORTAL_ENABLED=false` until the allowlists are configured and tested.
+2. Set both admin email lists to the same approved staff addresses.
+3. Replace the public allowlist with Supabase `profiles.role` plus server-side session checks before broadening internal tooling.
+
+## Required production variables
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SENDGRID_API_KEY`
+- `SENDGRID_FROM_EMAIL`
+- `SENDGRID_ADMIN_EMAIL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `ADMIN_PORTAL_ENABLED`
+- `ADMIN_USER_EMAILS`
+- `NEXT_PUBLIC_ADMIN_USER_EMAILS`
+- `NEXT_PUBLIC_ANALYTICS_ID` if analytics are enabled
+
+## Supabase readiness
+
+1. Apply the schema in [supabase/schema.sql](/C:/Users/Achch/Desktop/PrintMe/supabase/schema.sql) and the extended reference in [docs/supabase-schema.sql](/C:/Users/Achch/Desktop/PrintMe/docs/supabase-schema.sql).
+2. Create the private `print-files` storage bucket.
+3. Enable Row Level Security for customer-facing tables before storing live customer data.
+4. Add policies for profiles, quotes, quote line items, orders, order line items, uploads, invoices, support records, activity logs, and internal notes.
+5. Plan the migration from email allowlists to `profiles.role` or equivalent claims before scaling staff workflows.
+
+## Payments and webhook readiness
+
+1. Create a live Stripe webhook endpoint for `/api/stripe/webhook`.
+2. Subscribe it to checkout completion and payment events used by the order workflow.
+3. Confirm webhook signatures with `STRIPE_WEBHOOK_SECRET`.
+4. Verify that checkout session metadata includes the order identifiers needed by internal operations.
+5. Test failed payment, cancelled checkout, and repeated webhook delivery paths before launch.
+
+## Email and notifications
+
+1. Verify SendGrid sender authentication for the PrintMe domain.
+2. Confirm admin recipients for quote, checkout, and support notifications.
+3. Test customer-facing emails for quote received, order placed, upload received, and payment confirmation.
+4. Add monitoring or alerting around failed notification sends before depending on them operationally.
+
+## Release checklist
+
+1. Run `npm run build`.
+2. Run `npm run typecheck`.
+3. Smoke-test these routes:
+   - `/`
+   - `/services`
+   - `/products`
+   - `/quote-request`
+   - `/cart`
+   - `/checkout`
+   - `/account/login`
+   - `/support`
+   - `/admin` with an allowed staff account
+4. Confirm Stripe redirects resolve against `NEXT_PUBLIC_SITE_URL`.
+5. Confirm Supabase uploads succeed and metadata is stored.
+6. Confirm the admin portal is inaccessible to non-staff accounts.
+7. Confirm a signed-in staff account can reach the admin portal and customer account safely.
+
+## Known temporary boundaries
+
+- The current admin portal gate is a UI and configuration boundary, not a full server-enforced authorization model.
+- Customer account data is still scaffold-backed in parts of the UI and should be moved fully to persisted records before launch at scale.
+- Upload metadata, payment history, and notification history are now structured for persistence, but supporting dashboards still need more live operational data before multi-staff use.
+
+## Recommended next engineering milestones
+
+1. Add Supabase SSR auth so admin and account route protection can be enforced server-side.
+2. Replace email allowlists with persisted staff roles and RLS-backed admin permissions.
+3. Add automated smoke tests for quote intake, cart, checkout, upload metadata submission, and admin access.
+4. Add centralized observability for payment failures, upload failures, and notification failures.

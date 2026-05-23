@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/account/auth-provider";
 
 export function ProtectedAdmin({ children }: { children: React.ReactNode }) {
-  const { user, loading, configured } = useAuth();
+  const { user, loading, configured, isAdmin } = useAuth();
   const pathname = usePathname();
 
   if (loading) {
@@ -38,6 +38,28 @@ export function ProtectedAdmin({ children }: { children: React.ReactNode }) {
           <Button href={`/account/login?redirect=${encodeURIComponent(pathname)}`} className="mt-6">
             Sign In as Staff
           </Button>
+        </section>
+      </main>
+    );
+  }
+
+  if (configured && user && !isAdmin) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-cream px-4">
+        <section className="max-w-xl rounded-2xl border border-line bg-white p-8 text-center shadow-card">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Staff-only area</p>
+          <h1 className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink">This account does not have admin access.</h1>
+          <p className="mt-3 text-sm leading-7 text-slate">
+            PrintMe operations routes are reserved for approved staff identities. Use a staff email on the allowlist or return to the customer account.
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button href="/account" variant="secondary">
+              Open Customer Account
+            </Button>
+            <Button href="/support">
+              Contact Support
+            </Button>
+          </div>
         </section>
       </main>
     );

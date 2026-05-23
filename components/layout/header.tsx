@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { navigation, siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { CartDrawer } from "@/components/commerce/cart-drawer";
 import { cn } from "@/lib/utils";
 
 export function Header() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { itemCount } = useCart();
@@ -21,23 +23,53 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b border-line/80 bg-white/95 backdrop-blur-xl transition-all duration-300 supports-[backdrop-filter]:bg-white/88",
-        scrolled ? "shadow-[0_14px_34px_rgba(22,19,17,0.08)]" : "shadow-[0_4px_18px_rgba(22,19,17,0.04)]",
+        "sticky top-0 z-50 border-b border-line/70 bg-white/92 backdrop-blur-xl transition-all duration-300 supports-[backdrop-filter]:bg-white/84",
+        scrolled ? "shadow-[0_18px_48px_rgba(22,19,17,0.1)]" : "shadow-[0_6px_22px_rgba(22,19,17,0.045)]",
       )}
     >
+      <div className="hidden border-b border-black/5 bg-ink text-white lg:block">
+        <div className="container-shell flex h-10 items-center justify-between gap-4 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70">
+          <div className="flex items-center gap-5">
+            <span>Scarborough print shop</span>
+            <span>{siteConfig.experience}</span>
+            <span>Rush-aware production support</span>
+          </div>
+          <div className="flex items-center gap-5">
+            <a href={siteConfig.phoneHref} className="link-underline text-white">
+              {siteConfig.phone}
+            </a>
+            <span>{siteConfig.shortAddress}</span>
+          </div>
+        </div>
+      </div>
       <div className="container-shell">
-        <div className={cn("flex items-center justify-between gap-6 transition-[height] duration-300", scrolled ? "h-[60px]" : "h-[68px]")}>
-          <BrandLogo />
+        <div className={cn("flex items-center justify-between gap-6 transition-[height] duration-300", scrolled ? "h-[64px]" : "h-[76px]")}>
+          <BrandLogo className="mr-2 lg:mr-4" size="header" />
 
-          <nav className="hidden items-center gap-8 lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative rounded-full px-1 py-2 text-xs font-extrabold text-ink transition-colors duration-200 after:absolute after:bottom-0 after:left-1 after:h-0.5 after:w-[calc(100%-0.5rem)] after:origin-left after:scale-x-0 after:rounded-full after:bg-brand after:transition-transform after:duration-300 hover:text-brand hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25"
+                className="relative rounded-full px-1 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-ink transition-colors duration-200 after:absolute after:bottom-0 after:left-1 after:h-0.5 after:w-[calc(100%-0.5rem)] after:origin-left after:scale-x-0 after:rounded-full after:bg-brand after:transition-transform after:duration-300 hover:text-brand hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25"
               >
                 {item.label}
               </Link>
@@ -45,9 +77,12 @@ export function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <a href={siteConfig.phoneHref} className="text-xs font-extrabold text-ink transition hover:text-brand">
-              {siteConfig.phone}
-            </a>
+            <div className="rounded-full border border-line/80 bg-white px-4 py-2 text-right shadow-[0_10px_20px_rgba(22,19,17,0.05)]">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Need a fast answer?</p>
+              <a href={siteConfig.phoneHref} className="mt-1 block text-sm font-extrabold text-ink transition hover:text-brand">
+                {siteConfig.phone}
+              </a>
+            </div>
             <CartDrawer />
             <Button href="/quote-request" className="px-5 py-2.5 text-xs">
               Get My Quote
@@ -58,9 +93,10 @@ export function Header() {
           <button
             type="button"
             aria-expanded={open}
+            aria-controls="printme-mobile-menu"
             aria-label="Toggle menu"
             onClick={() => setOpen((value) => !value)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white shadow-soft transition hover:border-brand/50 hover:bg-brand-soft lg:hidden"
+            className="liquid-glass inline-flex h-11 w-11 items-center justify-center rounded-2xl transition hover:border-brand/45 hover:bg-white lg:hidden"
           >
             <span className="sr-only">Menu</span>
             <div className="space-y-1.5">
@@ -72,19 +108,20 @@ export function Header() {
         </div>
 
         <div
+          id="printme-mobile-menu"
           className={cn(
-            "grid border-t border-line transition-[grid-template-rows,opacity] duration-300 ease-out lg:hidden",
+            "grid border-t border-white/60 transition-[grid-template-rows,opacity] duration-300 ease-out lg:hidden",
             open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
           )}
         >
           <div className="overflow-hidden">
             <div className="py-4">
-            <nav className="flex flex-col gap-2">
+            <nav aria-label="Mobile" className="flex flex-col gap-2">
               {navigation.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-xl px-4 py-3 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand"
+                  className="rounded-2xl px-4 py-3 text-sm font-bold text-ink transition hover:bg-white/80 hover:text-brand"
                   onClick={() => setOpen(false)}
                 >
                   {item.label}

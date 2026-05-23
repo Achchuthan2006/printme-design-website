@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient } from "@/lib/supabase";
-import { sendQuoteEmails } from "@/lib/sendgrid";
+import { dispatchQuoteReceivedNotifications } from "@/lib/backend/notifications";
+import { persistQuoteRequest } from "@/lib/backend/repository";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
 import { quoteRequestSchema } from "@/lib/validation";
@@ -24,37 +24,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = getSupabaseServerClient();
+    const storedQuote = await persistQuoteRequest(parsed.data, {
+      ipAddress: ip,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+      referer: request.headers.get("referer") ?? undefined,
+    });
+    const emailResult = await dispatchQuoteReceivedNotifications(parsed.data);
 
-    if (supabase) {
-      const { error } = await supabase.from("print_quote_requests").insert({
-        full_name: parsed.data.fullName,
-        email: parsed.data.email,
-        phone: parsed.data.phone,
-        company_name: parsed.data.companyName || null,
-        service_needed: parsed.data.serviceNeeded,
-        quantity: parsed.data.quantity,
-        preferred_deadline: parsed.data.preferredDeadline,
-        fulfillment_method: parsed.data.fulfillmentMethod,
-        project_details: parsed.data.projectDetails,
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    }
-
-    const emailResult = await sendQuoteEmails(parsed.data);
     logInfo("Quote request received", {
+      quoteNumber: storedQuote.quoteNumber,
       service: parsed.data.serviceNeeded,
-      storageConfigured: Boolean(supabase),
+      persisted: storedQuote.persisted,
+      legacyFallback: Boolean(storedQuote.legacyFallback),
       emailSkipped: Boolean(emailResult.skipped),
     });
 
     return NextResponse.json({
       message: "Quote request submitted successfully.",
+      quoteNumber: storedQuote.quoteNumber,
+      status: storedQuote.status,
       emailStatus: emailResult,
-      storageConfigured: Boolean(supabase),
+      storageConfigured: storedQuote.persisted,
     });
   } catch (error) {
     logError("Quote request submission failed", error);

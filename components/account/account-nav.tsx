@@ -18,7 +18,7 @@ const navItems = [
 export function AccountNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut, user, configured } = useAuth();
+  const { signOut, user, configured, isAdmin } = useAuth();
 
   async function handleSignOut() {
     await signOut();
@@ -26,11 +26,16 @@ export function AccountNav() {
   }
 
   return (
-    <aside className="h-fit rounded-lg border border-line bg-white p-4 shadow-soft lg:sticky lg:top-24">
-      <p className="px-3 text-xs font-black uppercase tracking-[0.2em] text-brand">Customer account</p>
+    <aside className="hero-panel h-fit p-4 lg:sticky lg:top-24">
+      <p className="px-3 text-[11px] font-black uppercase tracking-[0.22em] text-brand">Customer account</p>
       <p className="mt-2 px-3 text-sm font-bold text-ink">{user?.email ?? "Demo account preview"}</p>
+      {isAdmin ? (
+        <p className="mt-3 rounded-[1rem] border border-brand/15 bg-brand-soft px-3 py-2 text-xs font-bold leading-5 text-brand">
+          Staff-approved account detected. You can also open the internal operations portal.
+        </p>
+      ) : null}
       {!configured ? (
-        <p className="mt-3 rounded-md bg-brand-soft px-3 py-2 text-xs leading-5 text-brand">
+        <p className="mt-3 rounded-[1rem] bg-brand-soft px-3 py-2 text-xs leading-5 text-brand">
           Supabase env vars are not configured, so account pages are shown in preview mode.
         </p>
       ) : null}
@@ -40,19 +45,24 @@ export function AccountNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "rounded-md px-3 py-2 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand",
-              pathname === item.href && "bg-brand-soft text-brand",
+              "rounded-[1rem] px-3 py-2.5 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand",
+              pathname === item.href && "bg-ink text-white hover:bg-ink hover:text-white",
             )}
           >
             {item.label}
           </Link>
         ))}
       </nav>
-      <Button href="/products" variant="secondary" className="mt-5 w-full">Start New Order</Button>
+      {isAdmin ? (
+        <Button href="/admin" variant="secondary" className="mt-5 w-full">
+          Open Admin Portal
+        </Button>
+      ) : null}
+      <Button href="/products" variant="secondary" className={isAdmin ? "mt-3 w-full" : "mt-5 w-full"}>Start New Order</Button>
       <button
         type="button"
         onClick={handleSignOut}
-        className="mt-3 w-full rounded-md px-3 py-2 text-sm font-bold text-slate transition hover:bg-canvas hover:text-brand"
+        className="mt-3 w-full rounded-[1rem] px-3 py-2 text-sm font-bold text-slate transition hover:bg-canvas hover:text-brand"
       >
         Sign out
       </button>

@@ -11,20 +11,36 @@ export const metadata = buildMetadata({
 });
 
 export default function QuoteRequestPage() {
+  const quoteExpectations = [
+    "A clearer request helps us reply with fewer follow-up questions.",
+    "Artwork is helpful but not required. You can still send the project first.",
+    "Rush timing, pickup, delivery, and production fit are reviewed before the next step is confirmed.",
+  ];
+
   return (
     <>
       <PageHero
-        title="Get a clear print quote before you commit"
-        description="Tell us what you need, attach artwork if you have it, and we will review the job for price, timing, pickup or delivery, and production fit."
+        title="Get a clear print quote before you commit."
+        description="Tell us what you need, attach artwork if you have it, and PrintMe will review the job for price, timing, pickup or delivery, and production fit."
         ctaLabel="Call PrintMe"
         ctaHref="tel:+14165721999"
+        eyebrow="Quote request"
+        highlights={["No payment required", "Artwork upload available", "Response shaped around timing and production fit"]}
       />
       <section className="section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
           <QuoteRequestForm />
           <aside className="space-y-6">
             <div className="surface-card p-6">
-              <h2 className="text-2xl font-extrabold tracking-tight text-ink">Help us quote it right the first time</h2>
+              <p className="editorial-kicker">Quote quality</p>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-ink">Help us quote it right the first time.</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {quoteExpectations.map((item) => (
+                  <span key={item} className="value-chip">
+                    {item}
+                  </span>
+                ))}
+              </div>
               <ul className="mt-5 space-y-3 text-sm leading-7 text-slate">
                 <li>Service type and quantity</li>
                 <li>Finished size or dimensions</li>
@@ -34,10 +50,20 @@ export default function QuoteRequestPage() {
               </ul>
             </div>
             <div className="surface-card p-6">
-              <h3 className="text-xl font-extrabold tracking-tight text-ink">What happens after you send it</h3>
-              <p className="mt-3 text-sm leading-7 text-slate">
-                PrintMe reviews your request, checks the artwork notes, confirms what is realistic for your deadline, and follows up with the clearest next step.
-              </p>
+              <p className="editorial-kicker">What happens next</p>
+              <h3 className="mt-2 text-xl font-extrabold tracking-tight text-ink">What happens after you send it</h3>
+              <div className="mt-4 space-y-3">
+                {[
+                  "We review the service, quantity, timeline, and whether the job fits a direct order or custom path.",
+                  "If files are attached, we check size, quality, and production notes before quoting.",
+                  "You get a clearer next step instead of vague back-and-forth.",
+                ].map((item, index) => (
+                  <div key={item} className="signal-card">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Step {index + 1}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate">{item}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </aside>
         </div>

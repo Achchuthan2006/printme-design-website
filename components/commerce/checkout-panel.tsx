@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useId, useMemo, useState, useTransition } from "react";
+import { CartSupportPanel } from "@/components/commerce/cart-support-panel";
 import { Button } from "@/components/ui/button";
+import { CheckboxTile, FeedbackMessage, Field, Input, Textarea } from "@/components/ui/form-controls";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { useCart } from "@/features/cart/cart-context";
+import { openSupportChat } from "@/lib/chat";
 import { CheckoutAddress, CheckoutCustomer, CheckoutPayload } from "@/types";
 import { siteConfig } from "@/lib/site";
 
@@ -24,6 +27,7 @@ const emptyAddress: CheckoutAddress = {
 
 export function CheckoutPanel() {
   const { items, subtotal } = useCart();
+  const errorId = useId();
   const [customer, setCustomer] = useState(emptyCustomer);
   const [deliveryAddress, setDeliveryAddress] = useState(emptyAddress);
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"pickup" | "delivery">("pickup");
@@ -101,9 +105,9 @@ export function CheckoutPanel() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-line bg-white p-8 text-center shadow-soft">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Secure checkout</p>
-        <h1 className="mt-2 text-3xl font-black text-ink">Your checkout is waiting for a print item</h1>
+      <div className="hero-panel p-8 text-center">
+        <p className="editorial-kicker">Secure checkout</p>
+        <h1 className="display-title mt-2 text-[2.5rem] font-black">Your checkout is waiting for a print item.</h1>
         <p className="mt-3 text-sm leading-6 text-slate">Add an online-order item or request a quote if your project needs review first.</p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button href="/products">Start My Order</Button>
@@ -114,10 +118,12 @@ export function CheckoutPanel() {
   }
 
   return (
-    <form onSubmit={submitCheckout} className="grid gap-8 lg:grid-cols-[1fr_390px]">
+    <form onSubmit={submitCheckout} className="grid gap-8 lg:grid-cols-[1fr_390px]" noValidate>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Step 1</p>
+        <CartSupportPanel />
+
+        <section className="surface-card p-6">
+          <p className="editorial-kicker">Step 1</p>
           <h1 className="mt-2 text-3xl font-black text-ink">Where should we send updates?</h1>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             {[
@@ -126,24 +132,22 @@ export function CheckoutPanel() {
               ["phone", "Phone", "416-555-0123", "tel", "tel"],
               ["companyName", "Company", "Optional", "text", "organization"],
             ].map(([field, label, placeholder, inputType, autoComplete]) => (
-              <label key={field} className="block">
-                <span className="mb-2 block text-sm font-bold text-ink">{label}</span>
-                <input
+              <Field key={field} label={label}>
+                <Input
                   value={customer[field as keyof CheckoutCustomer] ?? ""}
                   onChange={(event) => updateCustomer(field as keyof CheckoutCustomer, event.target.value)}
                   placeholder={placeholder}
                   type={inputType}
                   required={field !== "companyName"}
                   autoComplete={autoComplete}
-                  className="premium-input w-full"
                 />
-              </label>
+              </Field>
             ))}
           </div>
         </section>
 
-        <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Step 2</p>
+        <section className="surface-card p-6">
+          <p className="editorial-kicker">Step 2</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Choose pickup or delivery review</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
@@ -152,8 +156,8 @@ export function CheckoutPanel() {
             ].map((choice) => (
               <label
                 key={choice.value}
-                className={`cursor-pointer rounded-2xl border p-4 transition hover:border-brand/40 ${
-                  fulfillmentMethod === choice.value ? "border-brand bg-brand-soft ring-2 ring-brand/10" : "border-line bg-white"
+                className={`cursor-pointer rounded-[1.35rem] border p-4 transition hover:border-brand/40 ${
+                  fulfillmentMethod === choice.value ? "border-brand bg-brand-soft ring-2 ring-brand/10 shadow-soft" : "border-line bg-white"
                 }`}
               >
                 <input
@@ -172,33 +176,28 @@ export function CheckoutPanel() {
 
           {fulfillmentMethod === "delivery" ? (
             <div className="hero-in mt-6 grid gap-5 md:grid-cols-2">
-              <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-bold text-ink">Address line 1</span>
-                <input value={deliveryAddress.addressLine1} onChange={(event) => updateAddress("addressLine1", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-line1" className="premium-input w-full" />
-              </label>
-              <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-bold text-ink">Address line 2</span>
-                <input value={deliveryAddress.addressLine2 ?? ""} onChange={(event) => updateAddress("addressLine2", event.target.value)} autoComplete="address-line2" className="premium-input w-full" />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold text-ink">City</span>
-                <input value={deliveryAddress.city} onChange={(event) => updateAddress("city", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-level2" className="premium-input w-full" />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold text-ink">Postal code</span>
-                <input value={deliveryAddress.postalCode} onChange={(event) => updateAddress("postalCode", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="postal-code" className="premium-input w-full" />
-              </label>
+              <Field label="Address line 1" className="md:col-span-2">
+                <Input value={deliveryAddress.addressLine1} onChange={(event) => updateAddress("addressLine1", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-line1" />
+              </Field>
+              <Field label="Address line 2" className="md:col-span-2">
+                <Input value={deliveryAddress.addressLine2 ?? ""} onChange={(event) => updateAddress("addressLine2", event.target.value)} autoComplete="address-line2" />
+              </Field>
+              <Field label="City">
+                <Input value={deliveryAddress.city} onChange={(event) => updateAddress("city", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-level2" />
+              </Field>
+              <Field label="Postal code">
+                <Input value={deliveryAddress.postalCode} onChange={(event) => updateAddress("postalCode", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="postal-code" />
+              </Field>
             </div>
           ) : null}
         </section>
 
-        <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Step 3</p>
+        <section className="surface-card p-6">
+          <p className="editorial-kicker">Step 3</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Artwork and production notes</h2>
-          <label className="mt-5 block">
-            <span className="mb-2 block text-sm font-bold text-ink">Anything we should confirm before print?</span>
-            <textarea value={orderNotes} onChange={(event) => setOrderNotes(event.target.value)} rows={5} className="premium-input w-full" />
-          </label>
+          <Field label="Anything we should confirm before print?" className="mt-5">
+            <Textarea value={orderNotes} onChange={(event) => setOrderNotes(event.target.value)} rows={5} />
+          </Field>
           <div className="mt-5">
             <ArtworkUploadZone
               context={{ scope: "order", relatedLabel: "Checkout order" }}
@@ -208,37 +207,40 @@ export function CheckoutPanel() {
               className="shadow-none"
             />
           </div>
-          <label className="mt-5 flex gap-3 rounded-2xl border border-line/80 bg-canvas p-4">
-            <input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-brand" />
-            <span className="text-sm leading-6 text-slate">
+          <CheckboxTile checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-5 items-start">
+            <span className="leading-6 text-slate">
               I understand PrintMe may review artwork, production details, pickup or delivery requirements, and quote-only items before production begins. This helps prevent avoidable print issues.
             </span>
-          </label>
+          </CheckboxTile>
         </section>
       </div>
 
-      <aside className="h-fit rounded-2xl border border-line/90 bg-white p-6 shadow-soft lg:sticky lg:top-24">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Secure checkout</p>
+      <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
+        <p className="editorial-kicker">Secure checkout</p>
         <h2 className="mt-2 text-2xl font-black text-ink">Confirm your print order</h2>
+        <p className="mt-2 text-sm leading-6 text-slate">Review what can be paid online now and what still needs staff confirmation before production.</p>
 
         <div className="mt-5 max-h-[360px] space-y-4 overflow-y-auto pr-1">
           {items.map((item) => (
-            <article key={item.id} className="rounded-2xl border border-line/90 p-4">
+            <article key={item.id} className="rounded-[1.35rem] border border-line/90 bg-white/80 p-4">
               <div className="flex justify-between gap-4">
                 <div>
                   <p className="font-black text-ink">{item.title}</p>
                   <p className="mt-1 text-xs text-slate">{item.optionLabels.slice(0, 3).map((option) => option.value).join(" / ")}</p>
                 </div>
-                <p className="text-sm font-black text-ink">{item.quoteOnly ? "Quote" : `$${(item.estimatedTotal || item.unitPrice) * item.quantity}`}</p>
+                <p className="text-sm font-black text-ink">{item.quoteOnly ? "Quote" : `$${((item.estimatedTotal || item.unitPrice) * item.quantity).toFixed(2)}`}</p>
               </div>
             </article>
           ))}
         </div>
 
         <div className="mt-5 space-y-3 border-t border-line pt-5 text-sm">
-          <div className="flex justify-between"><span>Estimated subtotal</span><span className="font-black text-ink">${subtotal}</span></div>
-          <div className="flex justify-between text-slate"><span>Payable online</span><span>${payableSubtotal}</span></div>
+          <div className="flex justify-between"><span>Estimated subtotal</span><span className="font-black text-ink">${subtotal.toFixed(2)}</span></div>
+          <div className="flex justify-between text-slate"><span>Payable online</span><span>${payableSubtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Quote review items</span><span>{quoteItems.length}</span></div>
+          <div className="rounded-[1.3rem] border border-line/80 bg-white/85 px-4 py-3 text-xs leading-5 text-slate">
+            Secure checkout is powered by Stripe. PrintMe still confirms files, fulfillment, and any quote-review items before production begins.
+          </div>
         </div>
 
         <fieldset className="mt-5">
@@ -246,10 +248,23 @@ export function CheckoutPanel() {
           <div className="grid gap-2">
             {[
               { value: "full", label: "Pay online now", description: "Use Stripe Checkout for online-payable items." },
-              { value: "deposit", label: "Deposit mode", description: "Prepared for future deposit workflows." },
+              { value: "deposit", label: "Deposit mode", description: "Coming soon. Online full payment is currently the supported checkout path.", disabled: true },
             ].map((choice) => (
-              <label key={choice.value} className={`cursor-pointer rounded-2xl border p-3 ${paymentMode === choice.value ? "border-brand bg-brand-soft" : "border-line"}`}>
-                <input type="radio" name="paymentMode" value={choice.value} checked={paymentMode === choice.value} onChange={(event) => setPaymentMode(event.target.value as "full" | "deposit")} className="sr-only" />
+              <label
+                key={choice.value}
+                className={`rounded-[1.25rem] border p-3 ${
+                  paymentMode === choice.value ? "border-brand bg-brand-soft" : "border-line bg-white/80"
+                } ${choice.disabled ? "cursor-not-allowed opacity-65" : "cursor-pointer"}`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value={choice.value}
+                  checked={paymentMode === choice.value}
+                  onChange={(event) => setPaymentMode(event.target.value as "full" | "deposit")}
+                  className="sr-only"
+                  disabled={choice.disabled}
+                />
                 <span className="block text-sm font-bold text-ink">{choice.label}</span>
                 <span className="mt-1 block text-xs text-slate">{choice.description}</span>
               </label>
@@ -258,15 +273,22 @@ export function CheckoutPanel() {
         </fieldset>
 
         {quoteItems.length > 0 ? (
-          <p className="mt-5 rounded-2xl border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
+          <p className="mt-5 rounded-[1.3rem] border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
             Quote-only items will be reviewed by PrintMe before final pricing or production approval.
           </p>
         ) : null}
 
-        {error ? <p className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
+        {error ? (
+          <FeedbackMessage id={errorId} tone="error" className="mt-5" >
+            {error}
+          </FeedbackMessage>
+        ) : null}
 
         <Button type="submit" disabled={isPending} className="mt-6 w-full">
           {isPending ? "Starting secure checkout..." : payableSubtotal > 0 ? "Go to Secure Payment" : "Send for PrintMe Review"}
+        </Button>
+        <Button type="button" variant="secondary" className="mt-3 w-full" onClick={openSupportChat}>
+          Ask About Files or Turnaround
         </Button>
         <p className="mt-4 text-xs leading-5 text-slate">
           Secure payment is handled by Stripe. For help, call {siteConfig.phone} or email {siteConfig.email}.

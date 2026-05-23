@@ -26,7 +26,7 @@ const statusStyles: Record<string, string> = {
 
 export function StatusBadge({ status }: { status: string }) {
   return (
-    <span className={cn("inline-flex rounded-full px-3 py-1 text-xs font-black capitalize", statusStyles[status] ?? "bg-neutral-100 text-neutral-700")}>
+    <span className={cn("inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em]", statusStyles[status] ?? "bg-neutral-100 text-neutral-700")}>
       {status.replace(/_/g, " ")}
     </span>
   );

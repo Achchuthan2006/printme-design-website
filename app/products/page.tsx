@@ -16,45 +16,69 @@ export const metadata = buildMetadata({
 
 export default function ProductsPage() {
   const featuredProducts = getFeaturedProducts();
+  const catalogGuides = [
+    {
+      title: "Browse by product type",
+      description: "Best when you already know the print format and want to compare options quickly.",
+    },
+    {
+      title: "Use product detail pages",
+      description: "Review turnaround, file requirements, pickup or delivery notes, and the safest ordering path before you commit.",
+    },
+    {
+      title: "Switch to quote-first when needed",
+      description: "If the job is custom, specialty, or uncertain, move into a guided quote request instead of forcing a direct order.",
+    },
+  ];
 
   return (
     <>
       <section className="bg-white section-space">
         <div className="container-shell">
           <Breadcrumbs items={[{ label: "Products" }]} />
-          <div className="mt-8 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <Badge>PrintMe catalog</Badge>
-              <h1 className="mt-4 text-balance text-5xl font-black leading-tight text-ink">
-                Browse print products by category, specs, timing, and order path.
-              </h1>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-slate">
-                Find the right product, review file requirements, compare turnaround notes, then request a quote, upload artwork, call the shop, or start a direct order where available.
-              </p>
+          <div className="hero-panel mt-8 px-6 py-7 sm:px-8 lg:px-10 lg:py-9">
+            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+              <div>
+                <Badge>PrintMe catalog</Badge>
+                <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">
+                  Browse print products by category, specs, timing, and order path.
+                </h1>
+                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">
+                  Find the right product, review file requirements, compare turnaround notes, then request a quote, upload artwork, call the shop, or start a direct order where available.
+                </p>
+              </div>
+              <TrustStrip items={["20+ years of print experience", "Quote, upload, and direct-order paths", "Pickup and delivery support"]} />
             </div>
-            <TrustStrip items={["20+ years of print experience", "Quote, upload, and direct-order paths", "Pickup and delivery support"]} />
           </div>
         </div>
       </section>
 
       <section className="section-space bg-canvas">
         <div className="container-shell">
-          <div className="mb-10 flex items-end justify-between gap-6">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Shop by category</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">Print service categories</h2>
+          <div className="mb-10 grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
+            <div className="story-panel pl-7">
+              <p className="editorial-kicker">Browse smarter</p>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Use the catalog to reduce guesswork before the order starts.</h2>
+              <div className="mt-5 space-y-3">
+                {catalogGuides.map((guide) => (
+                  <div key={guide.title} className="signal-card">
+                    <p className="text-sm font-black text-ink">{guide.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate">{guide.description}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {productCategories.map((category) => (
-              <a key={category.slug} href={`/products/category/${category.slug}`} className="premium-card rounded-lg border border-line bg-white p-5 shadow-soft hover:border-brand/35 hover:shadow-card">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-soft text-brand">
-                  <Icon name={category.icon} />
-                </span>
-                <h3 className="mt-5 text-xl font-black text-ink">{category.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate">{category.description}</p>
-              </a>
-            ))}
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {productCategories.map((category) => (
+                <a key={category.slug} href={`/products/category/${category.slug}`} className="premium-card premium-surface p-5 hover:border-brand/35 hover:shadow-card">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/12 bg-brand-soft text-brand">
+                    <Icon name={category.icon} />
+                  </span>
+                  <h3 className="mt-5 text-xl font-black text-ink">{category.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate">{category.description}</p>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -63,8 +87,8 @@ export default function ProductsPage() {
         <div className="container-shell">
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Featured</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">Most requested products</h2>
+              <p className="editorial-kicker">Featured</p>
+              <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Most requested products</h2>
             </div>
             <Button href="/quote-request" variant="secondary">Need a custom quote?</Button>
           </div>
@@ -79,8 +103,8 @@ export default function ProductsPage() {
       <section className="section-space bg-canvas">
         <div className="container-shell">
           <div className="mb-8">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">All services</p>
-            <h2 className="mt-2 text-3xl font-black text-ink">Complete catalog</h2>
+            <p className="editorial-kicker">All services</p>
+            <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Complete catalog</h2>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {products.map((product) => (

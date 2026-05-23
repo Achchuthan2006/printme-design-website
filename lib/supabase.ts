@@ -1,12 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
 
+let browserClient: ReturnType<typeof createClient> | null = null;
+let serverClient: ReturnType<typeof createClient> | null = null;
+
 export function getSupabaseBrowserClient() {
   if (!env.supabaseUrl || !env.supabaseAnonKey) {
     return null;
   }
 
-  return createClient(env.supabaseUrl, env.supabaseAnonKey);
+  if (!browserClient) {
+    browserClient = createClient(env.supabaseUrl, env.supabaseAnonKey);
+  }
+
+  return browserClient;
 }
 
 export function getSupabaseServerClient() {
@@ -14,12 +21,16 @@ export function getSupabaseServerClient() {
     return null;
   }
 
-  return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+  if (!serverClient) {
+    serverClient = createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  }
+
+  return serverClient;
 }
 
 // Future integration point:

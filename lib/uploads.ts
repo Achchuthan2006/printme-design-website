@@ -51,7 +51,9 @@ export async function uploadArtworkFile(file: File, context: ArtworkUploadContex
   const path = buildUploadPath(file, context);
 
   if (!supabase) {
-    return createMetadata(file, context, null, true);
+    const metadata = createMetadata(file, context, null, true);
+    await persistArtworkMetadata(metadata);
+    return metadata;
   }
 
   const { error } = await supabase.storage.from(UPLOAD_BUCKET).upload(path, file, {
@@ -61,11 +63,24 @@ export async function uploadArtworkFile(file: File, context: ArtworkUploadContex
 
   if (error) throw new Error(error.message);
 
-  // TODO: Insert this metadata into public.uploads once authenticated quote/order IDs are available in the flow.
-  return createMetadata(file, context, path);
+  const metadata = createMetadata(file, context, path);
+  await persistArtworkMetadata(metadata);
+  return metadata;
 }
 
 export async function uploadQuoteFile(file: File, quoteId: string) {
   const metadata = await uploadArtworkFile(file, { scope: "quote", quoteId });
   return { path: metadata.path, skipped: Boolean(metadata.skipped) };
+}
+
+async function persistArtworkMetadata(metadata: ArtworkUploadMetadata) {
+  try {
+    await fetch("/api/uploads/metadata", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(metadata),
+    });
+  } catch {
+    // Ignore metadata persistence errors so file upload UX still completes.
+  }
 }

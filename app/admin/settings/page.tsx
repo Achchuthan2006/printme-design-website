@@ -9,6 +9,8 @@ export default function AdminSettingsPage() {
     ["Shop address", siteConfig.address],
     ["Service area", siteConfig.serviceArea],
     ["Admin portal gate", "ADMIN_PORTAL_ENABLED"],
+    ["Server allowlist", "ADMIN_USER_EMAILS"],
+    ["Client portal gate", "NEXT_PUBLIC_ADMIN_USER_EMAILS"],
     ["Future role source", "Supabase profiles.role"],
   ];
 
@@ -37,7 +39,8 @@ export default function AdminSettingsPage() {
         <AdminCard>
           <h2 className="text-2xl font-black text-ink">Future workflow hooks</h2>
           <ul className="mt-5 space-y-3 text-sm leading-6 text-slate">
-            <li className="rounded-xl border border-line bg-white p-3">TODO: Replace the temporary portal gate with Supabase RLS and admin role claims.</li>
+            <li className="rounded-xl border border-line bg-white p-3">Current state: the admin UI now expects both the server allowlist and the client portal allowlist to match while the portal remains frontend-driven.</li>
+            <li className="rounded-xl border border-line bg-white p-3">TODO: Replace the temporary portal gate with Supabase RLS, admin role claims, and server-side session enforcement.</li>
             <li className="rounded-xl border border-line bg-white p-3">TODO: Connect status changes to SendGrid customer/admin notifications.</li>
             <li className="rounded-xl border border-line bg-white p-3">TODO: Add staff assignments, pickup scheduling, proof approval, and production board views.</li>
             <li className="rounded-xl border border-line bg-white p-3">TODO: Generate invoices and order PDFs from persisted Supabase order snapshots.</li>

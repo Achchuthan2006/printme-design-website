@@ -8,7 +8,7 @@ export function AdminCard({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-2xl border border-line/80 bg-white p-5 shadow-soft", className)}>
+    <section className={cn("rounded-[1.6rem] border border-line/80 bg-white p-5 shadow-soft premium-depth", className)}>
       {children}
     </section>
   );
@@ -24,7 +24,7 @@ export function AdminMetricCard({
   detail: string;
 }) {
   return (
-    <AdminCard className="transition duration-300 hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-card">
+    <AdminCard className="liquid-glass transition duration-300 hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-card">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-slate">{label}</p>
       <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-ink">{value}</p>
       <p className="mt-2 text-sm leading-6 text-slate">{detail}</p>

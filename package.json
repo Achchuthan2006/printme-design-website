@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify": "npm run build && npm run typecheck"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.3",

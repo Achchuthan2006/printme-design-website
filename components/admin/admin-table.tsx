@@ -10,10 +10,10 @@ export function AdminTable({
   emptyLabel?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+    <div className="overflow-hidden rounded-[1.5rem] border border-line bg-white shadow-soft">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-line text-left text-sm">
-          <thead className="bg-slate-50">
+          <thead className="bg-canvas">
             <tr>
               {columns.map((column) => (
                 <th key={column} scope="col" className="px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-slate">
@@ -25,7 +25,7 @@ export function AdminTable({
           <tbody className="divide-y divide-line">
             {rows.length ? (
               rows.map((row, index) => (
-                <tr key={index} className="transition hover:bg-brand-soft/20">
+                <tr key={index} className="transition hover:bg-brand-soft/18">
                   {row.map((cell, cellIndex) => (
                     <td key={cellIndex} className={cn("px-4 py-4 align-top", cellIndex === 0 && "font-bold text-ink")}>
                       {cell}
@@ -49,7 +49,7 @@ export function AdminTable({
 
 export function AdminFilterBar({ children }: { children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line/80 bg-white p-4 shadow-soft md:flex-row md:items-center md:justify-between">
+    <div className="hero-panel flex flex-col gap-3 rounded-[1.5rem] p-4 md:flex-row md:items-center md:justify-between">
       <label className="sr-only" htmlFor="admin-search">
         Search admin records
       </label>

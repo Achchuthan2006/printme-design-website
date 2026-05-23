@@ -13,6 +13,15 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   metadataBase: new URL(env.siteUrl),
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: ["/icon.svg"],
+  },
   alternates: { canonical: "/" },
   openGraph: {
     title: `${siteConfig.name} | Scarborough Print Shop`,
@@ -53,6 +62,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[120] focus:rounded-2xl focus:bg-ink focus:px-4 focus:py-3 focus:text-sm focus:font-black focus:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+        >
+          Skip to main content
+        </a>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}

@@ -35,8 +35,8 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
         <div className="container-shell">
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Services in this category</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">{category.shortTitle} products</h2>
+              <p className="editorial-kicker">Services in this category</p>
+              <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">{category.shortTitle} products</h2>
             </div>
             <Button href="/products" variant="secondary">All Products</Button>
           </div>

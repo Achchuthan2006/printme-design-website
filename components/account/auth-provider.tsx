@@ -2,11 +2,14 @@
 
 import { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { resolvePublicAppRole } from "@/lib/public-authz";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
+  role: "customer" | "admin";
+  isAdmin: boolean;
   loading: boolean;
   configured: boolean;
   signOut: () => Promise<void>;
@@ -18,6 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(Boolean(supabase));
+  const role = resolvePublicAppRole(session?.user?.email);
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     if (!supabase) return;
@@ -47,6 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user: session?.user ?? null,
         session,
+        role,
+        isAdmin,
         loading,
         configured: Boolean(supabase),
         signOut,

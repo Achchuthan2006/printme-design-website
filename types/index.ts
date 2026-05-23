@@ -35,6 +35,36 @@ export interface QuoteRequestPayload {
   projectDetails: string;
 }
 
+export type QuoteWorkflowStatus =
+  | "submitted"
+  | "under_review"
+  | "waiting_for_files"
+  | "quoted"
+  | "approved"
+  | "converted_to_order"
+  | "closed";
+
+export type OrderWorkflowStatus =
+  | "draft"
+  | "quote_review_required"
+  | "payment_pending"
+  | "paid"
+  | "in_production"
+  | "ready_for_pickup"
+  | "shipped_delivered"
+  | "completed"
+  | "cancelled"
+  | "on_hold";
+
+export type PaymentWorkflowStatus =
+  | "pending"
+  | "requires_action"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refunded"
+  | "demo";
+
 export type ProductMode = "direct-order" | "quote-only" | "hybrid";
 export type ProductCtaMode = "direct-order" | "quote-first" | "upload-first" | "contact";
 
@@ -202,8 +232,31 @@ export interface OrderSnapshot {
   subtotalCents: number;
   payableCents: number;
   quoteReviewRequired: boolean;
-  paymentStatus: "pending" | "paid" | "demo" | "failed";
+  paymentStatus: PaymentWorkflowStatus;
   createdAt: string;
+}
+
+export interface QuoteRequestRecord {
+  quoteNumber: string;
+  status: QuoteWorkflowStatus;
+  customerEmail: string;
+  persisted: boolean;
+  legacyFallback?: boolean;
+}
+
+export interface PersistedOrderRecord {
+  orderNumber: string;
+  workflowStatus: OrderWorkflowStatus;
+  paymentStatus: PaymentWorkflowStatus;
+  persisted: boolean;
+}
+
+export interface WorkflowEvent {
+  entityType: "quote" | "order" | "upload" | "support";
+  entityId: string;
+  eventType: string;
+  visibility: "internal" | "customer";
+  metadata?: Record<string, unknown>;
 }
 
 export type ArtworkUploadScope = "quote" | "order" | "account" | "product";

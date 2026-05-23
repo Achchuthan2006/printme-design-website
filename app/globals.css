@@ -13,8 +13,9 @@ html {
 body {
   @apply bg-canvas text-ink antialiased;
   background-image:
-    radial-gradient(circle at top left, rgba(217, 70, 32, 0.055), transparent 34rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(248, 246, 243, 0.9));
+    radial-gradient(circle at top left, rgba(217, 70, 32, 0.08), transparent 28rem),
+    radial-gradient(circle at 86% 10%, rgba(18, 17, 16, 0.04), transparent 24rem),
+    linear-gradient(180deg, #fffefd 0%, #f8f6f3 60%, #f4f1ed 100%);
   text-rendering: optimizeLegibility;
 }
 
@@ -27,11 +28,43 @@ body {
 }
 
 .section-space {
-  @apply py-16 sm:py-20 lg:py-24;
+  @apply py-[4.75rem] sm:py-24 lg:py-28;
+}
+
+.section-tight {
+  @apply py-12 sm:py-16 lg:py-20;
 }
 
 .surface-card {
-  @apply rounded-2xl border border-line/90 bg-panel shadow-soft;
+  @apply rounded-[1.75rem] border border-line/80 bg-panel shadow-soft;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.86) inset,
+    0 22px 52px rgba(22, 19, 17, 0.08);
+}
+
+.liquid-glass {
+  @apply border border-white/65 shadow-[0_22px_70px_rgba(22,19,17,0.11)];
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px) saturate(1.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
+}
+
+.liquid-glass-dark {
+  @apply border border-white/10 bg-white/[0.075] shadow-[0_24px_80px_rgba(0,0,0,0.22)];
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+
+.premium-depth {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 24px 64px rgba(22, 19, 17, 0.08);
+}
+
+.accent-glow {
+  box-shadow:
+    0 18px 48px rgba(217, 70, 32, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.18) inset;
 }
 
 .text-balance {
@@ -40,6 +73,110 @@ body {
 
 .text-pretty {
   text-wrap: pretty;
+}
+
+.display-title {
+  @apply font-display tracking-[-0.05em] text-ink;
+  letter-spacing: -0.055em;
+}
+
+.editorial-kicker {
+  @apply text-[11px] font-black uppercase tracking-[0.24em] text-brand;
+}
+
+.section-band {
+  @apply relative overflow-hidden border-y border-line/70 bg-white/70;
+}
+
+.section-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(217, 70, 32, 0.05), transparent 24rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.28));
+  pointer-events: none;
+}
+
+.quiet-grid {
+  background-image:
+    linear-gradient(to right, rgba(18, 17, 16, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(18, 17, 16, 0.045) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.hero-panel {
+  @apply relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 shadow-luxe;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 26px 72px rgba(18, 17, 16, 0.11);
+}
+
+.premium-outline {
+  @apply border border-line/80;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.78) inset;
+}
+
+.premium-stat {
+  @apply rounded-[1.4rem] border border-white/75 bg-white/90 p-4 shadow-soft;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 14px 28px rgba(18, 17, 16, 0.05);
+}
+
+.story-panel {
+  @apply relative overflow-hidden rounded-[1.7rem] border border-line/80 bg-white p-5 shadow-soft;
+  background-color: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.88) inset,
+    0 18px 36px rgba(18, 17, 16, 0.06);
+}
+
+.story-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.4rem;
+  background: linear-gradient(180deg, rgba(217, 70, 32, 0.86), rgba(217, 70, 32, 0.12));
+}
+
+.value-chip {
+  @apply inline-flex items-center gap-2 rounded-full border border-line/80 bg-white px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-ink shadow-[0_1px_0_rgba(255,255,255,0.85)_inset];
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+.signal-card {
+  @apply rounded-[1.45rem] border border-line/80 bg-white p-4 shadow-soft;
+  background-color: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 12px 26px rgba(18, 17, 16, 0.05);
+}
+
+.premium-divider {
+  @apply h-px w-full bg-gradient-to-r from-transparent via-line to-transparent;
+}
+
+.link-underline {
+  @apply relative inline-flex items-center;
+}
+
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.15rem;
+  height: 1px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: currentColor;
+  transition: transform 220ms ease;
+}
+
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
 }
 
 ::selection {
@@ -136,7 +273,10 @@ textarea:focus {
 }
 
 .premium-surface {
-  @apply rounded-2xl border border-line/90 bg-white shadow-soft;
+  @apply rounded-[1.5rem] border border-line/80 bg-white shadow-soft;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 14px 34px rgba(18, 17, 16, 0.065);
 }
 
 .premium-focus {
@@ -144,7 +284,7 @@ textarea:focus {
 }
 
 .premium-input {
-  @apply rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] outline-none transition duration-200 placeholder:text-slate/55 hover:border-brand/35 focus:border-brand focus:ring-4 focus:ring-brand/10;
+  @apply rounded-2xl border border-line/90 bg-white px-4 py-3 text-sm font-medium text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] outline-none transition duration-200 placeholder:text-slate/50 hover:border-ink/20 focus:border-brand focus:ring-4 focus:ring-brand/10;
 }
 
 .premium-cta {

@@ -1,6 +1,7 @@
 import { PageHero } from "@/components/ui/page-hero";
 import { Button } from "@/components/ui/button";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
+import { Icon } from "@/components/ui/icon";
 import { buildMetadata } from "@/lib/metadata";
 import { siteConfig } from "@/lib/site";
 
@@ -11,17 +12,38 @@ export const metadata = buildMetadata({
 });
 
 export default function ContactPage() {
+  const contactModes = [
+    { label: "Call", value: siteConfig.phone, detail: "Best for urgent timing, passport photos, or quick production questions.", href: siteConfig.phoneHref, icon: "phone" },
+    { label: "Email", value: siteConfig.email, detail: "Useful when you want to send written details or follow up after a quote.", href: `mailto:${siteConfig.email}`, icon: "document" },
+    { label: "Visit", value: siteConfig.shortAddress, detail: "In-store pickup, local help, and on-site questions in Scarborough.", href: "https://www.google.com/maps?q=1585+Markham+Road+Unit+103,+Scarborough,+ON+M1B+2W1", icon: "store" },
+  ];
+
   return (
     <>
       <PageHero
         title="Talk to PrintMe before your deadline gets tight"
         description="Call, visit our Scarborough shop, or send a quote request so we can help you choose the right print path before production starts."
         ctaLabel="Get My Quote"
+        eyebrow="Contact"
+        highlights={["Call for urgent timing", "Visit the Scarborough shop", "Quote requests for custom jobs"]}
       />
       <section className="section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="surface-card p-6 sm:p-8">
-            <h2 className="text-2xl font-extrabold tracking-tight text-ink">{siteConfig.name}</h2>
+            <p className="editorial-kicker">Contact details</p>
+            <h2 className="display-title mt-3 text-[2.1rem] font-black leading-[0.96]">{siteConfig.name}</h2>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {contactModes.map((item) => (
+                <a key={item.label} href={item.href} className="signal-card transition hover:border-brand/25 hover:bg-brand-soft/30">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
+                    <Icon name={item.icon} className="h-4.5 w-4.5" />
+                  </span>
+                  <p className="mt-4 text-sm font-black text-ink">{item.label}</p>
+                  <p className="mt-1 text-xs font-bold text-slate">{item.value}</p>
+                  <p className="mt-2 text-xs leading-5 text-slate">{item.detail}</p>
+                </a>
+              ))}
+            </div>
             <div className="mt-6 space-y-5 text-sm leading-7 text-slate">
               <div>
                 <p className="font-bold text-ink">Address</p>
@@ -56,8 +78,8 @@ export default function ContactPage() {
                 Call PrintMe
               </Button>
             </div>
-            <div className="mt-8 rounded-3xl border border-line bg-canvas p-5 text-sm leading-6 text-slate">
-              <p className="font-bold text-ink">Service highlights</p>
+            <div className="mt-8 rounded-[1.5rem] border border-line bg-canvas p-5 text-sm leading-6 text-slate">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">Service highlights</p>
               <p className="mt-2">Bring us your file, deadline, or print idea. We support document printing, passport photos, flyers, banners, envelopes, engineering drawing prints, manual cheques, and custom orders.</p>
             </div>
           </div>
@@ -71,7 +93,7 @@ export default function ContactPage() {
               referrerPolicy="no-referrer-when-downgrade"
             />
             <div className="border-t border-line p-6 text-sm leading-7 text-slate">
-              <p className="font-bold text-ink">Visit the shop</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">Visit the shop</p>
               <p className="mt-2">Use the map for directions to PrintMe at 1585 Markham Road Unit 103 in Scarborough.</p>
             </div>
           </div>

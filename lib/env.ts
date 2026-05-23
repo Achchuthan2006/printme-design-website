@@ -5,6 +5,13 @@ function normalizeSiteUrl(value?: string) {
   return url.endsWith("/") ? url.slice(0, -1) : url;
 }
 
+function parseList(value?: string) {
+  return (value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   siteUrl: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
@@ -17,6 +24,7 @@ export const env = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   adminPortalEnabled: process.env.ADMIN_PORTAL_ENABLED === "true",
+  adminUserEmails: parseList(process.env.ADMIN_USER_EMAILS),
   analyticsId: process.env.NEXT_PUBLIC_ANALYTICS_ID,
 };
 
@@ -38,4 +46,8 @@ export function isStripeConfigured() {
 
 export function isSendGridConfigured() {
   return Boolean(env.sendGridApiKey && env.sendGridFromEmail && env.sendGridAdminEmail);
+}
+
+export function isStripeWebhookConfigured() {
+  return Boolean(env.stripeSecretKey && env.stripeWebhookSecret);
 }

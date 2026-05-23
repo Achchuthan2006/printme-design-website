@@ -19,6 +19,11 @@ const iconPaths: Record<string, React.ReactNode> = {
   van: <path d="M4.5 9h9v5h-9zM13.5 10h2.8l1.7 2v2h-4.5zM7.5 16.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM15.5 16.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />,
   store: <path d="M5.5 9 7 6.5h10L18.5 9M6.5 9v8h11V9M9 13h6" />,
   check: <path d="m7.5 12 3 3 6-6" />,
+  shield: <path d="M12 5.5 18 8v4.6c0 3.1-2 5.9-6 7.9-4-2-6-4.8-6-7.9V8zM9.3 12.2l1.8 1.8 3.6-3.7" />,
+  upload: <path d="M12 16.5V8M8.8 11.2 12 8l3.2 3.2M6 17.5h12" />,
+  chat: <path d="M6.5 8.5h11a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-6.2L7.5 19v-2.5h-1a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2ZM9 12h6M9 14.5h4" />,
+  bag: <path d="M8 9V8a4 4 0 1 1 8 0v1M6.5 9h11l-.8 9h-9.4z" />,
+  phone: <path d="M8.2 6.8c.3-.3.8-.4 1.2-.2l1.9 1c.5.2.7.8.5 1.3l-.8 1.7a12 12 0 0 0 2.9 2.9l1.7-.8c.5-.2 1.1 0 1.3.5l1 1.9c.2.4.1.9-.2 1.2l-1.1 1.1c-.5.5-1.2.7-1.9.5-2.3-.7-4.7-2.2-6.7-4.2s-3.5-4.4-4.2-6.7c-.2-.7 0-1.4.5-1.9z" />,
 };
 
 export function Icon({ name, className = "h-5 w-5" }: { name: string; className?: string }) {
@@ -27,7 +32,7 @@ export function Icon({ name, className = "h-5 w-5" }: { name: string; className?
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="1.9"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}

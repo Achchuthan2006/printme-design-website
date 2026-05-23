@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { FeedbackMessage, Field, Input } from "@/components/ui/form-controls";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 export function ForgotPasswordForm() {
@@ -26,14 +27,14 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-line bg-white p-6 shadow-soft">
-      <h1 className="text-3xl font-black text-ink">Reset your password</h1>
+    <form onSubmit={submit} className="surface-card p-6">
+      <p className="editorial-kicker">Account recovery</p>
+      <h1 className="display-title mt-3 text-[2.2rem] font-black leading-[0.96]">Reset your password</h1>
       <p className="mt-2 text-sm leading-6 text-slate">Enter your account email and we will send a secure reset link.</p>
-      <label className="mt-6 block">
-        <span className="mb-2 block text-sm font-bold text-ink">Email</span>
-        <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-lg border border-line px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" />
-      </label>
-      {message ? <p className="mt-4 rounded-lg bg-brand-soft px-4 py-3 text-sm text-brand">{message}</p> : null}
+      <Field label="Email" className="mt-6">
+        <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+      </Field>
+      {message ? <FeedbackMessage className="mt-4">{message}</FeedbackMessage> : null}
       <Button type="submit" disabled={isPending} className="mt-6 w-full">{isPending ? "Sending..." : "Send Reset Link"}</Button>
     </form>
   );
@@ -59,13 +60,13 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-line bg-white p-6 shadow-soft">
-      <h1 className="text-3xl font-black text-ink">Choose a new password</h1>
-      <label className="mt-6 block">
-        <span className="mb-2 block text-sm font-bold text-ink">New password</span>
-        <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-lg border border-line px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" />
-      </label>
-      {message ? <p className="mt-4 rounded-lg bg-brand-soft px-4 py-3 text-sm text-brand">{message}</p> : null}
+    <form onSubmit={submit} className="surface-card p-6">
+      <p className="editorial-kicker">Security update</p>
+      <h1 className="display-title mt-3 text-[2.2rem] font-black leading-[0.96]">Choose a new password</h1>
+      <Field label="New password" className="mt-6">
+        <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+      </Field>
+      {message ? <FeedbackMessage className="mt-4">{message}</FeedbackMessage> : null}
       <Button type="submit" disabled={isPending} className="mt-6 w-full">{isPending ? "Updating..." : "Update Password"}</Button>
     </form>
   );

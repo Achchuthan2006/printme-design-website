@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { uploadArtworkFile } from "@/lib/uploads";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,8 @@ export function ArtworkUploadZone({
   className,
 }: ArtworkUploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
+  const helperId = useId();
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -118,21 +120,31 @@ export function ArtworkUploadZone({
   }
 
   return (
-    <section className={cn("rounded-2xl border border-line/90 bg-white p-5 shadow-soft", className)} id="upload">
+    <section className={cn("surface-card p-5", className)} id="upload">
       <div
+        role="button"
+        tabIndex={0}
+        aria-labelledby={titleId}
+        aria-describedby={helperId}
         onDragOver={(event) => {
           event.preventDefault();
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         className={cn(
           "rounded-2xl border border-dashed p-6 text-center transition duration-300",
           isDragging ? "border-brand bg-brand-soft shadow-glow" : "border-line bg-canvas hover:border-brand/40 hover:bg-brand-soft/30",
         )}
       >
         <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Artwork upload</p>
-        <h2 className="mt-2 text-2xl font-black text-ink">{title}</h2>
+        <h2 id={titleId} className="mt-2 text-2xl font-black text-ink">{title}</h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate">{description}</p>
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
           <Button type="button" onClick={() => inputRef.current?.click()} disabled={isPending}>
@@ -142,8 +154,8 @@ export function ArtworkUploadZone({
             Check File Guidelines
           </Button>
         </div>
-        <input ref={inputRef} type="file" multiple accept={acceptedFormats} className="sr-only" onChange={handleInputChange} />
-        <p className="mt-4 text-xs font-bold text-slate">{helperText}</p>
+        <input ref={inputRef} type="file" multiple accept={acceptedFormats} className="sr-only" onChange={handleInputChange} aria-describedby={helperId} />
+        <p id={helperId} className="mt-4 text-xs font-bold text-slate">{helperText}</p>
       </div>
 
       {items.length > 0 ? (

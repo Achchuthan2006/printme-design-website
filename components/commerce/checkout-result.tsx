@@ -41,11 +41,11 @@ export function CheckoutResult({
   }[status];
 
   return (
-    <div className="rounded-lg border border-line bg-white p-8 text-center shadow-soft">
-      <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">{copy.eyebrow}</p>
-      <h1 className="mt-3 text-4xl font-black text-ink">{copy.title}</h1>
+    <div className="hero-panel p-8 text-center">
+      <p className="editorial-kicker">{copy.eyebrow}</p>
+      <h1 className="display-title mt-3 text-[2.7rem] font-black leading-[0.94]">{copy.title}</h1>
       {orderNumber ? (
-        <p className="mt-4 rounded-lg bg-canvas px-4 py-3 text-sm font-black text-ink">
+        <p className="mt-4 rounded-[1rem] bg-canvas px-4 py-3 text-sm font-black text-ink">
           Order reference: {orderNumber}
         </p>
       ) : null}

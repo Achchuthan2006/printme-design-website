@@ -3,7 +3,7 @@ import { FaqItem, ServiceItem, TestimonialItem, WhyChooseItem } from "@/types";
 export const siteConfig = {
   name: "PrintMe Design",
   brandName: "PrintMe",
-  tagline: "Make Your Styles With Us",
+  tagline: "Professional print support that feels handled.",
   domain: "printmedesign.com",
   phone: "416-572-1999",
   phoneHref: "tel:+14165721999",
@@ -183,19 +183,19 @@ export const testimonials: TestimonialItem[] = [
     name: "Aisha K.",
     company: "Scarborough Wellness Clinic",
     quote:
-      "We needed brochures and reception signage before a Monday opening. The files were checked, the timing was clear, and everything looked polished.",
+      "We needed brochures and reception signage before a Monday opening. The file review was fast, the timeline was honest, and the finished pieces looked fully professional.",
   },
   {
     name: "Marco T.",
     company: "Toronto Food Startup",
     quote:
-      "PrintMe Design helped us with labels, posters, and rush flyers for a launch weekend. The process was straightforward from quote to pickup.",
+      "PrintMe helped us move labels, posters, and rush flyers for a launch weekend without the usual confusion. From quote to pickup, everything felt clear and in control.",
   },
   {
     name: "Priya S.",
     company: "Local Realtor",
     quote:
-      "The business cards and open house materials felt premium and on brand. Having a local shop we can call makes repeat orders much easier.",
+      "The business cards and open house materials felt premium and on brand. Having a local shop we can call for quick answers makes repeat orders dramatically easier.",
   },
 ];
 

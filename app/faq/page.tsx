@@ -14,6 +14,8 @@ export default function FaqPage() {
       <PageHero
         title="Frequently asked questions"
         description="A simple FAQ for customers who need help with services, timing, design support, pickup, delivery, and how to get started."
+        eyebrow="FAQ"
+        highlights={["Rush timing and services", "Pickup and delivery answers", "Quote and artwork guidance"]}
       />
       <section className="section-space">
         <div className="container-shell max-w-4xl">

@@ -11,6 +11,11 @@ interface CartContextValue {
   clearCart: () => void;
   subtotal: number;
   itemCount: number;
+  isDrawerOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  lastAddedItem: CartItem | null;
+  dismissLastAddedItem: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -18,10 +23,14 @@ const storageKey = "printme-cart";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey);
-    if (saved) {
+    try {
+      const saved = window.localStorage.getItem(storageKey);
+      if (!saved) return;
+
       const parsed = JSON.parse(saved) as Partial<CartItem>[];
       setItems(
         parsed
@@ -43,11 +52,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             quoteOnly: item.quoteOnly ?? item.pricingMode === "quote-only",
           })),
       );
+    } catch {
+      window.localStorage.removeItem(storageKey);
     }
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify(items));
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(items));
+    } catch {
+      // Ignore storage failures so cart interactions still work in-memory.
+    }
   }, [items]);
 
   const subtotal = useMemo(
@@ -61,21 +76,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     items,
     subtotal,
     itemCount,
+    isDrawerOpen,
+    openCart: () => setIsDrawerOpen(true),
+    closeCart: () => setIsDrawerOpen(false),
+    lastAddedItem,
+    dismissLastAddedItem: () => setLastAddedItem(null),
     addItem: (item) => {
+      const nextItem: CartItem = {
+        ...item,
+        id: crypto.randomUUID(),
+      };
+
       setItems((current) => [
         ...current,
-        {
-          ...item,
-          id: crypto.randomUUID(),
-        },
+        nextItem,
       ]);
+      setLastAddedItem(nextItem);
     },
-    removeItem: (id) => setItems((current) => current.filter((item) => item.id !== id)),
+    removeItem: (id) =>
+      setItems((current) => {
+        const next = current.filter((item) => item.id !== id);
+        if (lastAddedItem?.id === id) setLastAddedItem(null);
+        return next;
+      }),
     updateQuantity: (id, quantity) =>
       setItems((current) =>
         current.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item)),
       ),
-    clearCart: () => setItems([]),
+    clearCart: () => {
+      setItems([]);
+      setLastAddedItem(null);
+    },
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

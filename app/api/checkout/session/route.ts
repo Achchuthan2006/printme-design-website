@@ -1,51 +1,13 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { checkoutRequestSchema } from "@/lib/backend/schemas";
+import { dispatchOrderReceivedNotifications } from "@/lib/backend/notifications";
+import { persistOrderDraft, recordOperationalWarning } from "@/lib/backend/repository";
 import { buildOrderSnapshot, persistOrderSnapshot } from "@/lib/orders";
 import { env } from "@/lib/env";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
 import { createCheckoutSession } from "@/lib/stripe";
 import { CheckoutPayload } from "@/types";
-
-const cartItemSchema = z.object({
-  id: z.string(),
-  productSlug: z.string(),
-  title: z.string(),
-  quantity: z.number().min(1),
-  unitPrice: z.number().min(0),
-  estimatedTotal: z.number().min(0),
-  pricingMode: z.enum(["fixed-estimate", "starting-from", "quote-only"]),
-  mode: z.enum(["direct-order", "quote-only", "hybrid"]),
-  options: z.record(z.string(), z.string()),
-  optionLabels: z.array(z.object({ label: z.string(), value: z.string() })),
-  notes: z.string().optional(),
-  fulfillmentMethod: z.string().optional(),
-  turnaround: z.string().optional(),
-  quoteOnly: z.boolean().optional(),
-});
-
-const checkoutSchema = z.object({
-  customer: z.object({
-    fullName: z.string().min(2),
-    email: z.string().email(),
-    phone: z.string().min(7),
-    companyName: z.string().optional(),
-  }),
-  fulfillmentMethod: z.enum(["pickup", "delivery"]),
-  deliveryAddress: z
-    .object({
-      addressLine1: z.string(),
-      addressLine2: z.string().optional(),
-      city: z.string(),
-      province: z.string(),
-      postalCode: z.string(),
-    })
-    .optional(),
-  orderNotes: z.string().optional(),
-  paymentMode: z.enum(["full", "deposit"]),
-  items: z.array(cartItemSchema).min(1),
-  subtotal: z.number().min(0),
-});
 
 export async function POST(request: Request) {
   try {
@@ -57,14 +19,14 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const parsed = checkoutSchema.safeParse(body);
+    const parsed = checkoutRequestSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json({ message: "Please check your checkout details and try again." }, { status: 400 });
     }
 
-    if (parsed.data.fulfillmentMethod === "delivery" && !parsed.data.deliveryAddress?.addressLine1) {
-      return NextResponse.json({ message: "Please provide a delivery address." }, { status: 400 });
+    if (parsed.data.paymentMode === "deposit") {
+      return NextResponse.json({ message: "Deposit checkout is not enabled yet. Please use secure online payment for now." }, { status: 400 });
     }
 
     const order = buildOrderSnapshot(parsed.data as CheckoutPayload);
@@ -80,10 +42,36 @@ export async function POST(request: Request) {
       cancelUrl,
     });
 
+    const persistence = await persistOrderDraft({
+      payload: parsed.data as CheckoutPayload,
+      order,
+      paymentMode: parsed.data.paymentMode,
+      stripeSessionId: "sessionId" in session ? session.sessionId : undefined,
+      requestMeta: {
+        ipAddress: ip,
+        userAgent: request.headers.get("user-agent") ?? undefined,
+        referer: request.headers.get("referer") ?? undefined,
+      },
+    });
+
+    if (!persistence.persisted) {
+      await recordOperationalWarning("Order draft could not be persisted to the primary repository.", {
+        orderNumber: order.orderNumber,
+      });
+    }
+
+    const notificationResult = await dispatchOrderReceivedNotifications({
+      order,
+      payload: parsed.data as CheckoutPayload,
+      demo: session.status === "demo",
+    });
+
     logInfo("Checkout session created", {
       orderNumber: order.orderNumber,
       stripeStatus: session.status,
       itemCount: order.items.length,
+      persisted: persistence.persisted,
+      notificationSkipped: Boolean(notificationResult.skipped),
     });
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { CartItem, OrderSnapshot } from "@/types";
 import { env } from "@/lib/env";
+import { stripeCheckoutMetadataSchema } from "@/lib/backend/schemas";
 
 export interface CheckoutSessionInput {
   order: OrderSnapshot;
@@ -65,11 +66,16 @@ export async function createCheckoutSession(input: CheckoutSessionInput) {
     line_items: lineItems,
     success_url: input.successUrl,
     cancel_url: input.cancelUrl,
+    payment_intent_data: {
+      metadata: {
+        orderNumber: input.order.orderNumber,
+        paymentMode: input.mode,
+      },
+    },
     metadata: {
       orderNumber: input.order.orderNumber,
       paymentMode: input.mode,
       quoteReviewRequired: String(input.order.quoteReviewRequired),
-      // TODO: persist order snapshot in Supabase before creating the Stripe session and store order_id here.
     },
   });
 
@@ -79,4 +85,19 @@ export async function createCheckoutSession(input: CheckoutSessionInput) {
     status: "created",
     sessionId: session.id,
   };
+}
+
+export function verifyStripeWebhookSignature(payload: string, signature: string) {
+  const stripe = getStripeClient();
+  if (!stripe || !env.stripeWebhookSecret) {
+    throw new Error("Stripe webhook verification is not configured.");
+  }
+
+  return stripe.webhooks.constructEvent(payload, signature, env.stripeWebhookSecret);
+}
+
+export function parseCheckoutSessionMetadata(metadata: Stripe.Metadata | null | undefined) {
+  const parsed = stripeCheckoutMetadataSchema.safeParse(metadata ?? {});
+  if (!parsed.success) return null;
+  return parsed.data;
 }

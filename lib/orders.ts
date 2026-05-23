@@ -1,4 +1,5 @@
 import { CheckoutPayload, OrderSnapshot } from "@/types";
+import { getInitialPaymentStatus } from "@/lib/backend/workflows";
 
 export function createOrderNumber() {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -22,7 +23,7 @@ export function buildOrderSnapshot(payload: CheckoutPayload): OrderSnapshot {
     subtotalCents: Math.round(payload.subtotal * 100),
     payableCents,
     quoteReviewRequired: payload.items.some((item) => item.quoteOnly),
-    paymentStatus: "pending",
+    paymentStatus: getInitialPaymentStatus(payload.paymentMode, false),
     createdAt: new Date().toISOString(),
   };
 }

@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { FeedbackMessage, Field, Select, Textarea } from "@/components/ui/form-controls";
 import { useCart } from "@/features/cart/cart-context";
+import { openSupportChat } from "@/lib/chat";
 import {
   buildOptionLabels,
   calculateProductPrice,
@@ -23,16 +25,13 @@ function OptionField({
 }) {
   if (option.type === "textarea") {
     return (
-      <label className="block">
-        <span className="mb-2 block text-sm font-black text-ink">{option.label}</span>
-        {option.helperText ? <span className="mb-3 block text-xs leading-5 text-slate">{option.helperText}</span> : null}
-        <textarea
+      <Field label={option.label} hint={option.helperText}>
+        <Textarea
           rows={4}
           value={value ?? ""}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-lg border border-line px-4 py-3 text-sm outline-none transition hover:border-brand/35 focus:border-brand focus:ring-2 focus:ring-brand/15"
         />
-      </label>
+      </Field>
     );
   }
 
@@ -48,7 +47,7 @@ function OptionField({
               <label
                 key={choice.value}
                 className={cn(
-                  "cursor-pointer rounded-lg border bg-white p-4 transition duration-200 hover:border-brand/40 hover:bg-brand-soft/25",
+                  "cursor-pointer rounded-[1.3rem] border bg-white p-4 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset] transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:bg-brand-soft/25 hover:shadow-soft",
                   selected ? "border-brand bg-brand-soft ring-2 ring-brand/10" : "border-line",
                 )}
               >
@@ -76,13 +75,10 @@ function OptionField({
   }
 
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-black text-ink">{option.label}</span>
-      {option.helperText ? <span className="mb-3 block text-xs leading-5 text-slate">{option.helperText}</span> : null}
-      <select
+    <Field label={option.label} hint={option.helperText}>
+      <Select
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border border-line px-4 py-3 text-sm outline-none transition hover:border-brand/35 focus:border-brand focus:ring-2 focus:ring-brand/15"
       >
         <option value="">Select {option.label.toLowerCase()}</option>
         {option.choices?.map((choice) => (
@@ -91,13 +87,13 @@ function OptionField({
             {choice.priceDelta ? ` (+$${choice.priceDelta})` : ""}
           </option>
         ))}
-      </select>
-    </label>
+      </Select>
+    </Field>
   );
 }
 
 export function ProductConfigurator({ product }: { product: PrintProduct }) {
-  const { addItem } = useCart();
+  const { addItem, openCart } = useCart();
   const [options, setOptions] = useState<Record<string, string>>(() => getDefaultOptions(product));
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
   const [error, setError] = useState("");
@@ -146,17 +142,17 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
   }
 
   return (
-    <div className="rounded-lg border border-line bg-white shadow-soft">
-      <div className="border-b border-line p-5">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Build your order</p>
-        <h2 className="mt-2 text-2xl font-black text-ink">Choose options for {product.title}</h2>
+    <div className="overflow-hidden rounded-[1.8rem] border border-line/80 bg-white shadow-luxe">
+      <div className="border-b border-line/80 bg-[linear-gradient(180deg,rgba(255,241,236,0.7),rgba(255,255,255,0))] p-6">
+        <p className="editorial-kicker">Build your order</p>
+        <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
-          Select the basics now. PrintMe can still review files, timing, and special instructions before production.
+          Choose the practical details now. PrintMe can still review files, timing, and special instructions before production.
         </p>
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[1fr_330px]">
-        <div className="space-y-6 p-5">
+        <div className="space-y-6 p-6">
           {product.options.length > 0 ? (
             product.options.map((option) => (
               <OptionField
@@ -167,16 +163,16 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
               />
             ))
           ) : (
-            <div className="rounded-lg bg-canvas p-5">
+            <div className="rounded-[1.3rem] bg-canvas p-5">
               <p className="text-sm font-bold text-ink">This service is best handled by quote or in store.</p>
               <p className="mt-2 text-sm leading-6 text-slate">Send the details and we will confirm the safest production path before you commit.</p>
             </div>
           )}
         </div>
 
-        <aside className="border-t border-line bg-canvas p-5 lg:border-l lg:border-t-0">
+        <aside className="border-t border-line bg-[#f7f1ea] p-5 lg:border-l lg:border-t-0">
           <div className="lg:sticky lg:top-24">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Live print summary</p>
+            <p className="editorial-kicker">Live print summary</p>
             <h3 className="mt-2 text-xl font-black text-ink">{product.title}</h3>
             <div className="mt-5 space-y-3">
               {optionLabels.length > 0 ? (
@@ -191,7 +187,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
               )}
             </div>
 
-            <div className="mt-5 rounded-lg bg-white p-4 shadow-soft">
+            <div className="mt-5 rounded-[1.4rem] border border-white/80 bg-white/80 p-4 shadow-soft">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-slate">
                   {price.pricingMode === "quote-only" ? "Pricing" : price.pricingMode === "starting-from" ? "Starting estimate" : "Estimated total"}
@@ -203,23 +199,31 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
               <p className="mt-2 text-xs leading-5 text-slate">
                 {price.pricingMode === "quote-only"
                   ? "This product needs PrintMe review before pricing can be confirmed."
-                  : "Estimate before tax, delivery, artwork setup, or specialty finishing. We will review files before production."}
+                  : "Estimate before tax, delivery, artwork setup, or specialty finishing. Files are still reviewed before production begins."}
               </p>
             </div>
 
-            {error ? <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
+            {error ? <FeedbackMessage tone="error" className="mt-4 font-bold">{error}</FeedbackMessage> : null}
             {status === "added" ? (
-              <p className="hero-in mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                Added to cart. Review your order when you are ready, or keep building your print list.
-              </p>
+              <FeedbackMessage tone="success" className="hero-in mt-4 font-bold">
+                Added to cart. You can keep building the order, open the mini cart, or move straight into checkout when you are ready.
+              </FeedbackMessage>
             ) : null}
 
             <div className="mt-5 grid gap-3">
               <Button type="button" onClick={addToCart} disabled={!canAddToCart}>
                 {canAddToCart ? "Add to My Cart" : "Quote Required"}
               </Button>
+              {status === "added" ? (
+                <Button type="button" variant="secondary" onClick={openCart}>
+                  Open Mini Cart
+                </Button>
+              ) : null}
               <Button href={`/quote-request?service=${product.slug}`} variant="secondary">
                 Get a Quote Instead
+              </Button>
+              <Button type="button" variant="ghost" onClick={openSupportChat}>
+                Ask PrintMe Before Ordering
               </Button>
             </div>
 

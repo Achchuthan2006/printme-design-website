@@ -18,6 +18,10 @@ export function logInfo(message: string, context?: LogContext) {
   console.info(JSON.stringify({ level: "info", message, context, timestamp: new Date().toISOString() }));
 }
 
+export function logWarn(message: string, context?: LogContext) {
+  console.warn(JSON.stringify({ level: "warn", message, context, timestamp: new Date().toISOString() }));
+}
+
 export function logError(message: string, error: unknown, context?: LogContext) {
   console.error(
     JSON.stringify({

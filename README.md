@@ -57,9 +57,12 @@ cp .env.example .env.local
 - `STRIPE_WEBHOOK_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `ADMIN_PORTAL_ENABLED`
+- `ADMIN_USER_EMAILS`
+- `NEXT_PUBLIC_ADMIN_USER_EMAILS`
 - `NEXT_PUBLIC_ANALYTICS_ID`
 
 Supabase Storage also expects a private bucket named `print-files` for customer artwork uploads.
+Keep `ADMIN_USER_EMAILS` and `NEXT_PUBLIC_ADMIN_USER_EMAILS` identical while the admin portal still relies on a temporary frontend-visible staff allowlist.
 
 4. Run the development server:
 
@@ -96,7 +99,17 @@ components/
 lib/
 supabase/
 types/
+docs/
 ```
+
+## Brand and design system docs
+
+- [docs/README.md](/C:/Users/Achch/Desktop/PrintMe/docs/README.md)
+- [docs/brand-style-guide.md](/C:/Users/Achch/Desktop/PrintMe/docs/brand-style-guide.md)
+- [docs/design-system.md](/C:/Users/Achch/Desktop/PrintMe/docs/design-system.md)
+- [docs/component-library.md](/C:/Users/Achch/Desktop/PrintMe/docs/component-library.md)
+- [docs/backend-architecture.md](/C:/Users/Achch/Desktop/PrintMe/docs/backend-architecture.md)
+- [docs/launch-readiness.md](/C:/Users/Achch/Desktop/PrintMe/docs/launch-readiness.md)
 
 ## Integration notes
 
@@ -122,7 +135,7 @@ types/
 4. Create the private Supabase Storage bucket `print-files` and restrict file access with authenticated/storage policies before accepting real artwork.
 5. Configure SendGrid sender authentication for `printmedesign.com` and verify the quote/admin email recipients.
 6. Configure Stripe Checkout live keys, webhook endpoint, and Stripe Dashboard payment methods before accepting production payments.
-7. Keep `ADMIN_PORTAL_ENABLED=false` until staff access and Supabase role enforcement are ready. Turn it on only for trusted deployments.
+7. Keep `ADMIN_PORTAL_ENABLED=false` until staff access is tested. When enabling it, keep `ADMIN_USER_EMAILS` and `NEXT_PUBLIC_ADMIN_USER_EMAILS` aligned so the customer and admin shells enforce the same approved staff list.
 8. Add analytics/search tooling through `NEXT_PUBLIC_ANALYTICS_ID` or a future provider wrapper, then verify quote, call, upload, cart, and checkout events.
 9. Run `npm run build` before each release and smoke-test homepage, products, quote request, upload, cart, checkout, account, and admin routes.
 10. After launch, monitor platform logs for quote failures, checkout failures, upload errors, and failed auth/admin access.

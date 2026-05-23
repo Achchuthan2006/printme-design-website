@@ -14,12 +14,12 @@ export function ContactStrip() {
         <div className="surface-card overflow-hidden">
           <div className="grid gap-0 lg:grid-cols-[1.2fr_1fr]">
             <div className="bg-ink px-6 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand/90">Visit or call</p>
-              <h2 className="mt-3 text-3xl font-extrabold tracking-tight">Local print support with a practical, friendly process</h2>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-white/78 sm:text-base">
+              <p className="editorial-kicker text-brand-light">Visit or call</p>
+              <h2 className="display-title mt-3 text-[2.2rem] font-black leading-[0.94] text-white">Local print support with a practical, friendly process</h2>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-white/80 sm:text-base">
                 From quick document printing to custom signage and large-format work, we help businesses and walk-in customers move from idea to print-ready results.
               </p>
-              <div className="mt-6 text-sm leading-7 text-white/78">
+              <div className="mt-6 text-sm leading-7 text-white/80">
                 <p>{siteConfig.address}</p>
                 <p>{siteConfig.phone}</p>
               </div>
@@ -27,7 +27,7 @@ export function ContactStrip() {
             <div className="grid gap-px bg-line">
               {items.map((item) => (
                 <div key={item.title} className="bg-panel px-6 py-6 sm:px-8">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-soft text-brand">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/10 bg-brand-soft text-brand">
                     <Icon name={item.icon} />
                   </div>
                   <h3 className="mt-4 text-lg font-bold text-ink">{item.title}</h3>

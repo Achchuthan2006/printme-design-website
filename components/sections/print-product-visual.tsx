@@ -20,10 +20,12 @@ export function ServiceProductVisual({ slug }: { slug: string }) {
   const visual = serviceVisualStyles[slug] ?? serviceVisualStyles["custom-orders"];
 
   return (
-    <div className={cn("relative flex h-28 items-center justify-center overflow-hidden rounded-md border border-line", visual.bg)}>
-      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/8 to-transparent" />
-      <div className="relative h-20 w-28 rotate-[-4deg] rounded-sm border border-black/10 bg-white shadow-card transition duration-300 group-hover:rotate-[-2deg] group-hover:scale-[1.03]">
-        <div className={cn("h-3 w-full", visual.accent)} />
+    <div className={cn("relative flex h-36 items-center justify-center overflow-hidden rounded-[1.35rem] border border-line/80", visual.bg)}>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.75),transparent_18rem)]" />
+      <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/10 to-transparent" />
+      <div className="absolute left-5 top-5 h-16 w-16 rounded-full bg-white/55 blur-2xl" />
+      <div className="relative h-24 w-32 rotate-[-6deg] rounded-lg border border-black/10 bg-white shadow-card transition duration-300 group-hover:rotate-[-3deg] group-hover:scale-[1.03]">
+        <div className={cn("h-3 w-full rounded-t-lg", visual.accent)} />
         <div className="p-3">
           <p className={cn("text-sm font-black leading-tight", slug === "posters" || slug === "signs" ? "text-ink" : "text-ink")}>
             {visual.label}
@@ -32,46 +34,54 @@ export function ServiceProductVisual({ slug }: { slug: string }) {
           <div className="mt-1 h-1.5 w-10 rounded-full bg-black/10" />
         </div>
       </div>
-      <div className="absolute right-5 top-5 h-11 w-8 rotate-6 rounded-sm bg-brand/90 shadow-soft" />
+      <div className="absolute right-6 top-7 h-14 w-10 rotate-6 rounded-md bg-brand/90 shadow-soft" />
+      <div className="absolute bottom-6 left-8 h-5 w-16 rounded-full bg-white/55 blur-lg" />
     </div>
   );
 }
 
 export function HeroPrintComposition() {
   return (
-    <div className="hero-visual-in relative min-h-[430px] overflow-hidden rounded-lg bg-[#f0f0ef] shadow-card">
-      <div className="mockup-float absolute -right-8 top-10 h-72 w-52 rounded-md bg-ink p-6 text-white shadow-card [--float-delay:500ms] [--mockup-rotate:14deg]">
-        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-white/45">Custom print</p>
-        <p className="mt-16 text-4xl font-black uppercase leading-[0.92]">
-          Bold
+    <div className="hero-visual-in hero-panel relative min-h-[500px] bg-[rgba(246,240,232,0.88)] p-6 shadow-glass">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(255,255,255,0.95),transparent_28rem),radial-gradient(circle_at_80%_14%,rgba(217,70,32,0.14),transparent_22rem)]" aria-hidden="true" />
+      <div className="absolute inset-x-10 top-8 h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent" aria-hidden="true" />
+      <div className="mockup-float absolute -right-3 top-10 h-80 w-56 rounded-[1.75rem] bg-ink p-7 text-white shadow-card [--float-delay:500ms] [--mockup-rotate:11deg]">
+        <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-white/45">Campaign Print</p>
+        <p className="mt-14 font-display text-[2.7rem] leading-[0.9] text-white">
+          Bold ideas,
           <br />
-          Ideas.
+          beautifully
           <br />
-          Bright
-          <br />
-          Prints.
+          printed.
         </p>
-        <div className="absolute bottom-0 left-0 h-14 w-full bg-brand" />
+        <p className="mt-4 max-w-[12rem] text-xs leading-5 text-white/62">Flyers, signage, packaging, documents, and fast local support.</p>
+        <div className="absolute bottom-0 left-0 h-14 w-full rounded-b-[1.75rem] bg-brand" />
       </div>
-      <div className="mockup-float absolute left-12 top-14 h-28 w-48 rounded-md bg-white p-5 shadow-card [--float-delay:0ms] [--mockup-rotate:-14deg]">
-        <p className="text-xl font-black text-ink">
+      <div className="mockup-float liquid-glass absolute left-10 top-14 h-32 w-52 rounded-[1.65rem] p-5 [--float-delay:0ms] [--mockup-rotate:-14deg]">
+        <p className="text-2xl font-black text-ink">
           Print<span className="text-brand">Me</span>
         </p>
         <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.22em] text-slate">20+ Years Experience</p>
         <div className="mt-5 h-2 w-28 rounded-full bg-line" />
+        <div className="mt-2 h-2 w-16 rounded-full bg-brand/20" />
       </div>
-      <div className="mockup-float absolute bottom-12 left-8 h-56 w-44 rounded-md bg-white p-5 shadow-card [--float-delay:900ms] [--mockup-rotate:-10deg]">
-        <div className="h-24 rounded-sm bg-[#d9e4ec]" />
-        <p className="mt-5 text-2xl font-black uppercase leading-none text-brand">Grow your business</p>
-        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate">Flyers and banners</p>
+      <div className="mockup-float absolute bottom-10 left-8 h-64 w-48 rounded-[1.6rem] border border-white/80 bg-white p-5 shadow-card [--float-delay:900ms] [--mockup-rotate:-10deg]">
+        <div className="h-28 rounded-lg bg-[#d9e4ec]" />
+        <p className="mt-5 font-display text-[2rem] leading-none text-brand">Grow your business</p>
+        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate">Flyers, banners, promos</p>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="h-2 rounded-full bg-brand/20" />
+          <div className="h-2 rounded-full bg-ink/12" />
+        </div>
       </div>
-      <div className="mockup-float absolute bottom-9 right-28 h-40 w-48 rounded-md bg-white p-5 shadow-card [--float-delay:1300ms] [--mockup-rotate:8deg]">
-        <div className="grid grid-cols-3 gap-2">
+      <div className="mockup-float liquid-glass absolute bottom-8 right-28 h-44 w-52 rounded-[1.65rem] p-5 [--float-delay:1300ms] [--mockup-rotate:8deg]">
+        <div className="grid grid-cols-3 gap-2.5">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="aspect-square rounded-sm bg-[#dedede]" />
+            <div key={index} className="aspect-square rounded-md bg-[#dedede]" />
           ))}
         </div>
         <p className="mt-4 text-sm font-black text-ink">Passport Photos</p>
+        <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate">Quick in-store service</p>
       </div>
     </div>
   );

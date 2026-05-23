@@ -16,12 +16,15 @@ export function SectionHeading({
   return (
     <div className={cn("max-w-3xl", align === "center" && "mx-auto text-center")}>
       {eyebrow ? (
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-brand">{eyebrow}</p>
+        <p className="editorial-kicker">{eyebrow}</p>
       ) : null}
-      <h2 className="mt-3 text-balance text-3xl font-black leading-[1.04] tracking-[-0.03em] text-ink sm:text-5xl">{title}</h2>
+      <h2 className="display-title mt-3 text-balance text-[2.05rem] font-black leading-[0.96] sm:text-[3.15rem]">{title}</h2>
       {description ? (
-        <p className="mt-4 text-pretty text-sm leading-7 text-slate sm:text-[15px]">{description}</p>
+        <p className={cn("mt-4 max-w-2xl text-pretty text-[15px] leading-7 text-slate sm:text-base", align === "center" && "mx-auto")}>
+          {description}
+        </p>
       ) : null}
+      <div className={cn("premium-divider mt-6 max-w-[11rem]", align === "center" && "mx-auto")} />
     </div>
   );
 }

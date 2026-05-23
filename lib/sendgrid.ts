@@ -1,5 +1,5 @@
 import sgMail from "@sendgrid/mail";
-import { QuoteRequestInput } from "@/lib/validation";
+import type { QuoteRequestInput } from "@/lib/validation";
 import { siteConfig } from "@/lib/site";
 import { env, isSendGridConfigured } from "@/lib/env";
 
