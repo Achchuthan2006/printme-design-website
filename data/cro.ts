@@ -14,13 +14,13 @@ export const analyticsEvents = {
 
 export const homeHeroVariants = {
   default: {
-    eyebrow: "Scarborough print shop for business, document, and custom printing",
-    headline: "Custom printing, local pickup, and clear quotes from one Scarborough print shop.",
+    eyebrow: "Scarborough print shop for business printing, documents, signs, and custom jobs",
+    headline: "Print faster, quote clearer, and pick up locally in Scarborough.",
     subheadline:
-      "PrintMe Design helps Scarborough and Toronto businesses, schools, events, and walk-in customers order business cards, flyers, banners, documents, passport photos, cheques, and custom print jobs with practical file review before production.",
+      "PrintMe Design helps Scarborough and Toronto businesses, schools, community groups, and walk-in customers order business cards, flyers, brochures, postcards, banners, signs, documents, passport photos, and custom print work with practical local guidance before production.",
     primaryCta: "Request a Quote",
-    secondaryCta: "Browse Products",
-    trustItems: ["Pickup at 1585 Markham Road", "File review before production", "Rush-aware turnaround guidance"],
+    secondaryCta: "Browse Services",
+    trustItems: ["Scarborough pickup and local support", "Artwork reviewed before production", "Rush-aware turnaround guidance"],
   },
   speed: {
     eyebrow: "Rush-friendly local printing",

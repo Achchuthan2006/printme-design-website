@@ -1,16 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
-import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { CategoryDirectory } from "@/components/catalog/category-directory";
-import { Icon } from "@/components/ui/icon";
-import { SectionHeading } from "@/components/ui/section-heading";
+import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
+import { LocalContactCard } from "@/components/conversion/local-contact-card";
+import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { MobileBottomCta } from "@/components/sections/mobile-bottom-cta";
 import { HeroPrintComposition } from "@/components/sections/print-product-visual";
 import { ServiceCard } from "@/components/sections/service-card";
 import { TrustBadge } from "@/components/sections/trust-badge";
-import { buildMetadata } from "@/lib/metadata";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { analyticsEvents, homeHeroVariants } from "@/data/cro";
-import { processSteps, services, testimonials, whyChooseUs } from "@/lib/site";
+import { buildMetadata } from "@/lib/metadata";
+import { processSteps, services, siteConfig, testimonials, whyChooseUs } from "@/lib/site";
 
 const heroCopy = homeHeroVariants.default;
 
@@ -18,6 +19,12 @@ const serviceHighlights = [
   { icon: "clock", title: "Rush-aware guidance", copy: "When timing matters, we tell you what is realistic before production starts." },
   { icon: "store", title: "Pickup with confidence", copy: "Orders are reviewed, organized, and ready for pickup from our Scarborough shop." },
   { icon: "van", title: "Delivery when it fits", copy: "Ask about delivery options for qualifying Scarborough, Toronto, and GTA orders." },
+];
+
+const heroServiceSignals = [
+  "Business cards, flyers, brochures, and postcards",
+  "Signs, banners, promotional print, and custom jobs",
+  "Documents, passport photos, technical prints, and local support",
 ];
 
 const journeyOptions = [
@@ -68,7 +75,7 @@ export default function HomePage() {
                   {heroCopy.subheadline}
                 </p>
                 <p className="hero-in mt-4 max-w-2xl text-sm font-bold leading-6 text-ink [--delay:250ms]">
-                  Order online when the specs are clear, request a quote when the job is custom, or call the shop when you need a fast local answer.
+                  Order online when the specs are clear, request a quote when the job is custom, or call the shop when you need a fast local answer before the deadline moves.
                 </p>
                 <div className="hero-in mt-7 flex flex-col gap-3 [--delay:300ms] sm:flex-row">
                   <Button href="/quote-request" data-event={analyticsEvents.heroQuoteClick}>
@@ -78,6 +85,13 @@ export default function HomePage() {
                   <Button href="/services" variant="secondary" data-event={analyticsEvents.heroServicesClick}>
                     {heroCopy.secondaryCta}
                   </Button>
+                </div>
+                <div className="hero-in mt-5 flex flex-wrap gap-2 [--delay:345ms]">
+                  {heroServiceSignals.map((item) => (
+                    <span key={item} className="value-chip">
+                      {item}
+                    </span>
+                  ))}
                 </div>
                 <div className="hero-in mt-7 grid gap-3 text-xs font-bold text-slate [--delay:390ms] sm:grid-cols-3">
                   {heroCopy.trustItems.map((item, index) => (
@@ -89,7 +103,7 @@ export default function HomePage() {
                 </div>
                 <div className="hero-in mt-5 rounded-[1.5rem] border border-line/80 bg-canvas/70 px-4 py-4 text-sm leading-6 text-slate [--delay:430ms]">
                   <p className="font-black text-ink">Visit, call, or send files online.</p>
-                  <p className="mt-1">Pickup at 1585 Markham Road Unit 103, Scarborough. Call 416-572-1999 for rush questions, passport photo availability, or custom print help.</p>
+                  <p className="mt-1">Pickup at {siteConfig.address}. Call {siteConfig.phone} for rush questions, passport photo availability, or custom print help.</p>
                 </div>
                 <div className="hero-in mt-7 grid gap-4 sm:grid-cols-2 [--delay:470ms]">
                   <div className="premium-stat">
@@ -119,6 +133,10 @@ export default function HomePage() {
               <p className="mt-3 max-w-xl text-sm leading-7 text-slate">
                 Some customers are ready to order now. Others need sizing, timing, finishing, or artwork help first. Pick the path that matches your job instead of forcing the wrong checkout flow.
               </p>
+              <div className="mt-5 rounded-[1.25rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                <p className="font-black text-ink">Simple rule for faster progress</p>
+                <p className="mt-1">If the job is custom, rush-sensitive, or still fuzzy, the quote path usually gets you to the right answer faster than guessing through checkout.</p>
+              </div>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               {journeyOptions.map((option) => (
@@ -167,7 +185,10 @@ export default function HomePage() {
 
       <section className="reveal-up bg-canvas py-8">
         <div className="container-shell">
-          <LocalTrustStrip />
+          <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr] xl:items-start">
+            <LocalTrustStrip />
+            <LocalContactCard />
+          </div>
         </div>
       </section>
 
@@ -261,7 +282,7 @@ export default function HomePage() {
         <div className="container-shell grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="story-panel pl-7">
             <p className="editorial-kicker">Why businesses switch</p>
-            <h2 className="mt-2 text-[2.3rem] font-black leading-[0.98] text-ink">A cleaner alternative to the “huge but hard to use” print catalog.</h2>
+            <h2 className="mt-2 text-[2.3rem] font-black leading-[0.98] text-ink">A cleaner alternative to the huge, hard-to-use print catalog.</h2>
             <p className="mt-3 text-sm leading-7 text-slate">
               PrintMe is built for customers who want broad print capability without digging through noisy menus. Start with the product when it is straightforward, switch to quote-first when the job gets custom, and use support when timing or artwork still needs guidance.
             </p>
@@ -347,21 +368,21 @@ export default function HomePage() {
               </div>
             </div>
             <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map((item) => (
-              <article key={item.name} className="premium-card premium-depth rounded-[1.7rem] border border-line bg-white p-6 hover:border-brand/30 hover:shadow-card">
-                <p className="font-display text-5xl leading-none text-brand">"</p>
-                <p className="mt-3 text-sm leading-7 text-slate">{item.quote}</p>
-                <div className="mt-6 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-sm font-black text-brand">
-                    {item.name.charAt(0)}
+              {testimonials.map((item) => (
+                <article key={item.name} className="premium-card premium-depth rounded-[1.7rem] border border-line bg-white p-6 hover:border-brand/30 hover:shadow-card">
+                  <p className="font-display text-5xl leading-none text-brand">"</p>
+                  <p className="mt-3 text-sm leading-7 text-slate">{item.quote}</p>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-sm font-black text-brand">
+                      {item.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-ink">{item.name}</p>
+                      <p className="text-xs text-slate">{item.company}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-black text-ink">{item.name}</p>
-                    <p className="text-xs text-slate">{item.company}</p>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))}
             </div>
           </div>
         </div>
@@ -371,7 +392,7 @@ export default function HomePage() {
         <div className="container-shell">
           <LeadCtaPanel
             title="Have the file, the deadline, or just the rough idea?"
-            description="Send the details now and PrintMe will help you choose the cleanest, fastest, most realistic path to a finished print job."
+            description="Send the details now and PrintMe will help you choose the cleanest, fastest, most realistic path to a finished print job with local support before production begins."
             primaryLabel="Request a Quote"
             secondaryLabel="Call PrintMe"
           />
