@@ -27,6 +27,11 @@ const supportPoints = [
     title: "Artwork help available",
     detail: "Send files now or after checkout. We can flag anything that needs attention before print.",
   },
+  {
+    icon: "check",
+    title: "Clear next steps",
+    detail: "If an item needs review, we confirm pricing, turnaround, and fulfillment before your order moves ahead.",
+  },
 ];
 
 export function CartSupportPanel({ compact = false, className }: CartSupportPanelProps) {

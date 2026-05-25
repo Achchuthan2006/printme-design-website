@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FeedbackMessage, Field, Input, Select, Textarea } from "@/components/ui/form-controls";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
+import { siteConfig } from "@/lib/site";
 import { ArtworkUploadMetadata } from "@/types";
 
 const initialState = {
@@ -141,6 +142,21 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
           <span className="font-black text-ink">Fastest path to an accurate quote:</span> include the quantity, deadline, pickup or delivery preference, and artwork if you have it. More clarity here means fewer follow-up messages later.
         </div>
 
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">Best for custom, rush, or not-quite-standard jobs</p>
+            <p className="mt-1">
+              Use this form when the specs are still taking shape, the product needs review, or you want PrintMe to confirm the safest path before you pay.
+            </p>
+          </div>
+          <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">Need a quick answer before you submit?</p>
+            <p className="mt-1">
+              Call {siteConfig.phone} if the deadline is close, the service choice is unclear, or you want help deciding whether to quote, upload, or order online.
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-5 md:grid-cols-2">
           {fields.map((field) => (
             <Field key={field.name} label={field.label} hint={field.hint} error={fieldErrors[field.name]}>
@@ -228,13 +244,35 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
           </FeedbackMessage>
         ) : null}
 
+        {status.type === "success" ? (
+          <div className="grid gap-3 rounded-[1.35rem] border border-emerald-100 bg-emerald-50/80 p-4 md:grid-cols-3">
+            {[
+              "We review the service, quantity, timing, and fulfillment details.",
+              "If files were attached, we check size, quality, bleed, and production fit.",
+              "You get a quote, clarification, or the cleanest next step instead of vague back-and-forth.",
+            ].map((item, index) => (
+              <div key={item} className="rounded-[1rem] bg-white/80 px-3 py-3 text-sm leading-6 text-slate">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Next {index + 1}</p>
+                <p className="mt-2">{item}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate">
             No payment is taken here. This form is only used to review your request, confirm pricing and timing, and guide you to the right next step.
           </p>
-          <Button type="submit" disabled={isPending} className="min-w-44 disabled:cursor-not-allowed disabled:opacity-70">
-            {isPending ? "Sending..." : "Request My Quote"}
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {status.type === "success" ? (
+              <Button href="/support" variant="secondary" className="min-w-44">
+                Get Help With My Project
+              </Button>
+            ) : null}
+            <Button type="submit" disabled={isPending} className="min-w-44 disabled:cursor-not-allowed disabled:opacity-70">
+              {isPending ? "Sending..." : "Send Quote Request"}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

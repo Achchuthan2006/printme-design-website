@@ -43,6 +43,7 @@ export function CheckoutPanel() {
     () => payableItems.reduce((total, item) => total + (item.estimatedTotal || item.unitPrice) * item.quantity, 0),
     [payableItems],
   );
+  const needsReviewOnly = payableSubtotal <= 0 && quoteItems.length > 0;
 
   function updateCustomer(field: keyof CheckoutCustomer, value: string) {
     setCustomer((current) => ({ ...current, [field]: value }));
@@ -122,6 +123,20 @@ export function CheckoutPanel() {
       <div className="space-y-6">
         <CartSupportPanel />
 
+        <section className="grid gap-3 md:grid-cols-3">
+          {[
+            { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, questions, and pickup updates." },
+            { label: "Step 2", title: "Fulfillment choice", detail: "Choose pickup or delivery so timing and logistics can be confirmed." },
+            { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or leave guidance so PrintMe knows what is coming next." },
+          ].map((item) => (
+            <div key={item.title} className="signal-card">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{item.label}</p>
+              <p className="mt-2 text-sm font-black text-ink">{item.title}</p>
+              <p className="mt-1 text-xs leading-5 text-slate">{item.detail}</p>
+            </div>
+          ))}
+        </section>
+
         <section className="section-frame p-6">
           <p className="editorial-kicker">Step 1</p>
           <h1 className="display-title mt-2 text-[2.3rem] font-black leading-[0.95] text-ink">Where should we send updates?</h1>
@@ -200,6 +215,12 @@ export function CheckoutPanel() {
           <Field label="Anything we should confirm before print?" hint="Use this for deadlines, colour notes, file naming, packaging details, or anything else we should double-check." className="mt-5">
             <Textarea value={orderNotes} onChange={(event) => setOrderNotes(event.target.value)} rows={5} />
           </Field>
+          <div className="mt-5 rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">You do not need every file finalized to continue.</p>
+            <p className="mt-1">
+              If artwork is still being updated, tell PrintMe what is missing and when to expect it. We will keep the order moving with the clearest next step possible.
+            </p>
+          </div>
           <div className="mt-5">
             <ArtworkUploadZone
               context={{ scope: "order", relatedLabel: "Checkout order" }}
@@ -220,7 +241,7 @@ export function CheckoutPanel() {
       <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
         <p className="editorial-kicker">Secure checkout</p>
         <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Confirm your print order</h2>
-        <p className="mt-2 text-sm leading-6 text-slate">Review what can be paid online now and what still needs staff confirmation before production.</p>
+        <p className="mt-2 text-sm leading-6 text-slate">Review what can be paid online now, what still needs staff confirmation, and what happens after you submit.</p>
 
         <div className="mt-5 max-h-[360px] space-y-4 overflow-y-auto pr-1">
           {items.map((item) => (
@@ -240,6 +261,9 @@ export function CheckoutPanel() {
           <div className="flex justify-between"><span>Estimated subtotal</span><span className="font-black text-ink">${subtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Payable online</span><span>${payableSubtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Quote review items</span><span>{quoteItems.length}</span></div>
+          <div className="rounded-[1.25rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
+            After checkout, PrintMe confirms files, fulfillment, and any review items before production begins.
+          </div>
           <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">
             Secure checkout is powered by Stripe. PrintMe still confirms files, fulfillment, and any quote-review items before production begins.
           </div>
@@ -279,6 +303,11 @@ export function CheckoutPanel() {
             Quote-only items will be reviewed by PrintMe before final pricing or production approval.
           </p>
         ) : null}
+        {needsReviewOnly ? (
+          <p className="mt-5 rounded-[1.3rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
+            This checkout will send your details and files for review. If no online-payable items are in the cart, no Stripe payment step is required.
+          </p>
+        ) : null}
 
         {error ? (
           <FeedbackMessage id={errorId} tone="error" className="mt-5" >
@@ -287,7 +316,7 @@ export function CheckoutPanel() {
         ) : null}
 
         <Button type="submit" disabled={isPending} className="mt-6 w-full">
-          {isPending ? "Starting secure checkout..." : payableSubtotal > 0 ? "Go to Secure Payment" : "Send for PrintMe Review"}
+          {isPending ? "Starting secure checkout..." : payableSubtotal > 0 ? "Continue to Secure Payment" : "Send Order for Review"}
         </Button>
         <Button type="button" variant="secondary" className="mt-3 w-full" onClick={openSupportChat}>
           Ask About Files or Turnaround

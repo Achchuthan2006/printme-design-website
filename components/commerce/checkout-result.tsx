@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/features/cart/cart-context";
+import { siteConfig } from "@/lib/site";
 
 export function CheckoutResult({
   status,
@@ -25,18 +26,33 @@ export function CheckoutResult({
       title: "Your print order is in.",
       body:
         "PrintMe will review artwork, production details, pickup or delivery requirements, and follow up if anything needs attention before production begins.",
+      steps: [
+        "You will receive order confirmation and payment details by email.",
+        "The team reviews files, fulfillment notes, and any quote-review items before production starts.",
+        "If anything needs clarification, PrintMe reaches out before the job moves ahead.",
+      ],
     },
     cancel: {
       eyebrow: "Checkout cancelled",
       title: "Checkout was paused - your cart is still safe.",
       body:
         "No payment was taken. Your cart is still available so you can review details, adjust products, or try secure checkout again.",
+      steps: [
+        "Your cart stays available so you do not need to start over.",
+        "You can return to checkout, adjust the order, or ask PrintMe a quick question first.",
+        "If the issue was timing, files, or fulfillment, support can help you choose the cleanest next step.",
+      ],
     },
     failure: {
       eyebrow: "Payment issue",
       title: "Checkout needs another try.",
       body:
         "Please try again or contact PrintMe and we will help you complete the order safely.",
+      steps: [
+        "No production starts until payment and order details are confirmed.",
+        "You can retry checkout right away or speak with PrintMe for help.",
+        "If the issue was file-related or order-related, the team can guide you before you attempt payment again.",
+      ],
     },
   }[status];
 
@@ -50,6 +66,14 @@ export function CheckoutResult({
         </p>
       ) : null}
       <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate">{copy.body}</p>
+      <div className="mx-auto mt-6 grid max-w-2xl gap-3 md:grid-cols-3">
+        {copy.steps.map((step, index) => (
+          <div key={step} className="rounded-[1.2rem] border border-line/80 bg-white/88 px-4 py-4 text-left shadow-soft">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Next {index + 1}</p>
+            <p className="mt-2 text-sm leading-6 text-slate">{step}</p>
+          </div>
+        ))}
+      </div>
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         {status === "success" ? (
           <>
@@ -63,6 +87,9 @@ export function CheckoutResult({
           </>
         )}
       </div>
+      <p className="mt-5 text-xs leading-5 text-slate">
+        Need help now? Call {siteConfig.phone} or email {siteConfig.email}.
+      </p>
     </div>
   );
 }

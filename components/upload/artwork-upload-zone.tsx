@@ -3,6 +3,8 @@
 import { useId, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { openSupportChat } from "@/lib/chat";
+import { siteConfig } from "@/lib/site";
 import { uploadArtworkFile } from "@/lib/uploads";
 import { cn } from "@/lib/utils";
 import { ArtworkUploadContext, ArtworkUploadMetadata } from "@/types";
@@ -28,6 +30,7 @@ interface ArtworkUploadZoneProps {
 }
 
 const acceptedFormats = ".pdf,.jpg,.jpeg,.png,.tif,.tiff,.ai,.eps,.psd,.zip";
+const acceptedFileLabels = ["PDF", "JPG", "PNG", "TIFF", "AI", "EPS", "PSD", "ZIP"];
 
 function formatFileSize(size: number) {
   if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
@@ -57,6 +60,8 @@ export function ArtworkUploadZone({
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const uploadedCount = items.filter((item) => item.state === "uploaded").length;
+  const hasError = items.some((item) => item.state === "error");
 
   function removeItem(id: string) {
     setItems((current) => {
@@ -145,6 +150,13 @@ export function ArtworkUploadZone({
         <p className="mx-auto mt-3 max-w-xl text-xs leading-5 text-slate">
           Drag files into this area or use the upload button below. PDFs are preferred, but PrintMe can also review source files, images, and ZIP packages.
         </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          {acceptedFileLabels.map((label) => (
+            <span key={label} className="rounded-full border border-line/80 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-slate">
+              {label}
+            </span>
+          ))}
+        </div>
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
           <Button type="button" onClick={() => inputRef.current?.click()} disabled={isPending}>
             {isPending ? "Uploading..." : "Upload My Artwork"}
@@ -155,6 +167,9 @@ export function ArtworkUploadZone({
         </div>
         <input ref={inputRef} type="file" multiple accept={acceptedFormats} className="sr-only" onChange={handleInputChange} aria-describedby={helperId} />
         <p id={helperId} className="mt-4 text-xs font-bold text-slate">{helperText}</p>
+        <p className="mt-2 text-xs leading-5 text-slate">
+          If a file is not final yet, you can still continue. PrintMe can review what you have first and tell you what still needs attention.
+        </p>
       </div>
 
       {items.length > 0 ? (
@@ -194,6 +209,31 @@ export function ArtworkUploadZone({
               </p>
             </article>
           ))}
+        </div>
+      ) : null}
+
+      {items.length > 0 ? (
+        <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto]">
+          <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">What happens next</p>
+            <p className="mt-1">
+              Uploaded files are matched to your quote or order so the team can check size, bleed, quality, and production fit before anything moves forward.
+            </p>
+            <p className="mt-2 text-xs leading-5 text-slate">
+              {uploadedCount > 0
+                ? `${uploadedCount} file${uploadedCount === 1 ? "" : "s"} uploaded successfully so far.`
+                : "No files have finished uploading yet."}{" "}
+              {hasError ? "If something failed, retry or send the file later after speaking with PrintMe." : "You can keep adding files if the project has multiple pieces."}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Button type="button" variant="secondary" onClick={openSupportChat}>
+              Ask About My Files
+            </Button>
+            <Button href={siteConfig.phoneHref}>
+              Call PrintMe
+            </Button>
+          </div>
         </div>
       ) : null}
     </section>

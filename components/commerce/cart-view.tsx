@@ -29,6 +29,7 @@ export function CartView() {
   }
 
   const hasQuoteItems = items.some((item) => item.quoteOnly);
+  const hasMissingArtworkReminder = items.some((item) => item.mode !== "quote-only");
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
@@ -39,6 +40,18 @@ export function CartView() {
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate">
             Adjust quantities, confirm the right print setup, and use support whenever you want a fast answer on turnaround, artwork, pickup, delivery, or quote review.
           </p>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              "Review quantities and options before secure checkout.",
+              "Upload files now or continue if the artwork still needs a final pass.",
+              "PrintMe rechecks payment, fulfillment, and production details before printing begins.",
+            ].map((item, index) => (
+              <div key={item} className="signal-card">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Step {index + 1}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {items.map((item) => (
@@ -120,6 +133,11 @@ export function CartView() {
           {hasQuoteItems ? (
             <p className="rounded-[1.3rem] border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
               Some items need PrintMe review before final pricing. We will confirm the details before production starts.
+            </p>
+          ) : null}
+          {hasMissingArtworkReminder ? (
+            <p className="rounded-[1.3rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
+              You can upload artwork during checkout. If files are still being finalized, you can still continue and tell PrintMe what is coming next.
             </p>
           ) : null}
           <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">

@@ -159,6 +159,9 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
               {quoteReviewCount} item{quoteReviewCount === 1 ? "" : "s"} still need PrintMe review before final pricing or production approval.
             </div>
           ) : null}
+          <div className="mb-4 rounded-[1.25rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
+            Files can be uploaded during checkout. If the artwork is not final yet, you can still continue and add notes for the team.
+          </div>
           <div className="mb-4 rounded-[1.3rem] border border-line/80 bg-canvas p-4 text-sm">
             <div className="flex justify-between">
               <span className="font-bold text-slate">Estimated subtotal</span>
