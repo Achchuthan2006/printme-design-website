@@ -1,4 +1,55 @@
-import { AccountFile, AccountInvoice, AccountOrder, AccountQuote } from "@/types";
+import {
+  AccountActivityItem,
+  AccountFile,
+  AccountInvoice,
+  AccountOrder,
+  AccountQuote,
+  AccountReorderTemplate,
+  CustomerAddress,
+  CustomerProfile,
+} from "@/types";
+
+export const demoProfile: CustomerProfile = {
+  id: "cust-demo-1",
+  fullName: "Aisha Khan",
+  email: "aisha@scarboroughwellness.ca",
+  phone: "416-555-0192",
+  companyName: "Scarborough Wellness Clinic",
+  accountStatus: "active",
+  communicationPreferences: {
+    emailUpdates: true,
+    smsUpdates: true,
+    marketingEmails: false,
+  },
+};
+
+export const demoAddresses: CustomerAddress[] = [
+  {
+    id: "addr-demo-1",
+    label: "Main pickup contact",
+    recipient: "Aisha Khan",
+    companyName: "Scarborough Wellness Clinic",
+    addressLine1: "1585 Markham Road Unit 103",
+    city: "Scarborough",
+    province: "ON",
+    postalCode: "M1B 2W1",
+    instructions: "Front desk pickup after 2 PM works best.",
+    isDefaultPickup: true,
+  },
+  {
+    id: "addr-demo-2",
+    label: "Clinic delivery",
+    recipient: "Aisha Khan",
+    companyName: "Scarborough Wellness Clinic",
+    addressLine1: "2150 Lawrence Avenue East",
+    addressLine2: "Suite 208",
+    city: "Toronto",
+    province: "ON",
+    postalCode: "M1R 3A7",
+    instructions: "Call on arrival if delivering banners or signs.",
+    isDefaultDelivery: true,
+  },
+];
 
 export const demoOrders: AccountOrder[] = [
   {
@@ -9,6 +60,11 @@ export const demoOrders: AccountOrder[] = [
     total: "$128.00",
     fulfillmentMethod: "In-store pickup",
     items: ["Business Cards", "Flyers"],
+    fileStatus: "awaiting_review",
+    nextStep: "Artwork review is in progress before production is locked in.",
+    reorderHref: "/quote-request?service=business-cards",
+    linkedFiles: ["file-demo-1", "file-demo-3"],
+    deliveryWindow: "Pickup update expected within 1 business day of artwork approval.",
   },
   {
     id: "ord-demo-2",
@@ -18,6 +74,25 @@ export const demoOrders: AccountOrder[] = [
     total: "$89.00",
     fulfillmentMethod: "Local delivery",
     items: ["Banners"],
+    fileStatus: "approved_for_print",
+    nextStep: "This job is complete and ready to be used as the starting point for a repeat order.",
+    reorderHref: "/quote-request?service=banners",
+    linkedFiles: ["file-demo-2"],
+    deliveryWindow: "Delivered May 20, 2026.",
+  },
+  {
+    id: "ord-demo-3",
+    orderNumber: "PM-20260514-R72LM",
+    date: "May 14, 2026",
+    status: "ready_for_pickup",
+    total: "$214.00",
+    fulfillmentMethod: "In-store pickup",
+    items: ["Postcards", "Brochures"],
+    fileStatus: "ready_for_production",
+    nextStep: "This order is printed and waiting for pickup confirmation.",
+    reorderHref: "/quote-request?service=postcards",
+    linkedFiles: ["file-demo-4"],
+    deliveryWindow: "Pickup available today until 6 PM.",
   },
 ];
 
@@ -28,6 +103,9 @@ export const demoQuotes: AccountQuote[] = [
     requestedDate: "May 21, 2026",
     status: "reviewing",
     summary: "Large-format drawing sets for contractor pickup.",
+    estimatedValue: "$95 - $140",
+    nextStep: "PrintMe is confirming set count, size, and whether all files are grouped correctly.",
+    linkedFiles: ["file-demo-5"],
   },
   {
     id: "quote-demo-2",
@@ -35,6 +113,19 @@ export const demoQuotes: AccountQuote[] = [
     requestedDate: "May 19, 2026",
     status: "priced",
     summary: "Custom packaging labels and branded inserts.",
+    estimatedValue: "$280 - $340",
+    nextStep: "This quote is ready for approval or updates to quantity and finishing.",
+    linkedFiles: ["file-demo-6"],
+  },
+  {
+    id: "quote-demo-3",
+    service: "Graphic Design Services",
+    requestedDate: "May 17, 2026",
+    status: "approved",
+    summary: "Flyer cleanup and postcard adaptation for a summer campaign.",
+    estimatedValue: "$180",
+    nextStep: "Approved quotes can move into a production-ready order once final files are confirmed.",
+    linkedFiles: ["file-demo-7"],
   },
 ];
 
@@ -43,19 +134,85 @@ export const demoFiles: AccountFile[] = [
     id: "file-demo-1",
     fileName: "business-card-front-back.pdf",
     relatedTo: "PM-20260522-A12FQ",
+    relatedType: "order",
     uploadedAt: "May 22, 2026",
     fileSize: "2.4 MB",
     fileType: "PDF",
     status: "awaiting_review",
+    reviewNote: "Bleed and trim look good. Waiting on final flyer file to review the order together.",
+    reusable: true,
   },
   {
     id: "file-demo-2",
     fileName: "banner-artwork-v2.pdf",
     relatedTo: "PM-20260518-K91PR",
+    relatedType: "order",
     uploadedAt: "May 18, 2026",
     fileSize: "8.7 MB",
     fileType: "PDF",
     status: "approved_for_print",
+    reviewNote: "Approved and ready for future size changes or repeat production.",
+    reusable: true,
+  },
+  {
+    id: "file-demo-3",
+    fileName: "flyer-promo-june-final.pdf",
+    relatedTo: "PM-20260522-A12FQ",
+    relatedType: "order",
+    uploadedAt: "May 22, 2026",
+    fileSize: "5.1 MB",
+    fileType: "PDF",
+    status: "proof_required",
+    reviewNote: "Awaiting final colour confirmation before production.",
+    reusable: true,
+  },
+  {
+    id: "file-demo-4",
+    fileName: "spring-postcard-mailer.zip",
+    relatedTo: "PM-20260514-R72LM",
+    relatedType: "order",
+    uploadedAt: "May 14, 2026",
+    fileSize: "14.2 MB",
+    fileType: "ZIP",
+    status: "ready_for_production",
+    reviewNote: "Mailer assets are clean and can be reused for a repeat run.",
+    reusable: true,
+  },
+  {
+    id: "file-demo-5",
+    fileName: "site-plan-set-a.pdf",
+    relatedTo: "Engineering Drawing Prints",
+    relatedType: "quote",
+    uploadedAt: "May 21, 2026",
+    fileSize: "18.3 MB",
+    fileType: "PDF",
+    status: "awaiting_review",
+    reviewNote: "Waiting for confirmation on final sheet size and set count.",
+    reusable: false,
+  },
+  {
+    id: "file-demo-6",
+    fileName: "label-dielines.ai",
+    relatedTo: "Custom Orders",
+    relatedType: "quote",
+    uploadedAt: "May 19, 2026",
+    fileSize: "6.5 MB",
+    fileType: "AI",
+    status: "needs_changes",
+    reviewNote: "Artwork needs bleed added before labels can move to production.",
+    reusable: false,
+  },
+  {
+    id: "file-demo-7",
+    fileName: "summer-campaign-assets.zip",
+    relatedTo: "Graphic Design Services",
+    relatedType: "quote",
+    uploadedAt: "May 17, 2026",
+    fileSize: "24.8 MB",
+    fileType: "ZIP",
+    status: "uploaded",
+    reviewNote: "Assets received and attached to the approved design-support quote.",
+    reusable: true,
   },
 ];
 
@@ -67,6 +224,7 @@ export const demoInvoices: AccountInvoice[] = [
     date: "May 22, 2026",
     amount: "$128.00",
     status: "unpaid",
+    dueLabel: "Due after artwork approval",
   },
   {
     id: "inv-demo-2",
@@ -75,6 +233,91 @@ export const demoInvoices: AccountInvoice[] = [
     date: "May 18, 2026",
     amount: "$89.00",
     status: "paid",
+    dueLabel: "Paid May 18, 2026",
+  },
+  {
+    id: "inv-demo-3",
+    invoiceNumber: "INV-20260514-003",
+    orderNumber: "PM-20260514-R72LM",
+    date: "May 14, 2026",
+    amount: "$214.00",
+    status: "paid",
+    dueLabel: "Paid May 14, 2026",
+  },
+];
+
+export const demoActivity: AccountActivityItem[] = [
+  {
+    id: "activity-demo-1",
+    title: "Flyer file needs colour confirmation",
+    detail: "Your active order is waiting on a final proof decision before production starts.",
+    date: "Today",
+    entityType: "file",
+    href: "/account/files",
+    tone: "attention",
+  },
+  {
+    id: "activity-demo-2",
+    title: "Postcard order is ready for pickup",
+    detail: "A completed postcard and brochure job can be collected at the Scarborough shop today.",
+    date: "Today",
+    entityType: "order",
+    href: "/account/orders",
+    tone: "success",
+  },
+  {
+    id: "activity-demo-3",
+    title: "Custom packaging quote is ready",
+    detail: "Review the priced quote and move it into production when the finishing details are approved.",
+    date: "Yesterday",
+    entityType: "quote",
+    href: "/account/quotes",
+    tone: "default",
+  },
+  {
+    id: "activity-demo-4",
+    title: "Invoice generated for active order",
+    detail: "Billing is prepared and tied to the order once artwork is approved.",
+    date: "Yesterday",
+    entityType: "invoice",
+    href: "/account/invoices",
+    tone: "default",
+  },
+];
+
+export const demoReorders: AccountReorderTemplate[] = [
+  {
+    id: "reorder-demo-1",
+    title: "Clinic business cards",
+    sourceType: "order",
+    sourceId: "ord-demo-1",
+    summary: "Reuse the same card setup with a new quantity, rush timing, or updated contact details.",
+    lastUsed: "May 2026",
+    recommendedPath: "cart",
+    href: "/quote-request?service=business-cards",
+    tags: ["Direct order", "Saved artwork", "Repeat-friendly"],
+  },
+  {
+    id: "reorder-demo-2",
+    title: "Seasonal banner campaign",
+    sourceType: "order",
+    sourceId: "ord-demo-2",
+    summary: "Repeat the completed banner job or request a revised size for the next promotion.",
+    lastUsed: "May 2026",
+    recommendedPath: "quote",
+    href: "/quote-request?service=banners",
+    tags: ["Large format", "File approved", "Quote update"],
+  },
+  {
+    id: "reorder-demo-3",
+    title: "Packaging label project",
+    sourceType: "quote",
+    sourceId: "quote-demo-2",
+    summary: "Restart the priced custom label quote with updated quantity, stock, or finishing.",
+    lastUsed: "May 2026",
+    recommendedPath: "quote",
+    href: "/quote-request?service=custom-orders",
+    tags: ["Custom work", "Needs review", "Quote-first"],
   },
 ];
 
@@ -90,6 +333,11 @@ export const accountOrderProgress: Record<string, Array<{ label: string; detail:
     { label: "Production completed", detail: "PrintMe finished the banner job and confirmed dispatch.", status: "done" },
     { label: "Delivered", detail: "This delivery order has been completed.", status: "done" },
   ],
+  "ord-demo-3": [
+    { label: "Order received", detail: "The postcard and brochure order is fully approved.", status: "done" },
+    { label: "Production completed", detail: "Printing and finishing are complete.", status: "done" },
+    { label: "Ready for pickup", detail: "The order is waiting at the Scarborough counter.", status: "current" },
+  ],
 };
 
 export const accountQuoteProgress: Record<string, Array<{ label: string; detail: string; status: "done" | "current" | "upcoming" | "attention" }>> = {
@@ -102,6 +350,11 @@ export const accountQuoteProgress: Record<string, Array<{ label: string; detail:
     { label: "Quote received", detail: "Custom label requirements were captured successfully.", status: "done" },
     { label: "Pricing prepared", detail: "This quote is ready for approval or follow-up questions.", status: "current" },
     { label: "Convert to order", detail: "Once approved, PrintMe can move this into a production-ready order.", status: "upcoming" },
+  ],
+  "quote-demo-3": [
+    { label: "Request received", detail: "Design scope and source files are attached to the quote.", status: "done" },
+    { label: "Design work approved", detail: "This quote is ready to move into a production order.", status: "current" },
+    { label: "Convert to order", detail: "The next step is a final print order once output specs are confirmed.", status: "upcoming" },
   ],
 };
 
@@ -121,14 +374,14 @@ export const accountSupportShortcuts = [
   {
     title: "Start a repeat job",
     detail: "Use a new quote when quantity, finishing, or dates changed from a previous order.",
-    href: "/quote-request",
-    cta: "Request Repeat Quote",
+    href: "/account/reorders",
+    cta: "Open Reorders",
   },
 ];
 
 export const accountHealthSummary = [
-  { label: "Active jobs", value: "2", detail: "Orders and quotes that still need an update or approval." },
-  { label: "Files waiting", value: "1", detail: "Artwork currently awaiting review before production." },
-  { label: "Ready to reorder", value: "2", detail: "Completed or priced jobs that can be restarted quickly." },
+  { label: "Active jobs", value: "4", detail: "Orders and quotes that still need an update, approval, or pickup." },
+  { label: "Files waiting", value: "2", detail: "Artwork currently awaiting review or proof direction." },
+  { label: "Ready to reorder", value: "3", detail: "Completed or priced jobs that can be restarted quickly." },
   { label: "Billing items", value: "1", detail: "Invoices or payment actions that may need attention." },
 ];

@@ -48,13 +48,14 @@ export default function AccountOrdersPage() {
                     <div>
                       <p className="font-black text-ink">{order.orderNumber}</p>
                       <p className="mt-1 text-sm text-slate">{order.items.join(", ")}</p>
+                      {order.nextStep ? <p className="mt-2 text-xs leading-5 text-slate">{order.nextStep}</p> : null}
                     </div>
                     <p className="text-sm text-slate">{order.date}</p>
                     <StatusBadge status={order.status} />
                     <p className="font-bold text-ink">{order.total}</p>
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/account/orders/${order.id}`} className="text-sm font-bold text-brand">Review Details</Link>
-                      <Link href={`/quote-request?service=${encodeURIComponent(order.items[0])}`} className="text-sm font-bold text-slate">Start Similar Job</Link>
+                      <Link href={order.reorderHref ?? `/quote-request?service=${encodeURIComponent(order.items[0])}`} className="text-sm font-bold text-slate">Start Similar Job</Link>
                     </div>
                   </article>
                 ))}

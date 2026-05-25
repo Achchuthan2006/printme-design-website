@@ -65,12 +65,29 @@ export default function AccountFilesPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h2 className="font-black text-ink">{file.fileName}</h2>
-                        <p className="mt-2 text-sm text-slate">Related to {file.relatedTo}</p>
+                        <p className="mt-2 text-sm text-slate">
+                          Related to {file.relatedTo}
+                          {file.relatedType ? ` / ${file.relatedType}` : ""}
+                        </p>
                         <p className="mt-1 text-xs font-bold text-slate">
                           {file.uploadedAt} / {file.fileType} / {file.fileSize}
                         </p>
                       </div>
                       <StatusBadge status={file.status} />
+                    </div>
+                    {file.reviewNote ? (
+                      <div className="mt-4 rounded-[1rem] border border-line/80 bg-canvas px-4 py-3 text-sm leading-6 text-slate">
+                        <p className="font-black text-ink">Review note</p>
+                        <p className="mt-1">{file.reviewNote}</p>
+                      </div>
+                    ) : null}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {file.reusable ? (
+                        <span className="value-chip">Ready for reuse</span>
+                      ) : (
+                        <span className="value-chip">Needs updates before reuse</span>
+                      )}
+                      <span className="value-chip">{file.relatedType === "quote" ? "Quote-linked" : file.relatedType === "order" ? "Order-linked" : "File library"}</span>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Button href={`/account/files?file=${file.id}`} variant="secondary" className="px-4 py-2 text-xs">
@@ -78,6 +95,9 @@ export default function AccountFilesPage() {
                       </Button>
                       <Button href="/quote-request" variant="secondary" className="px-4 py-2 text-xs">
                         Use in Quote
+                      </Button>
+                      <Button href="/support" variant="secondary" className="px-4 py-2 text-xs">
+                        Replace or Fix File
                       </Button>
                     </div>
                   </article>

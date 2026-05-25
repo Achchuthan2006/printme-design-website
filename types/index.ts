@@ -160,6 +160,21 @@ export interface CustomerProfile {
   };
 }
 
+export interface CustomerAddress {
+  id: string;
+  label: string;
+  recipient: string;
+  companyName?: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  instructions?: string;
+  isDefaultPickup?: boolean;
+  isDefaultDelivery?: boolean;
+}
+
 export interface AccountOrder {
   id: string;
   orderNumber: string;
@@ -168,6 +183,11 @@ export interface AccountOrder {
   total: string;
   fulfillmentMethod: string;
   items: string[];
+  fileStatus?: ArtworkUploadStatus;
+  nextStep?: string;
+  reorderHref?: string;
+  linkedFiles?: string[];
+  deliveryWindow?: string;
 }
 
 export interface AccountQuote {
@@ -176,6 +196,9 @@ export interface AccountQuote {
   requestedDate: string;
   status: "new" | "reviewing" | "priced" | "approved" | "expired";
   summary: string;
+  estimatedValue?: string;
+  nextStep?: string;
+  linkedFiles?: string[];
 }
 
 export interface AccountFile {
@@ -186,6 +209,9 @@ export interface AccountFile {
   fileSize?: string;
   fileType?: string;
   status: ArtworkUploadStatus;
+  relatedType?: "order" | "quote" | "library";
+  reviewNote?: string;
+  reusable?: boolean;
 }
 
 export interface AccountInvoice {
@@ -195,6 +221,29 @@ export interface AccountInvoice {
   date: string;
   amount: string;
   status: "paid" | "unpaid" | "void";
+  dueLabel?: string;
+}
+
+export interface AccountActivityItem {
+  id: string;
+  title: string;
+  detail: string;
+  date: string;
+  entityType: "order" | "quote" | "file" | "invoice" | "support";
+  href: string;
+  tone?: "default" | "attention" | "success";
+}
+
+export interface AccountReorderTemplate {
+  id: string;
+  title: string;
+  sourceType: "order" | "quote";
+  sourceId: string;
+  summary: string;
+  lastUsed: string;
+  recommendedPath: "cart" | "quote";
+  href: string;
+  tags: string[];
 }
 
 export interface CheckoutCustomer {

@@ -40,6 +40,7 @@ export default function AccountQuotesPage() {
                         <h2 className="text-xl font-black text-ink">{quote.service}</h2>
                         <p className="mt-2 text-sm text-slate">{quote.summary}</p>
                         <p className="mt-2 text-xs font-bold text-slate">{quote.requestedDate}</p>
+                        {quote.estimatedValue ? <p className="mt-2 text-xs font-black uppercase tracking-[0.12em] text-brand">Estimated value {quote.estimatedValue}</p> : null}
                       </div>
                       <StatusBadge status={quote.status} />
                     </div>
@@ -48,10 +49,12 @@ export default function AccountQuotesPage() {
                       <p className="mt-2 text-sm leading-6 text-slate">
                         {(accountQuoteProgress[quote.id] ?? []).find((item) => item.status === "current")?.detail ?? "Quote activity will appear here as the platform connects to live workflow events."}
                       </p>
+                      {quote.nextStep ? <p className="mt-2 text-xs leading-5 text-slate">{quote.nextStep}</p> : null}
                     </div>
                     <div className="mt-4 flex flex-wrap gap-3">
                       <Button href="/support" variant="secondary" className="px-4 py-2 text-xs">Message PrintMe</Button>
                       <Button href={`/quote-request?service=${encodeURIComponent(quote.service)}`} variant="secondary" className="px-4 py-2 text-xs">Update Quote Details</Button>
+                      <Button href="/account/files" variant="secondary" className="px-4 py-2 text-xs">Review Linked Files</Button>
                     </div>
                   </article>
                 ))}

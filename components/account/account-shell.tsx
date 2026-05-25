@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/components/account/auth-provider";
 import { StatusBadge } from "@/components/account/status-badge";
-import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoFiles, demoInvoices, demoOrders, demoQuotes } from "@/data/account";
+import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoActivity, demoAddresses, demoFiles, demoInvoices, demoOrders, demoProfile, demoQuotes, demoReorders } from "@/data/account";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 import { StatusTimeline } from "@/components/platform/status-timeline";
+import { AccountActivityFeed } from "@/components/account/account-activity-feed";
+import { AddressBookPanel } from "@/components/account/address-book-panel";
+import { ReorderStudio } from "@/components/account/reorder-studio";
 
 export function AccountShell() {
   const { user, configured } = useAuth();
@@ -35,6 +38,11 @@ export function AccountShell() {
             <p className="mt-3 text-sm leading-6 text-slate">
               Keep your quotes, orders, artwork files, invoices, and future reorders organized in one place.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="value-chip">{demoProfile.companyName}</span>
+              <span className="value-chip">{demoProfile.email}</span>
+              <span className="value-chip">{demoProfile.phone}</span>
+            </div>
             <div className="mt-4 rounded-[1.3rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
               <span className="font-black text-ink">Current dashboard state:</span>{" "}
               {configured
@@ -147,6 +155,13 @@ export function AccountShell() {
           </div>
         </section>
       </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <AccountActivityFeed items={demoActivity} />
+        <AddressBookPanel addresses={demoAddresses} />
+      </div>
+
+      <ReorderStudio items={demoReorders} />
 
       <section className="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-ink p-6 text-white shadow-card">
         <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-brand/20 blur-3xl" aria-hidden="true" />

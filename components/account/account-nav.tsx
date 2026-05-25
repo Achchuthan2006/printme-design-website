@@ -10,6 +10,7 @@ const navItems = [
   { label: "Overview", href: "/account" },
   { label: "Orders", href: "/account/orders" },
   { label: "Quotes", href: "/account/quotes" },
+  { label: "Reorders", href: "/account/reorders" },
   { label: "Files", href: "/account/files" },
   { label: "Invoices", href: "/account/invoices" },
   { label: "Settings", href: "/account/settings" },
