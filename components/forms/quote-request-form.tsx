@@ -218,7 +218,7 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
           />
         </Field>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_0.85fr]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
           <ArtworkUploadZone
             context={{ scope: "quote", productSlug: form.serviceNeeded || undefined, relatedLabel: "Quote request" }}
             title="Upload artwork for a more accurate quote"
