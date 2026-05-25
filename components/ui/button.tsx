@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 
 const variants = {
   primary:
-    "cta-sheen premium-cta relative overflow-hidden bg-brand text-white shadow-[0_18px_40px_rgba(217,70,32,0.24)] hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-[0_24px_54px_rgba(217,70,32,0.28)] active:translate-y-0 active:shadow-[0_10px_18px_rgba(183,51,20,0.16)]",
+    "border border-brand-dark/10 bg-brand text-white shadow-[0_14px_28px_rgba(217,70,32,0.18)] hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-[0_18px_32px_rgba(217,70,32,0.22)] active:translate-y-0 active:shadow-[0_8px_16px_rgba(183,51,20,0.12)]",
   secondary:
-    "bg-white/92 text-ink ring-1 ring-inset ring-line shadow-[0_1px_0_rgba(255,255,255,0.8)_inset] hover:-translate-y-0.5 hover:bg-white hover:text-ink hover:ring-ink/20 hover:shadow-soft active:translate-y-0",
-  ghost: "bg-transparent text-ink hover:bg-white/80 hover:text-brand hover:shadow-soft",
+    "bg-white text-ink ring-1 ring-inset ring-line/90 shadow-[0_1px_0_rgba(255,255,255,0.88)_inset,0_8px_18px_rgba(18,17,16,0.03)] hover:-translate-y-0.5 hover:bg-white hover:text-ink hover:ring-ink/15 hover:shadow-[0_12px_24px_rgba(18,17,16,0.05)] active:translate-y-0",
+  ghost: "bg-transparent text-ink hover:bg-white/85 hover:text-brand",
 };
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -32,7 +32,7 @@ export function Button({
   };
 
   const sharedClassName = cn(
-    "inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
+    "inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
     variants[variant],
     className,
   );

@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/account/status-badge";
 import { Button } from "@/components/ui/button";
 import { demoOrders } from "@/data/account";
 import { buildMetadata } from "@/lib/metadata";
+import { SummaryStrip } from "@/components/platform/summary-strip";
 
 export const metadata = buildMetadata({
   title: "Account Orders",
@@ -13,6 +14,13 @@ export const metadata = buildMetadata({
 });
 
 export default function AccountOrdersPage() {
+  const orderSummary = [
+    { label: "Active orders", value: String(demoOrders.filter((order) => order.status !== "completed").length), detail: "Jobs still moving through review, production, or pickup." },
+    { label: "Pickup jobs", value: String(demoOrders.filter((order) => order.fulfillmentMethod.includes("pickup")).length), detail: "Orders expected to hand off at the Scarborough shop." },
+    { label: "Completed orders", value: String(demoOrders.filter((order) => order.status === "completed").length), detail: "Useful starting points for quick repeat work." },
+    { label: "Reorder-ready", value: String(demoOrders.length), detail: "Every order can feed future repeat jobs, invoices, and file reuse." },
+  ];
+
   return (
     <section className="section-space bg-canvas">
       <div className="container-shell">
@@ -25,6 +33,7 @@ export default function AccountOrdersPage() {
               </div>
               <Button href="/products">Start New Order</Button>
             </div>
+            <SummaryStrip items={orderSummary} className="mt-6" />
             {demoOrders.length === 0 ? (
               <div className="mt-6">
                 <EmptyState title="No orders yet" description="Start an online print order or request a quote when your job needs review first." ctaLabel="Start My Order" ctaHref="/products" />
@@ -45,7 +54,7 @@ export default function AccountOrdersPage() {
                     <p className="font-bold text-ink">{order.total}</p>
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/account/orders/${order.id}`} className="text-sm font-bold text-brand">Review Details</Link>
-                      <button className="text-sm font-bold text-slate">Reorder Soon</button>
+                      <Link href={`/quote-request?service=${encodeURIComponent(order.items[0])}`} className="text-sm font-bold text-slate">Start Similar Job</Link>
                     </div>
                   </article>
                 ))}

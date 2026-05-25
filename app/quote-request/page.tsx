@@ -10,7 +10,12 @@ export const metadata = buildMetadata({
   path: "/quote-request",
 });
 
-export default function QuoteRequestPage() {
+export default async function QuoteRequestPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ service?: string }>;
+}) {
+  const { service } = await searchParams;
   const quoteExpectations = [
     "A clearer request helps us reply with fewer follow-up questions.",
     "Artwork is helpful but not required. You can still send the project first.",
@@ -21,15 +26,15 @@ export default function QuoteRequestPage() {
     <>
       <PageHero
         title="Get a clear print quote before you commit."
-        description="Tell us what you need, attach artwork if you have it, and PrintMe will review the job for price, timing, pickup or delivery, and production fit."
+        description="Tell us what you need, attach artwork if you have it, and PrintMe will review the job for pricing, timing, pickup or delivery, and production fit before you pay."
         ctaLabel="Call PrintMe"
         ctaHref="tel:+14165721999"
         eyebrow="Quote request"
-        highlights={["No payment required", "Artwork upload available", "Response shaped around timing and production fit"]}
+        highlights={["No payment required", "Artwork upload available", "Pricing and turnaround reviewed before production"]}
       />
       <section className="section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-          <QuoteRequestForm />
+          <QuoteRequestForm initialService={service ?? ""} />
           <aside className="space-y-6">
             <div className="surface-card p-6">
               <p className="editorial-kicker">Quote quality</p>
@@ -48,6 +53,10 @@ export default function QuoteRequestPage() {
                 <li>Pickup or delivery preference</li>
                 <li>Whether your artwork is ready or still needs design help</li>
               </ul>
+              <div className="mt-5 rounded-[1.35rem] border border-line bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+                <p className="font-black text-ink">Need help before you submit?</p>
+                <p className="mt-1">Call 416-572-1999 if timing is urgent, the product is unclear, or you want to confirm the fastest route before filling out the form.</p>
+              </div>
             </div>
             <div className="surface-card p-6">
               <p className="editorial-kicker">What happens next</p>
@@ -71,10 +80,31 @@ export default function QuoteRequestPage() {
           <LocalTrustStrip />
         </div>
         <div className="container-shell mt-8">
+          <div className="mb-8 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                title: "Best for custom work",
+                detail: "Use quote-first for banners, signs, postcards, promotional print, print-and-mail, and any specialty job.",
+              },
+              {
+                title: "Best for design help",
+                detail: "If the idea is ready but the artwork is not, the quote path is the cleanest place to scope layout or print-setup support.",
+              },
+              {
+                title: "Best for rush questions",
+                detail: "Tell us the real deadline, file status, and quantity so PrintMe can confirm what is realistic before you commit.",
+              },
+            ].map((item) => (
+              <article key={item.title} className="premium-surface p-5">
+                <p className="text-sm font-black text-ink">{item.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+              </article>
+            ))}
+          </div>
           <LeadCtaPanel
-            title="Prefer to talk through the job first?"
-            description="If the specs are unclear, call PrintMe or send a few details. We can help turn the request into a cleaner quote."
-            primaryLabel="Send My Quote Request"
+            title="Need help shaping the request before you send it?"
+            description="If the specs are still fuzzy, call PrintMe first or send the rough version now. We can help turn it into a cleaner, more accurate quote."
+            primaryLabel="Request a Quote"
             secondaryLabel="Call PrintMe"
           />
         </div>

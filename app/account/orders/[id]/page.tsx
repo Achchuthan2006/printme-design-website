@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { ProtectedAccount } from "@/components/account/protected-account";
 import { StatusBadge } from "@/components/account/status-badge";
 import { Button } from "@/components/ui/button";
-import { demoOrders } from "@/data/account";
+import { accountOrderProgress, demoOrders } from "@/data/account";
+import { StatusTimeline } from "@/components/platform/status-timeline";
 
 export default async function AccountOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,20 +26,32 @@ export default async function AccountOrderDetailPage({ params }: { params: Promi
               </div>
             </div>
             <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-              <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
-                <h2 className="text-2xl font-black text-ink">Items</h2>
-                <div className="mt-5 space-y-3">
-                  {order.items.map((item) => (
-                    <div key={item} className="rounded-2xl border border-line/80 bg-canvas p-4 text-sm font-bold text-ink">{item}</div>
-                  ))}
-                </div>
-              </section>
+              <div className="space-y-6">
+                <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
+                  <h2 className="text-2xl font-black text-ink">Items</h2>
+                  <div className="mt-5 space-y-3">
+                    {order.items.map((item) => (
+                      <div key={item} className="rounded-2xl border border-line/80 bg-canvas p-4 text-sm font-bold text-ink">{item}</div>
+                    ))}
+                  </div>
+                </section>
+                <StatusTimeline
+                  title="Order progress"
+                  items={accountOrderProgress[order.id] ?? [
+                    { label: "Order received", detail: "Workflow timeline will appear here once live events are connected.", status: "current" },
+                  ]}
+                />
+              </div>
               <aside className="h-fit rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
                 <h2 className="text-2xl font-black text-ink">Actions</h2>
                 <div className="mt-5 grid gap-3">
-                  <Button href="/products">Reorder Similar</Button>
+                  <Button href={`/quote-request?service=${encodeURIComponent(order.items[0])}`}>Reorder Similar</Button>
                   <Button href="/account/invoices" variant="secondary">Download Invoice</Button>
                   <Button href="/support" variant="secondary">Contact Support</Button>
+                </div>
+                <div className="mt-5 rounded-[1.25rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                  <p className="font-black text-ink">Best next step</p>
+                  <p className="mt-1">Use support if the deadline changed, artwork needs updating, or you want to reuse this job with a new quantity or finish.</p>
                 </div>
                 <p className="mt-4 text-xs leading-5 text-slate">
                   Order details are ready to connect to Supabase order items, uploads, invoices, and status events.

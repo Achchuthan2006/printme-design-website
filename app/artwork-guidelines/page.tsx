@@ -20,6 +20,27 @@ export default function ArtworkGuidelinesPage() {
       />
       <section className="section-space bg-canvas">
         <div className="container-shell">
+          <div className="mb-8 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                title: "Files ready now",
+                detail: "Use upload-first products or the quote form when artwork is already prepared and you want faster review.",
+              },
+              {
+                title: "Need a file check",
+                detail: "If bleed, sizing, colour, or resolution still feel uncertain, send the file anyway and ask PrintMe to review it before print.",
+              },
+              {
+                title: "Need design help",
+                detail: "If the artwork is incomplete, outdated, or not printable yet, use the quote path so design support can be scoped first.",
+              },
+            ].map((item) => (
+              <article key={item.title} className="premium-surface p-5">
+                <p className="text-sm font-black text-ink">{item.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+              </article>
+            ))}
+          </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {artworkGuidelines.map((item) => (
               <article key={item.title} className="rounded-lg border border-line bg-white p-6 shadow-soft">
@@ -42,6 +63,9 @@ export default function ArtworkGuidelinesPage() {
                     <p className="mt-2 text-sm leading-6 text-white/70">{item.description}</p>
                   </article>
                 ))}
+              </div>
+              <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/72">
+                If the file is not ready yet, that does not stop the job. PrintMe can still guide the safest next step through quote review or design help first.
               </div>
             </section>
           </div>

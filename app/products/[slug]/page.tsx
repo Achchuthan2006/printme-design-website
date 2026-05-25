@@ -57,7 +57,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.92] sm:text-[4.3rem]">{product.title}</h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{product.longDescription}</p>
                 <p className="mt-4 max-w-2xl rounded-[1.4rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm font-bold leading-6 text-brand">
-                  Send artwork when you have it. PrintMe reviews files and specs before production so your order starts with fewer unknowns.
+                  Send artwork when you have it. PrintMe reviews files and specs before production so your order starts with fewer unknowns and a clearer next step.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {product.badges?.map((badge) => <Badge key={badge}>{badge}</Badge>)}
@@ -88,7 +88,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </article>
               <article className="premium-surface p-5">
                 <p className="text-sm font-bold text-slate">Order path</p>
-                <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.ctaMode.replace("-", " ")}</p>
+                <p className="mt-3 text-sm font-bold leading-6 text-ink">
+                  {product.ctaMode === "direct-order"
+                    ? "Direct order online"
+                    : product.ctaMode === "upload-first"
+                      ? "Upload details or order with file review"
+                      : product.ctaMode === "contact"
+                        ? "Call or visit the shop"
+                        : "Quote-first review"}
+                </p>
               </article>
             </div>
           </div>

@@ -3,17 +3,32 @@ import { ProtectedAccount } from "@/components/account/protected-account";
 import { StatusBadge } from "@/components/account/status-badge";
 import { demoInvoices } from "@/data/account";
 import { buildMetadata } from "@/lib/metadata";
+import { SummaryStrip } from "@/components/platform/summary-strip";
+import { Button } from "@/components/ui/button";
 
 export const metadata = buildMetadata({ title: "Account Invoices", description: "Review and download PrintMe invoice records.", path: "/account/invoices" });
 
 export default function AccountInvoicesPage() {
+  const invoiceSummary = [
+    { label: "Total invoices", value: String(demoInvoices.length), detail: "Billing records tied to orders as the platform grows." },
+    { label: "Paid", value: String(demoInvoices.filter((invoice) => invoice.status === "paid").length), detail: "Invoices already completed successfully." },
+    { label: "Open", value: String(demoInvoices.filter((invoice) => invoice.status === "unpaid").length), detail: "Invoices that may still need payment follow-up." },
+    { label: "Download-ready", value: String(demoInvoices.length), detail: "Records prepared for future PDF and statement workflows." },
+  ];
+
   return (
     <section className="section-space bg-canvas">
       <div className="container-shell">
         <ProtectedAccount>
           <div className="rounded-lg border border-line bg-white p-6 shadow-soft">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Invoices</p>
-            <h1 className="mt-2 text-3xl font-black text-ink">Invoice history</h1>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Invoices</p>
+                <h1 className="mt-2 text-3xl font-black text-ink">Invoice history</h1>
+              </div>
+              <Button href="/support" variant="secondary">Billing Help</Button>
+            </div>
+            <SummaryStrip items={invoiceSummary} className="mt-6" />
             {demoInvoices.length === 0 ? (
               <div className="mt-6"><EmptyState title="No invoices yet" description="Invoices will appear here as your online order and payment history grows." ctaLabel="Review Orders" ctaHref="/account/orders" /></div>
             ) : (

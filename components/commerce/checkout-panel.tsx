@@ -111,7 +111,7 @@ export function CheckoutPanel() {
         <p className="mt-3 text-sm leading-6 text-slate">Add an online-order item or request a quote if your project needs review first.</p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button href="/products">Start My Order</Button>
-          <Button href="/quote-request" variant="secondary">Get My Quote</Button>
+          <Button href="/quote-request" variant="secondary">Request a Quote</Button>
         </div>
       </div>
     );
@@ -122,9 +122,10 @@ export function CheckoutPanel() {
       <div className="space-y-6">
         <CartSupportPanel />
 
-        <section className="surface-card p-6">
+        <section className="section-frame p-6">
           <p className="editorial-kicker">Step 1</p>
-          <h1 className="mt-2 text-3xl font-black text-ink">Where should we send updates?</h1>
+          <h1 className="display-title mt-2 text-[2.3rem] font-black leading-[0.95] text-ink">Where should we send updates?</h1>
+          <p className="mt-3 text-sm leading-6 text-slate">We use these details for order confirmation, artwork questions, pickup updates, and payment follow-up if needed.</p>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             {[
               ["fullName", "Full name", "Your name", "text", "name"],
@@ -148,7 +149,8 @@ export function CheckoutPanel() {
 
         <section className="surface-card p-6">
           <p className="editorial-kicker">Step 2</p>
-          <h2 className="mt-2 text-2xl font-black text-ink">Choose pickup or delivery review</h2>
+          <h2 className="mt-2 text-2xl font-black text-ink">Choose pickup or delivery</h2>
+          <p className="mt-3 text-sm leading-6 text-slate">Pickup is fastest for most orders. Delivery is reviewed after the order details are confirmed.</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
               { value: "pickup", label: "In-store pickup", description: siteConfig.address },
@@ -195,7 +197,7 @@ export function CheckoutPanel() {
         <section className="surface-card p-6">
           <p className="editorial-kicker">Step 3</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Artwork and production notes</h2>
-          <Field label="Anything we should confirm before print?" className="mt-5">
+          <Field label="Anything we should confirm before print?" hint="Use this for deadlines, colour notes, file naming, packaging details, or anything else we should double-check." className="mt-5">
             <Textarea value={orderNotes} onChange={(event) => setOrderNotes(event.target.value)} rows={5} />
           </Field>
           <div className="mt-5">
@@ -217,12 +219,12 @@ export function CheckoutPanel() {
 
       <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
         <p className="editorial-kicker">Secure checkout</p>
-        <h2 className="mt-2 text-2xl font-black text-ink">Confirm your print order</h2>
+        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Confirm your print order</h2>
         <p className="mt-2 text-sm leading-6 text-slate">Review what can be paid online now and what still needs staff confirmation before production.</p>
 
         <div className="mt-5 max-h-[360px] space-y-4 overflow-y-auto pr-1">
           {items.map((item) => (
-            <article key={item.id} className="rounded-[1.35rem] border border-line/90 bg-white/80 p-4">
+            <article key={item.id} className="rounded-[1.35rem] border border-line/90 bg-white/88 p-4 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
               <div className="flex justify-between gap-4">
                 <div>
                   <p className="font-black text-ink">{item.title}</p>
@@ -238,7 +240,7 @@ export function CheckoutPanel() {
           <div className="flex justify-between"><span>Estimated subtotal</span><span className="font-black text-ink">${subtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Payable online</span><span>${payableSubtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Quote review items</span><span>{quoteItems.length}</span></div>
-          <div className="rounded-[1.3rem] border border-line/80 bg-white/85 px-4 py-3 text-xs leading-5 text-slate">
+          <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">
             Secure checkout is powered by Stripe. PrintMe still confirms files, fulfillment, and any quote-review items before production begins.
           </div>
         </div>

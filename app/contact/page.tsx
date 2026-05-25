@@ -21,9 +21,9 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
-        title="Talk to PrintMe before your deadline gets tight"
-        description="Call, visit our Scarborough shop, or send a quote request so we can help you choose the right print path before production starts."
-        ctaLabel="Get My Quote"
+        title="Call, visit, or message PrintMe before the deadline gets tight."
+        description="Contact our Scarborough print shop for quotes, file questions, passport photo availability, pickup details, or help choosing the right print path."
+        ctaLabel="Request a Quote"
         eyebrow="Contact"
         highlights={["Call for urgent timing", "Visit the Scarborough shop", "Quote requests for custom jobs"]}
       />
@@ -72,8 +72,12 @@ export default function ContactPage() {
                 ))}
               </div>
             </div>
+            <div className="mt-6 rounded-[1.35rem] border border-line bg-canvas p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-brand">Why customers call first</p>
+              <p className="mt-2 text-sm leading-6 text-slate">The fastest way to confirm rush timing, passport photo availability, pickup details, or whether a custom print job should start with a quote.</p>
+            </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button href="/quote-request">Get My Quote</Button>
+              <Button href="/quote-request">Request a Quote</Button>
               <Button href={siteConfig.phoneHref} variant="secondary">
                 Call PrintMe
               </Button>
@@ -102,7 +106,7 @@ export default function ContactPage() {
           <LeadCtaPanel
             title="Not sure what to ask for yet?"
             description="Send the file, size, deadline, or rough idea. PrintMe can help you clarify the right service before production."
-            primaryLabel="Get My Quote"
+            primaryLabel="Request a Quote"
             secondaryLabel="Call PrintMe"
           />
         </div>

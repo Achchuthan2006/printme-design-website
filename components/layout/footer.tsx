@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { localLandingPages } from "@/data/cro";
 import { navigation, serviceOptions, siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -8,17 +7,14 @@ export function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-white/10 bg-[#12100f] pb-20 text-white md:pb-0">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/55 to-transparent" aria-hidden="true" />
-      <div className="absolute -right-32 top-10 h-72 w-72 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
-      <div className="absolute left-0 top-28 h-56 w-56 rounded-full bg-white/5 blur-3xl" aria-hidden="true" />
       <div className="container-shell py-16">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-8">
-          <div className="mb-8 grid gap-4 xl:grid-cols-3">
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_28px_80px_rgba(0,0,0,0.16)] sm:p-8">
+          <div className="mb-8 grid gap-4 xl:grid-cols-2">
             {[
-              "Quote-first support for custom print work",
-              "Pickup confidence from a real Scarborough shop",
-              "Production guidance before you spend money on the wrong path",
+              "Business printing, document printing, banners, passport photos, and custom jobs",
+              "Pickup confidence from a real Scarborough print shop",
             ].map((item) => (
-              <div key={item} className="rounded-[1.35rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-bold text-white/78 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <div key={item} className="rounded-[1.35rem] border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-bold text-white/82 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                 {item}
               </div>
             ))}
@@ -27,12 +23,12 @@ export function Footer() {
           <div className="space-y-5">
             <div>
               <BrandLogo inverted size="footer" />
-              <p className="mt-4 max-w-md text-sm leading-7 text-white/70">
-                Premium local print production for businesses, events, documents, and custom jobs that need clear guidance, sharp output, and dependable follow-through.
+              <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
+                PrintMe Design helps businesses, schools, community groups, and walk-in customers order print with clearer quotes, practical file review, and dependable local follow-through.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-white/70">
+              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                 <p>{siteConfig.address}</p>
                 <a href={siteConfig.phoneHref} className="mt-2 block font-bold text-white transition hover:text-brand">
                   Tel: {siteConfig.phone}
@@ -42,7 +38,7 @@ export function Footer() {
                   {siteConfig.email}
                 </a>
               </div>
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-white/70">
+              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">Store hours</p>
                 <div className="mt-2 space-y-1.5">
                   {siteConfig.hours.map((hour) => (
@@ -51,13 +47,8 @@ export function Footer() {
                 </div>
               </div>
             </div>
-            <div className="text-sm leading-7 text-white/70">
-              <p className="max-w-lg">
-                From quick document jobs to custom marketing materials, PrintMe keeps the process calm, practical, and local from quote to pickup.
-              </p>
-            </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button href="/quote-request">Get My Quote</Button>
+              <Button href="/quote-request">Request a Quote</Button>
               <Button href={siteConfig.phoneHref} variant="secondary" className="bg-white/8 text-white ring-white/10 hover:bg-white/14 hover:text-white">
                 Call PrintMe
               </Button>
@@ -90,23 +81,12 @@ export function Footer() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Local support</p>
             <div className="mt-4 space-y-3 text-sm text-white/70">
               <p>{siteConfig.experience} helping customers avoid print guesswork with clearer files, timing, and production guidance.</p>
-              <p>Pickup available at {siteConfig.shortAddress}. Ask about delivery for qualifying orders.</p>
+              <p>Pickup available at {siteConfig.shortAddress}. Ask about delivery for qualifying Scarborough, Toronto, and GTA orders.</p>
             </div>
-            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4 text-sm text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-4 text-sm text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_32px_rgba(0,0,0,0.1)]">
               <p className="font-semibold text-white">Professional print help without the production guesswork.</p>
-              <p className="mt-2">One local stop for document printing, marketing materials, stationery, technical prints, and custom orders.</p>
+              <p className="mt-2">One local stop for document printing, marketing materials, stationery, technical prints, passport photos, and custom orders.</p>
             </div>
-          </div>
-        </div>
-
-        <div className="mt-10 border-t border-white/10 pt-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Popular local print searches</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            {localLandingPages.map((page) => (
-              <Link key={page.slug} href={`/local/${page.slug}`} className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-bold text-white/70 transition hover:border-brand/45 hover:text-white">
-                {page.title}
-              </Link>
-            ))}
           </div>
         </div>
 

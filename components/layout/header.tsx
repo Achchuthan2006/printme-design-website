@@ -50,7 +50,7 @@ export function Header() {
           <div className="flex items-center gap-5">
             <span>Scarborough print shop</span>
             <span>{siteConfig.experience}</span>
-            <span>Rush-aware production support</span>
+            <span>Quotes, uploads, and local pickup</span>
           </div>
           <div className="flex items-center gap-5">
             <a href={siteConfig.phoneHref} className="link-underline text-white">
@@ -76,18 +76,20 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 lg:flex">
-            <div className="rounded-full border border-line/80 bg-white px-4 py-2 text-right shadow-[0_10px_20px_rgba(22,19,17,0.05)]">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Need a fast answer?</p>
-              <a href={siteConfig.phoneHref} className="mt-1 block text-sm font-extrabold text-ink transition hover:text-brand">
-                {siteConfig.phone}
-              </a>
+          <div className="flex items-center gap-2.5 lg:gap-3">
+            <CartDrawer compact />
+            <div className="hidden items-center gap-3 lg:flex">
+              <div className="rounded-full border border-line/80 bg-white px-4 py-2 text-right shadow-[0_10px_20px_rgba(22,19,17,0.05)]">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Need a fast answer?</p>
+                <a href={siteConfig.phoneHref} className="mt-1 block text-sm font-extrabold text-ink transition hover:text-brand">
+                  {siteConfig.phone}
+                </a>
+              </div>
+              <Button href="/quote-request" className="px-5 py-2.5 text-xs">
+                Request a Quote
+                <span aria-hidden="true" className="ml-2">-&gt;</span>
+              </Button>
             </div>
-            <CartDrawer />
-            <Button href="/quote-request" className="px-5 py-2.5 text-xs">
-              Get My Quote
-              <span aria-hidden="true" className="ml-2">-&gt;</span>
-            </Button>
           </div>
 
           <button
@@ -128,7 +130,7 @@ export function Header() {
                 </Link>
               ))}
               <Button href="/quote-request" className="mt-2 w-full justify-center">
-                Get My Quote
+                Request a Quote
               </Button>
               <Button href="/cart" variant="secondary" className="w-full justify-center">
                 Cart {itemCount > 0 ? `(${itemCount})` : ""}

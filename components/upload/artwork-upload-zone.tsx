@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { uploadArtworkFile } from "@/lib/uploads";
 import { cn } from "@/lib/utils";
 import { ArtworkUploadContext, ArtworkUploadMetadata } from "@/types";
@@ -122,8 +123,6 @@ export function ArtworkUploadZone({
   return (
     <section className={cn("surface-card p-5", className)} id="upload">
       <div
-        role="button"
-        tabIndex={0}
         aria-labelledby={titleId}
         aria-describedby={helperId}
         onDragOver={(event) => {
@@ -132,20 +131,20 @@ export function ArtworkUploadZone({
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
         className={cn(
           "rounded-2xl border border-dashed p-6 text-center transition duration-300",
           isDragging ? "border-brand bg-brand-soft shadow-glow" : "border-line bg-canvas hover:border-brand/40 hover:bg-brand-soft/30",
         )}
       >
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-brand/15 bg-white text-brand shadow-soft">
+          <Icon name="upload" className="h-6 w-6" />
+        </div>
         <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Artwork upload</p>
         <h2 id={titleId} className="mt-2 text-2xl font-black text-ink">{title}</h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate">{description}</p>
+        <p className="mx-auto mt-3 max-w-xl text-xs leading-5 text-slate">
+          Drag files into this area or use the upload button below. PDFs are preferred, but PrintMe can also review source files, images, and ZIP packages.
+        </p>
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
           <Button type="button" onClick={() => inputRef.current?.click()} disabled={isPending}>
             {isPending ? "Uploading..." : "Upload My Artwork"}

@@ -4,8 +4,11 @@ const serviceVisualStyles: Record<string, { bg: string; label: string; accent?: 
   "business-cards": { bg: "bg-[#f5f5f5]", label: "PrintMe", accent: "bg-brand" },
   flyers: { bg: "bg-[#fff6f2]", label: "Flyer", accent: "bg-[#f7c7b8]" },
   brochures: { bg: "bg-[#f3f4f6]", label: "Fold", accent: "bg-[#222222]" },
+  postcards: { bg: "bg-[#fff7f1]", label: "Postcard", accent: "bg-brand" },
   posters: { bg: "bg-[#1f1f1f]", label: "Bold", accent: "bg-brand" },
   banners: { bg: "bg-[#eef4f9]", label: "Banner", accent: "bg-[#4f6f86]" },
+  "promotional-printing": { bg: "bg-[#f4efe8]", label: "Promo", accent: "bg-brand" },
+  "print-mail-services": { bg: "bg-[#f7f3ee]", label: "Mail", accent: "bg-[#222222]" },
   envelopes: { bg: "bg-[#f6f6f4]", label: "Mail", accent: "bg-brand" },
   signs: { bg: "bg-[#242424]", label: "Sign", accent: "bg-brand" },
   stickers: { bg: "bg-[#fff4ef]", label: "Thank You", accent: "bg-brand" },
@@ -14,6 +17,7 @@ const serviceVisualStyles: Record<string, { bg: string; label: string; accent?: 
   "engineering-drawings": { bg: "bg-[#eef2f3]", label: "Plans", accent: "bg-[#9aa8ad]" },
   "manual-cheques": { bg: "bg-[#f8f8f8]", label: "Cheque", accent: "bg-[#222222]" },
   "custom-orders": { bg: "bg-[#f1ebe7]", label: "Custom", accent: "bg-brand" },
+  "graphic-design-services": { bg: "bg-[#f3eee9]", label: "Design", accent: "bg-brand" },
 };
 
 export function ServiceProductVisual({ slug }: { slug: string }) {

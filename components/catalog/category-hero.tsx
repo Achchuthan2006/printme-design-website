@@ -16,8 +16,11 @@ export function CategoryHero({ category }: { category: ProductCategory }) {
               <Badge>{category.shortTitle}</Badge>
               <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">{category.title}</h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{category.description}</p>
+              <p className="mt-4 max-w-2xl text-sm font-bold leading-6 text-ink">
+                Browse the service family, compare the common paths, then order, upload, or request a quote depending on how ready the job is.
+              </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Button href="/quote-request">Get My Quote</Button>
+                <Button href="/quote-request">Request a Quote</Button>
                 <Button href="/artwork-guidelines" variant="secondary">Check Artwork First</Button>
               </div>
             </div>

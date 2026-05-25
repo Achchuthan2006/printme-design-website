@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { demoFiles } from "@/data/account";
 import { buildMetadata } from "@/lib/metadata";
+import { SummaryStrip } from "@/components/platform/summary-strip";
 
 export const metadata = buildMetadata({
   title: "Account Files",
@@ -13,6 +14,13 @@ export const metadata = buildMetadata({
 });
 
 export default function AccountFilesPage() {
+  const fileSummary = [
+    { label: "Saved files", value: String(demoFiles.length), detail: "Artwork kept ready for quotes, orders, and repeat jobs." },
+    { label: "Awaiting review", value: String(demoFiles.filter((file) => file.status === "awaiting_review").length), detail: "Files that still need PrintMe review before they can move forward." },
+    { label: "Approved for print", value: String(demoFiles.filter((file) => file.status === "approved_for_print").length), detail: "Artwork already cleared for future reuse." },
+    { label: "Reuse-ready", value: String(demoFiles.length), detail: "Files that can speed up repeat orders and support conversations." },
+  ];
+
   return (
     <section className="section-space bg-canvas">
       <div className="container-shell">
@@ -28,6 +36,7 @@ export default function AccountFilesPage() {
               </div>
               <Button href="/quote-request">Upload With Quote</Button>
             </div>
+            <SummaryStrip items={fileSummary} className="mt-6" />
             <div className="mt-6">
               <ArtworkUploadZone
                 context={{ scope: "account", relatedLabel: "Account file library" }}

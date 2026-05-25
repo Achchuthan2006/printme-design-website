@@ -147,7 +147,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
         <p className="editorial-kicker">Build your order</p>
         <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
-          Choose the practical details now. PrintMe can still review files, timing, and special instructions before production.
+          Choose the practical details now. PrintMe still reviews files, timing, and special instructions before production, so you are not locked into guesswork.
         </p>
       </div>
 
@@ -212,18 +212,18 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
 
             <div className="mt-5 grid gap-3">
               <Button type="button" onClick={addToCart} disabled={!canAddToCart}>
-                {canAddToCart ? "Add to My Cart" : "Quote Required"}
+                {canAddToCart ? "Add to Cart" : "Quote Required"}
               </Button>
               {status === "added" ? (
                 <Button type="button" variant="secondary" onClick={openCart}>
-                  Open Mini Cart
+                  Review Cart
                 </Button>
               ) : null}
               <Button href={`/quote-request?service=${product.slug}`} variant="secondary">
-                Get a Quote Instead
+                Request a Quote Instead
               </Button>
               <Button type="button" variant="ghost" onClick={openSupportChat}>
-                Ask PrintMe Before Ordering
+                Ask Before Ordering
               </Button>
             </div>
 

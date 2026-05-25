@@ -75,7 +75,9 @@ const quickActions: QuickAction[] = [
     id: "track",
     label: "Track My Order",
     prompt: "Can I track my order?",
-    response: "Self-serve order tracking is coming soon. For now, PrintMe can confirm order status by phone or email and let you know whether your files, payment, or pickup timing need attention.",
+    response: "You can use the order status page for guided progress lookup, then contact PrintMe if timing, files, or pickup details still need a faster answer.",
+    href: "/order-status",
+    hrefLabel: "Check order status",
   },
   {
     id: "support",
@@ -148,7 +150,7 @@ export function ChatWidget() {
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="printme-chat-widget"
-          className="group inline-flex min-h-14 items-center gap-3 rounded-full border border-brand/10 bg-ink px-4 py-3 text-left text-white shadow-[0_24px_60px_rgba(22,19,17,0.26)] transition hover:-translate-y-0.5 hover:bg-ink/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+          className="group inline-flex min-h-14 items-center gap-3 rounded-full border border-brand/10 bg-ink px-4 py-3 text-left text-white shadow-[0_26px_64px_rgba(22,19,17,0.28)] transition hover:-translate-y-0.5 hover:bg-ink/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white shadow-[0_14px_30px_rgba(217,70,32,0.28)]">
             <Icon name="chat" className="h-5 w-5" />
@@ -166,7 +168,7 @@ export function ChatWidget() {
         aria-modal="false"
         aria-label="PrintMe support chat"
         className={cn(
-          "fixed bottom-[5.75rem] right-4 z-[74] flex w-[min(100%-2rem,24rem)] flex-col overflow-hidden rounded-[1.75rem] border border-line/80 bg-white shadow-[0_40px_90px_rgba(22,19,17,0.18)] transition-all duration-300 md:bottom-24 md:right-6",
+          "fixed bottom-[5.75rem] right-4 z-[74] flex w-[min(100%-2rem,24rem)] flex-col overflow-hidden rounded-[1.75rem] border border-line/80 bg-white shadow-[0_42px_96px_rgba(22,19,17,0.2)] transition-all duration-300 md:bottom-24 md:right-6",
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0",
         )}
       >
@@ -197,9 +199,9 @@ export function ChatWidget() {
                   "max-w-[88%] rounded-[1.25rem] px-4 py-3 text-sm leading-6 shadow-soft",
                   message.role === "assistant"
                     ? message.tone === "soft"
-                      ? "border border-line/80 bg-white/90 text-slate"
-                      : "bg-ink text-white"
-                    : "bg-brand text-white",
+                      ? "border border-line/80 bg-white/92 text-slate"
+                      : "bg-ink text-white shadow-[0_16px_28px_rgba(18,17,16,0.12)]"
+                    : "bg-brand text-white shadow-[0_16px_30px_rgba(217,70,32,0.18)]",
                 )}
               >
                 {message.text}
@@ -209,6 +211,22 @@ export function ChatWidget() {
         </div>
 
         <div className="border-t border-line/70 bg-white p-4">
+          <div className="rounded-[1.25rem] border border-line bg-canvas p-3 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Support modes</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              {[
+                { title: "Quote help", detail: "Best for custom jobs, pricing, and rush planning." },
+                { title: "Order help", detail: "Best for status, pickup, payment, and production updates." },
+                { title: "File help", detail: "Best for uploads, proofing, bleed, and print readiness." },
+              ].map((item) => (
+                <div key={item.title} className="rounded-[1rem] border border-white/80 bg-white px-3 py-3">
+                  <p className="text-xs font-black text-ink">{item.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate">{item.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Quick questions</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {suggestedActions.map((action) => (
@@ -224,7 +242,7 @@ export function ChatWidget() {
           </div>
 
           {activeAction ? (
-            <div className="mt-4 rounded-[1.25rem] border border-line/80 bg-canvas p-3">
+            <div className="mt-4 rounded-[1.25rem] border border-line/80 bg-canvas p-3 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate">Next best step</p>
               <div className="mt-3 flex flex-col gap-2">
                 {quickActions
@@ -252,6 +270,9 @@ export function ChatWidget() {
             <Link href="/support" className="rounded-2xl border border-line bg-white px-4 py-3 text-sm font-black text-ink transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand">
               Full support page
             </Link>
+          </div>
+          <div className="mt-3 rounded-[1rem] border border-line/80 bg-canvas px-3 py-3 text-xs leading-5 text-slate">
+            If your deadline is today, call the shop directly for the fastest answer.
           </div>
         </div>
       </aside>

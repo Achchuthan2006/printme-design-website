@@ -14,13 +14,13 @@ export const analyticsEvents = {
 
 export const homeHeroVariants = {
   default: {
-    eyebrow: "Scarborough printing. Clear quotes. Fast handoff.",
-    headline: "Print it right, fast, and locally in Scarborough.",
+    eyebrow: "Scarborough print shop for business, document, and custom printing",
+    headline: "Custom printing, local pickup, and clear quotes from one Scarborough print shop.",
     subheadline:
-      "From business cards and flyers to banners, documents, passport photos, cheques, and custom jobs, PrintMe helps you move from file to finished print with clear guidance and dependable local service.",
-    primaryCta: "Get My Quote",
-    secondaryCta: "See Print Options",
-    trustItems: ["Local pickup in Scarborough", "Files reviewed before production", "Rush-ready jobs prioritized"],
+      "PrintMe Design helps Scarborough and Toronto businesses, schools, events, and walk-in customers order business cards, flyers, banners, documents, passport photos, cheques, and custom print jobs with practical file review before production.",
+    primaryCta: "Request a Quote",
+    secondaryCta: "Browse Products",
+    trustItems: ["Pickup at 1585 Markham Road", "File review before production", "Rush-aware turnaround guidance"],
   },
   speed: {
     eyebrow: "Rush-friendly local printing",
@@ -34,9 +34,9 @@ export const homeHeroVariants = {
 };
 
 export const localTrustItems = [
-  { icon: "store", title: "Scarborough pickup", detail: siteConfig.shortAddress },
-  { icon: "check", title: "File review included", detail: "Artwork and specs checked before production." },
-  { icon: "clock", title: "Rush-aware timing", detail: "We confirm what is realistic before you commit." },
+  { icon: "store", title: "Visit or pick up in Scarborough", detail: `${siteConfig.shortAddress} for pickup, walk-ins, and local print support.` },
+  { icon: "check", title: "Reviewed before production", detail: "Artwork, specs, and print-fit are checked before the job moves forward." },
+  { icon: "clock", title: "Clear turnaround guidance", detail: "We confirm what is realistic for standard, rush, or same-day requests." },
 ];
 
 export const quoteReassurance = [

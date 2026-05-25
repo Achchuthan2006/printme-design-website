@@ -26,6 +26,17 @@
 - `lib/backend/notifications.ts`
   Notification dispatch layer and automation-readiness trigger map
 
+## Current Frontend Platform Direction
+
+- Customer account surfaces are now organized around `orders`, `quotes`, `files`, `invoices`, and `support`, rather than a single generic dashboard
+- Order and quote progress UI is built to consume future `workflow_events` without changing the customer-facing component model
+- Support is structured as a system:
+  quote guidance, file help, status tracking, escalation, and contact shortcuts
+- Cart and checkout now distinguish between:
+  online-payable items and jobs that still require staff review
+- Repeat-order readiness is being shaped through:
+  file reuse, quote-first restart paths, order history, and status-linked support
+
 ## Recommended Core Tables
 
 - `profiles`
@@ -132,6 +143,14 @@ Prepared trigger points:
 - ready for pickup
 - invoice notice
 - support follow-up
+
+## Recommended Next Build Steps
+
+- Persist customer-visible timeline events in `workflow_events` and expose them to account and order-status UI
+- Normalize quote and order detail snapshots so reorder and approval flows can be generated from stored line items
+- Attach uploads to quotes and orders through canonical IDs instead of preview-only labels
+- Add support message persistence and routing status so chat, support page, and contact flows can feed one operational inbox
+- Add notification preferences and outbound delivery history so email/SMS reminders can be introduced cleanly
 
 ## Operational Notes
 

@@ -20,7 +20,7 @@ export function FinalCta({ product }: { product?: PrintProduct }) {
               </p>
             </div>
             <div className="relative flex flex-col gap-3 sm:flex-row">
-              {product ? <ProductActions product={product} /> : <Button href="/quote-request" variant="secondary">Get My Quote</Button>}
+              {product ? <ProductActions product={product} /> : <Button href="/quote-request" variant="secondary">Request a Quote</Button>}
             </div>
           </div>
         </div>

@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/components/account/auth-provider";
 import { StatusBadge } from "@/components/account/status-badge";
-import { demoFiles, demoInvoices, demoOrders, demoQuotes } from "@/data/account";
+import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoFiles, demoInvoices, demoOrders, demoQuotes } from "@/data/account";
+import { SummaryStrip } from "@/components/platform/summary-strip";
+import { StatusTimeline } from "@/components/platform/status-timeline";
 
 export function AccountShell() {
-  const { user } = useAuth();
+  const { user, configured } = useAuth();
   const displayName = user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer";
   const widgets = [
     { title: "Open Orders", value: String(demoOrders.filter((order) => order.status !== "completed").length), description: "Track active jobs and know what needs review next." },
@@ -20,6 +22,8 @@ export function AccountShell() {
     { title: "Upload or organize artwork", detail: "Keep files attached to the right order, quote, or future repeat job.", href: "/account/files", icon: "upload" },
     { title: "Talk to support", detail: "Ask about pickup timing, status, invoices, or the next production step.", href: "/support", icon: "chat" },
   ];
+  const featuredOrder = demoOrders[0];
+  const featuredTimeline = accountOrderProgress[featuredOrder.id] ?? [];
 
   return (
     <div className="space-y-6">
@@ -31,13 +35,21 @@ export function AccountShell() {
             <p className="mt-3 text-sm leading-6 text-slate">
               Keep your quotes, orders, artwork files, invoices, and future reorders organized in one place.
             </p>
+            <div className="mt-4 rounded-[1.3rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
+              <span className="font-black text-ink">Current dashboard state:</span>{" "}
+              {configured
+                ? "account access is live, but the overview cards below still use preview data until full order, quote, invoice, and upload history are connected."
+                : "this is a preview dashboard until Supabase auth and persisted customer data are fully configured."}
+            </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button href="/products">Start My Order</Button>
-            <Button href="/quote-request" variant="secondary">Get My Quote</Button>
+            <Button href="/quote-request" variant="secondary">Request a Quote</Button>
           </div>
         </div>
       </section>
+
+      <SummaryStrip items={accountHealthSummary} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {widgets.map((widget) => (
@@ -100,6 +112,36 @@ export function AccountShell() {
                   </div>
                   <StatusBadge status={quote.status} />
                 </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+        <StatusTimeline
+          title="Most urgent account progress"
+          items={featuredTimeline}
+        />
+        <section className="surface-card p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-brand">Customer support hub</p>
+              <h2 className="mt-2 text-2xl font-black text-ink">Everything needed to keep the job moving</h2>
+            </div>
+            <StatusBadge status={featuredOrder.status} />
+          </div>
+          <p className="mt-3 text-sm leading-6 text-slate">
+            This account view is structured around the real jobs customers come back to: reorders, file reuse, proofs, invoices, and quick support.
+          </p>
+          <div className="mt-5 grid gap-3">
+            {accountSupportShortcuts.map((item) => (
+              <article key={item.title} className="rounded-[1.25rem] border border-line/90 bg-canvas p-4">
+                <p className="text-sm font-black text-ink">{item.title}</p>
+                <p className="mt-1 text-sm leading-6 text-slate">{item.detail}</p>
+                <Button href={item.href} variant="secondary" className="mt-4 w-full px-4 py-2.5 text-xs">
+                  {item.cta}
+                </Button>
               </article>
             ))}
           </div>

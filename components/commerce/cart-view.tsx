@@ -18,11 +18,11 @@ export function CartView() {
         <p className="editorial-kicker">Cart</p>
         <h1 className="display-title mt-2 text-[2.5rem] font-black">Ready when your print job is.</h1>
         <p className="mt-3 text-sm leading-6 text-slate">
-          Browse orderable print products or request a quote if your job needs custom sizing, finishing, or file review.
+          Browse orderable print products or request a quote if your job needs custom sizing, finishing, design help, or file review.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button href="/products">Start My Order</Button>
-          <Button href="/quote-request" variant="secondary">Get My Quote</Button>
+          <Button href="/quote-request" variant="secondary">Request a Quote</Button>
         </div>
       </div>
     );
@@ -33,11 +33,11 @@ export function CartView() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
       <div className="space-y-4">
-        <div className="surface-card p-6">
+        <div className="section-frame p-6">
           <p className="editorial-kicker">Cart review</p>
-          <h1 className="mt-2 text-3xl font-black text-ink">Everything in one place before you check out.</h1>
+          <h1 className="display-title mt-2 text-[2.4rem] font-black leading-[0.95] text-ink">Everything in one place before you check out.</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate">
-            Adjust quantities, confirm the right print setup, and use support whenever you want a fast answer on turnaround, artwork, pickup, or quote review.
+            Adjust quantities, confirm the right print setup, and use support whenever you want a fast answer on turnaround, artwork, pickup, delivery, or quote review.
           </p>
         </div>
 
@@ -48,7 +48,7 @@ export function CartView() {
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">
                   {item.pricingMode === "quote-only" ? "Needs quote review" : "Ready for checkout"}
                 </p>
-                <h2 className="mt-2 text-xl font-black text-ink">{item.title}</h2>
+                <h2 className="mt-2 text-[1.4rem] font-black leading-[1.02] text-ink">{item.title}</h2>
                 {item.turnaround || item.fulfillmentMethod ? (
                   <p className="mt-2 text-sm text-slate">
                     {[item.turnaround, item.fulfillmentMethod].filter(Boolean).join(" / ")}
@@ -64,7 +64,7 @@ export function CartView() {
               </button>
             </div>
 
-            <div className="mt-5 grid gap-2 rounded-[1.3rem] border border-line/80 bg-canvas p-4 sm:grid-cols-2">
+            <div className="focus-band mt-5 grid gap-2 p-4 sm:grid-cols-2">
               {item.optionLabels.length > 0 ? (
                 item.optionLabels.map((option) => (
                   <div key={`${item.id}-${option.label}`} className="text-sm">
@@ -108,7 +108,8 @@ export function CartView() {
 
       <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
         <p className="editorial-kicker">Order review</p>
-        <h2 className="mt-2 text-2xl font-black text-ink">Review before secure checkout</h2>
+        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Review before secure checkout</h2>
+        <p className="mt-2 text-sm leading-6 text-slate">Pay online for orderable items now. If any item needs quote review, PrintMe confirms the details before production begins.</p>
         <div className="mt-5 space-y-3 text-sm">
           <div className="flex justify-between">
             <span>Estimated subtotal</span>
@@ -118,17 +119,17 @@ export function CartView() {
           <div className="flex justify-between text-slate"><span>Pickup / delivery</span><span>Confirmed with your order</span></div>
           {hasQuoteItems ? (
             <p className="rounded-[1.3rem] border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
-              Some items need PrintMe review before final pricing. We will confirm details before production starts.
+              Some items need PrintMe review before final pricing. We will confirm the details before production starts.
             </p>
           ) : null}
-          <div className="rounded-[1.3rem] border border-line/80 bg-white/85 px-4 py-3 text-xs leading-5 text-slate">
+          <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">
             Secure payment is handled by Stripe. Pickup, delivery, and artwork details are rechecked before anything moves into production.
           </div>
         </div>
         <div className="mt-5 border-t border-line pt-5">
           <Button href="/checkout" className="w-full">Go to Secure Checkout</Button>
           <Button href="/products" variant="secondary" className="mt-3 w-full">Add More Print Items</Button>
-          <Button type="button" variant="ghost" className="mt-3 w-full" onClick={openSupportChat}>Ask PrintMe a Question</Button>
+          <Button type="button" variant="ghost" className="mt-3 w-full" onClick={openSupportChat}>Ask a Print Question</Button>
           <button type="button" onClick={clearCart} className="mt-4 w-full text-center text-sm font-bold text-slate transition hover:text-brand">
             Clear cart
           </button>

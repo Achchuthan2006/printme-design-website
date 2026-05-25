@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useEffect } from "react";
+import { products } from "@/data/products";
 import { serviceOptions } from "@/lib/site";
 import { quoteRequestSchema } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
@@ -23,7 +25,12 @@ const initialState = {
 
 type FormState = typeof initialState;
 
-export function QuoteRequestForm() {
+export function QuoteRequestForm({ initialService = "" }: { initialService?: string }) {
+  const normalizedInitialService = initialService.trim();
+  const matchedProduct = products.find((product) => product.slug === normalizedInitialService);
+  const matchedService = serviceOptions.find((service) => service.toLowerCase() === normalizedInitialService.toLowerCase());
+  const prefillingService = matchedProduct?.title ?? matchedService ?? initialService;
+
   const [form, setForm] = useState<FormState>(initialState);
   const [status, setStatus] = useState<{ type: "idle" | "success" | "error"; message?: string }>({
     type: "idle",
@@ -32,8 +39,19 @@ export function QuoteRequestForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (!prefillingService) return;
+    setForm((current) => (current.serviceNeeded === prefillingService ? current : { ...current, serviceNeeded: prefillingService }));
+  }, [prefillingService]);
+
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -92,13 +110,14 @@ export function QuoteRequestForm() {
     type?: string;
     placeholder?: string;
     required?: boolean;
+    hint?: string;
   }> = [
-    { label: "Full name", name: "fullName", placeholder: "Your name", required: true },
-    { label: "Email", name: "email", type: "email", placeholder: "you@example.com", required: true },
-    { label: "Phone number", name: "phone", type: "tel", placeholder: "(416) 555-0123", required: true },
-    { label: "Company name", name: "companyName", placeholder: "Optional" },
-    { label: "Quantity", name: "quantity", placeholder: "Example: 500", required: true },
-    { label: "Preferred deadline", name: "preferredDeadline", type: "date", required: true },
+    { label: "Full name", name: "fullName", placeholder: "Your name", required: true, hint: "Who should we contact about this job?" },
+    { label: "Email", name: "email", type: "email", placeholder: "you@example.com", required: true, hint: "We will send quote details and follow-up questions here." },
+    { label: "Phone number", name: "phone", type: "tel", placeholder: "(416) 555-0123", required: true, hint: "Best number for urgent timing or clarification." },
+    { label: "Company name", name: "companyName", placeholder: "Optional", hint: "Helpful for repeat orders, business printing, or invoicing." },
+    { label: "Quantity", name: "quantity", placeholder: "Example: 500", required: true, hint: "Approximate quantity is enough if you are still deciding." },
+    { label: "Preferred deadline", name: "preferredDeadline", type: "date", required: true, hint: "Tell us the real date you need it in hand." },
   ];
 
   return (
@@ -124,7 +143,7 @@ export function QuoteRequestForm() {
 
         <div className="grid gap-5 md:grid-cols-2">
           {fields.map((field) => (
-            <Field key={field.name} label={field.label} error={fieldErrors[field.name]}>
+            <Field key={field.name} label={field.label} hint={field.hint} error={fieldErrors[field.name]}>
               <Input
                 type={field.type ?? "text"}
                 value={form[field.name]}
@@ -137,7 +156,7 @@ export function QuoteRequestForm() {
             </Field>
           ))}
 
-          <Field label="Service needed" error={fieldErrors.serviceNeeded}>
+          <Field label="Service needed" hint="Choose the closest match. If you came from a product page, this may already be filled in." error={fieldErrors.serviceNeeded}>
             <Select
               value={form.serviceNeeded}
               onChange={(event) => updateField("serviceNeeded", event.target.value)}
@@ -153,7 +172,7 @@ export function QuoteRequestForm() {
             </Select>
           </Field>
 
-          <Field label="Pickup or delivery" error={fieldErrors.fulfillmentMethod}>
+          <Field label="Pickup or delivery" hint="Choose your preferred path. We can still confirm what makes the most sense." error={fieldErrors.fulfillmentMethod}>
             <Select
               value={form.fulfillmentMethod}
               onChange={(event) => updateField("fulfillmentMethod", event.target.value)}
@@ -168,7 +187,11 @@ export function QuoteRequestForm() {
           </Field>
         </div>
 
-        <Field label="Tell us what the finished job needs to do" error={fieldErrors.projectDetails}>
+        <Field
+          label="Tell us what the finished job needs to do"
+          hint="Include size, sides, stock, finish, where it will be used, or anything else that helps us quote accurately."
+          error={fieldErrors.projectDetails}
+        >
           <Textarea
             value={form.projectDetails}
             onChange={(event) => updateField("projectDetails", event.target.value)}
@@ -189,6 +212,10 @@ export function QuoteRequestForm() {
           <PrintReadyChecklist compact className="shadow-none" />
         </div>
 
+        <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
+          Files upload separately from the form so PrintMe can start reviewing artwork right away. If you are still waiting on final files, submit the request now and mention that in the project details.
+        </div>
+
         {uploadedFiles.length > 0 ? (
           <FeedbackMessage>
             {uploadedFiles.length} file{uploadedFiles.length === 1 ? "" : "s"} attached. That helps us quote with more confidence and less back-and-forth.
@@ -203,10 +230,10 @@ export function QuoteRequestForm() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate">
-            No payment is taken here. This form is only used to review your request and confirm the next production step.
+            No payment is taken here. This form is only used to review your request, confirm pricing and timing, and guide you to the right next step.
           </p>
           <Button type="submit" disabled={isPending} className="min-w-44 disabled:cursor-not-allowed disabled:opacity-70">
-            {isPending ? "Sending..." : "Get My Quote"}
+            {isPending ? "Sending..." : "Request My Quote"}
           </Button>
         </div>
       </form>

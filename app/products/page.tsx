@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/commerce/product-card";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
+import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { FinalCta } from "@/components/catalog/final-cta";
 import { TrustStrip } from "@/components/catalog/trust-strip";
 import { Badge } from "@/components/ui/badge";
@@ -41,10 +42,10 @@ export default function ProductsPage() {
               <div>
                 <Badge>PrintMe catalog</Badge>
                 <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">
-                  Browse print products by category, specs, timing, and order path.
+                  Browse print products by category, specs, timing, and how to get started.
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-slate">
-                  Find the right product, review file requirements, compare turnaround notes, then request a quote, upload artwork, call the shop, or start a direct order where available.
+                  Find the right product, review file requirements, compare turnaround notes, then choose the safest next step: direct order, artwork upload, quote request, or a quick call to the shop.
                 </p>
               </div>
               <TrustStrip items={["20+ years of print experience", "Quote, upload, and direct-order paths", "Pickup and delivery support"]} />
@@ -59,6 +60,9 @@ export default function ProductsPage() {
             <div className="story-panel pl-7">
               <p className="editorial-kicker">Browse smarter</p>
               <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Use the catalog to reduce guesswork before the order starts.</h2>
+              <p className="mt-3 text-sm leading-7 text-slate">
+                Every product page is built to answer the practical questions first: What is this for? How fast can it move? Can I order online or should I request a quote?
+              </p>
               <div className="mt-5 space-y-3">
                 {catalogGuides.map((guide) => (
                   <div key={guide.title} className="signal-card">
@@ -80,6 +84,19 @@ export default function ProductsPage() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white section-space">
+        <div className="container-shell">
+          <div className="mb-8">
+            <p className="editorial-kicker">Browse by service family</p>
+            <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">A cleaner way to explore a wider print catalog</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
+              PrintMe covers more than the basics: postcards, promotional print, print-and-mail support, design help, technical documents, local shop essentials, and custom production paths.
+            </p>
+          </div>
+          <CategoryDirectory />
         </div>
       </section>
 

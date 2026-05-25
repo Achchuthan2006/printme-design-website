@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
+import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { MobileBottomCta } from "@/components/sections/mobile-bottom-cta";
@@ -22,22 +23,22 @@ const serviceHighlights = [
 const journeyOptions = [
   {
     title: "I know what I need",
-    description: "Browse orderable products, compare specs, and move into checkout with file review still built in.",
+    description: "Browse common print products, compare options, and move into cart or checkout when the job is straightforward.",
     cta: "Browse Products",
     href: "/products",
     icon: "bag",
   },
   {
     title: "I need a quote first",
-    description: "Best for custom sizes, finishing, specialty materials, rush-sensitive jobs, and production questions.",
-    cta: "Start My Quote",
+    description: "Best for custom sizes, design help, specialty materials, rush-sensitive jobs, or anything that still needs review.",
+    cta: "Request a Quote",
     href: "/quote-request",
     icon: "document",
   },
   {
     title: "I need a real answer quickly",
-    description: "Use support or call the shop when timing is tight, files are unclear, or the path still needs shaping.",
-    cta: "Get Support",
+    description: "Call or use support when timing is tight, files are unclear, or you want to confirm the right path before ordering.",
+    cta: "Talk to PrintMe",
     href: "/support",
     icon: "phone",
   },
@@ -54,18 +55,20 @@ export default function HomePage() {
   return (
     <>
       <section className="relative overflow-hidden bg-white pb-8 pt-8 sm:pb-10 sm:pt-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.10),transparent_32rem),radial-gradient(circle_at_86%_14%,rgba(31,27,24,0.06),transparent_26rem)]" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.05),transparent_28rem)]" aria-hidden="true" />
         <div className="container-shell relative">
-          <div className="hero-panel quiet-grid px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
-            <div className="absolute inset-y-0 right-0 hidden w-[40%] bg-[linear-gradient(135deg,rgba(255,255,255,0),rgba(217,70,32,0.09))] lg:block" aria-hidden="true" />
+          <div className="hero-panel px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
             <div className="relative grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
               <div>
                 <p className="hero-in editorial-kicker [--delay:40ms]">{heroCopy.eyebrow}</p>
                 <h1 className="display-title hero-in mt-4 max-w-2xl text-balance text-[3.2rem] font-black leading-[0.92] [--delay:120ms] sm:text-[4.9rem]">
-                  {heroCopy.headline}
+                  <span className="headline-accent">{heroCopy.headline}</span>
                 </h1>
                 <p className="hero-in mt-5 max-w-xl text-[15px] leading-8 text-slate [--delay:210ms] sm:text-lg">
                   {heroCopy.subheadline}
+                </p>
+                <p className="hero-in mt-4 max-w-2xl text-sm font-bold leading-6 text-ink [--delay:250ms]">
+                  Order online when the specs are clear, request a quote when the job is custom, or call the shop when you need a fast local answer.
                 </p>
                 <div className="hero-in mt-7 flex flex-col gap-3 [--delay:300ms] sm:flex-row">
                   <Button href="/quote-request" data-event={analyticsEvents.heroQuoteClick}>
@@ -84,7 +87,11 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
-                <div className="hero-in mt-7 grid gap-4 sm:grid-cols-3 [--delay:470ms]">
+                <div className="hero-in mt-5 rounded-[1.5rem] border border-line/80 bg-canvas/70 px-4 py-4 text-sm leading-6 text-slate [--delay:430ms]">
+                  <p className="font-black text-ink">Visit, call, or send files online.</p>
+                  <p className="mt-1">Pickup at 1585 Markham Road Unit 103, Scarborough. Call 416-572-1999 for rush questions, passport photo availability, or custom print help.</p>
+                </div>
+                <div className="hero-in mt-7 grid gap-4 sm:grid-cols-2 [--delay:470ms]">
                   <div className="premium-stat">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate">Trusted locally</p>
                     <p className="mt-2 text-2xl font-black text-ink">20+ years</p>
@@ -94,11 +101,6 @@ export default function HomePage() {
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate">Handled carefully</p>
                     <p className="mt-2 text-2xl font-black text-ink">File review first</p>
                     <p className="mt-1 text-sm leading-6 text-slate">Artwork, timing, and finishing are checked before your job moves forward.</p>
-                  </div>
-                  <div className="premium-stat">
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate">Built for action</p>
-                    <p className="mt-2 text-2xl font-black text-ink">Quote or order</p>
-                    <p className="mt-1 text-sm leading-6 text-slate">Start with a fast quote, upload artwork, or move directly into checkout.</p>
                   </div>
                 </div>
               </div>
@@ -110,12 +112,12 @@ export default function HomePage() {
 
       <section className="reveal-up bg-white section-tight">
         <div className="container-shell">
-          <div className="grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
-            <div className="story-panel pl-7">
+          <div className="section-frame grid gap-5 p-5 xl:grid-cols-[0.92fr_1.08fr] xl:p-6">
+            <div className="editorial-panel pl-7 pr-5 py-5">
               <p className="editorial-kicker">Start the right way</p>
-              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink sm:text-[2.5rem]">Three clean paths, depending on how ready the job is.</h2>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink sm:text-[2.5rem]">Three clear ways to start, depending on how ready the job is.</h2>
               <p className="mt-3 max-w-xl text-sm leading-7 text-slate">
-                Some customers are ready to order now. Others need sizing, timing, finishing, or artwork help first. The site should make both paths feel easy and intentional.
+                Some customers are ready to order now. Others need sizing, timing, finishing, or artwork help first. Pick the path that matches your job instead of forcing the wrong checkout flow.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
@@ -124,7 +126,7 @@ export default function HomePage() {
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
                     <Icon name={option.icon} className="h-4.5 w-4.5" />
                   </span>
-                  <h3 className="mt-5 text-lg font-black text-ink">{option.title}</h3>
+                  <h3 className="mt-5 text-[1.15rem] font-black leading-[1.04] text-ink">{option.title}</h3>
                   <p className="mt-3 flex-1 text-sm leading-6 text-slate">{option.description}</p>
                   <div className="mt-5">
                     <Button href={option.href} variant="secondary" className="w-full px-4 py-2.5 text-xs">
@@ -138,7 +140,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="reveal-up section-band py-10">
+      <section className="reveal-up section-band py-8">
         <div className="container-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div className="flex items-start gap-5">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.4rem] bg-ink text-white shadow-[0_18px_30px_rgba(22,19,17,0.18)]">
@@ -146,14 +148,14 @@ export default function HomePage() {
             </div>
             <div>
               <p className="editorial-kicker">Why it converts</p>
-              <h2 className="display-title mt-2 text-balance text-[2.4rem] font-black leading-[0.98]">Print support that feels handled, not handed off.</h2>
+              <h2 className="display-title mt-2 text-balance text-[2.4rem] font-black leading-[0.98]">One local shop for print orders that need fewer surprises.</h2>
               <p className="mt-3 max-w-2xl text-[15px] leading-7 text-slate">
-                Bring the job, the deadline, or even the rough idea. We help local businesses and customers turn documents, marketing materials, stationery, technical prints, and custom requests into clean finished pieces with fewer surprises.
+                Bring the job, the deadline, or even the rough idea. We help local businesses and customers turn documents, marketing materials, stationery, technical prints, and custom requests into clean finished pieces with clear next steps.
               </p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {["20+ years of print experience", "Practical artwork review", "Rush-aware production", "Real local support"].map((item) => (
+            {["20+ years of print experience", "Practical artwork review", "Real local support"].map((item) => (
               <div key={item} className="premium-surface flex items-center gap-3 p-4 text-sm font-bold text-ink">
                 <Icon name="check" className="h-4 w-4 text-brand" />
                 <span>{item}</span>
@@ -169,18 +171,32 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="reveal-up bg-white section-space">
+        <div className="container-shell">
+          <SectionHeading
+            eyebrow="Service breadth, presented cleanly"
+            title="A broader print platform than a basic local shop menu."
+            description="Business essentials, marketing materials, postcards, promotional printing, print-and-mail support, technical documents, design help, and custom jobs organized into clear service families."
+            align="center"
+          />
+          <div className="mt-10">
+            <CategoryDirectory />
+          </div>
+        </div>
+      </section>
+
       <section id="services" className="reveal-up bg-canvas section-space">
         <div className="container-shell">
           <SectionHeading
             eyebrow="Choose your path"
-            title="Print services designed to move the job forward quickly."
+            title="Print services that make the next step obvious."
             description="Start with a common product when you want speed, or move into a quote-led workflow when the job needs custom sizing, finishing, artwork review, or local advice."
             align="center"
           />
           <div className="mt-10 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-            <div className="story-panel pl-7">
+            <div className="editorial-panel pl-7 pr-5 py-5">
               <p className="editorial-kicker">Best use cases</p>
-              <h3 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Built for everyday essentials, marketing campaigns, and custom jobs that need guidance.</h3>
+              <h3 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Built for everyday essentials, marketing campaigns, and custom jobs that need real guidance.</h3>
               <div className="mt-5 grid gap-3">
                 {[
                   "Business cards, brochures, flyers, and handouts that need a polished first impression",
@@ -241,8 +257,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="reveal-up section-band bg-canvas py-10">
-        <div className="container-shell grid gap-6 md:grid-cols-3">
+      <section className="reveal-up bg-canvas section-space">
+        <div className="container-shell grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="story-panel pl-7">
+            <p className="editorial-kicker">Why businesses switch</p>
+            <h2 className="mt-2 text-[2.3rem] font-black leading-[0.98] text-ink">A cleaner alternative to the “huge but hard to use” print catalog.</h2>
+            <p className="mt-3 text-sm leading-7 text-slate">
+              PrintMe is built for customers who want broad print capability without digging through noisy menus. Start with the product when it is straightforward, switch to quote-first when the job gets custom, and use support when timing or artwork still needs guidance.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {[
+              "Business cards, flyers, brochures, postcards, and posters for everyday marketing",
+              "Banners, signs, promotional print, and campaign bundles for events and local outreach",
+              "Print-and-mail, design help, technical prints, and custom orders when the job needs more guidance",
+              "Quote, upload, checkout, support, and account tools built into the same premium experience",
+            ].map((item) => (
+              <div key={item} className="premium-surface flex items-start gap-3 p-4">
+                <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                <p className="text-sm leading-6 text-slate">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="reveal-up section-band bg-canvas py-8">
+        <div className="container-shell grid gap-4 md:grid-cols-3">
           {serviceHighlights.map((item) => (
             <TrustBadge key={item.title} icon={item.icon} title={item.title} detail={item.copy} className="border-0 bg-transparent shadow-none" />
           ))}
@@ -290,14 +331,14 @@ export default function HomePage() {
             align="center"
           />
           <div className="mt-10 grid gap-5 xl:grid-cols-[0.82fr_1.18fr]">
-            <div className="story-panel pl-7">
+            <div className="editorial-panel pl-7 pr-5 py-5">
               <p className="editorial-kicker">What people value most</p>
               <h3 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Speed matters. Clarity matters more.</h3>
               <p className="mt-3 text-sm leading-7 text-slate">
                 Repeat customers come back because the process feels calmer: timing is discussed honestly, files are reviewed, and the finished work lands with more confidence.
               </p>
               <div className="mt-5 grid gap-3">
-                {["Honest timing before commitment", "Artwork and production details reviewed together", "A local team that is easier to reach when something is urgent"].map((item) => (
+                {["Honest timing before commitment", "Artwork reviewed together"].map((item) => (
                   <div key={item} className="value-chip w-fit">
                     <Icon name="check" className="h-3.5 w-3.5 text-brand" />
                     {item}
@@ -331,7 +372,7 @@ export default function HomePage() {
           <LeadCtaPanel
             title="Have the file, the deadline, or just the rough idea?"
             description="Send the details now and PrintMe will help you choose the cleanest, fastest, most realistic path to a finished print job."
-            primaryLabel="Get My Quote"
+            primaryLabel="Request a Quote"
             secondaryLabel="Call PrintMe"
           />
         </div>

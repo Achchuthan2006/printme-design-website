@@ -9,7 +9,7 @@ export function ProductActions({ product }: { product: PrintProduct }) {
     return (
       <>
         <Button href="#order-builder">Start My Order</Button>
-        <Button href="/quote-request" variant="secondary">Get a Quote First</Button>
+        <Button href={`/quote-request?service=${product.slug}`} variant="secondary">Request a Quote First</Button>
       </>
     );
   }
@@ -18,7 +18,7 @@ export function ProductActions({ product }: { product: PrintProduct }) {
     return (
       <>
         <Button href={uploadHref}>Upload My Artwork</Button>
-        <Button href="/quote-request" variant="secondary">Get a Quote First</Button>
+        <Button href={`/quote-request?service=${product.slug}`} variant="secondary">Request a Quote First</Button>
       </>
     );
   }
@@ -34,7 +34,7 @@ export function ProductActions({ product }: { product: PrintProduct }) {
 
   return (
     <>
-      <Button href="/quote-request">Get My Quote</Button>
+      <Button href={`/quote-request?service=${product.slug}`}>Request a Quote</Button>
       <Button href={siteConfig.phoneHref} variant="secondary">Talk to PrintMe</Button>
     </>
   );

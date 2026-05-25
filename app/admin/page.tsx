@@ -74,6 +74,28 @@ export default function AdminDashboardPage() {
           </div>
         </AdminCard>
       </div>
+
+      <div className="grid gap-6 xl:grid-cols-3">
+        {[
+          {
+            title: "Customer experience readiness",
+            detail: "Quote, order, upload, and support flows now share clearer status language and escalation paths across the platform.",
+          },
+          {
+            title: "Operational history readiness",
+            detail: "Admin notes, workflow events, payment events, and upload review states are already structured to support timeline-style records.",
+          },
+          {
+            title: "Repeat-order readiness",
+            detail: "Customer account, order detail, files, and quote flows are now better aligned for repeat jobs and future reorder shortcuts.",
+          },
+        ].map((item) => (
+          <AdminCard key={item.title}>
+            <h2 className="text-xl font-black tracking-[-0.04em] text-ink">{item.title}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate">{item.detail}</p>
+          </AdminCard>
+        ))}
+      </div>
     </div>
   );
 }

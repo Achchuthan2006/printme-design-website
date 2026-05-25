@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { PageHero } from "@/components/ui/page-hero";
-import { helpTopics } from "@/data/support";
 import { buildMetadata } from "@/lib/metadata";
 import { siteConfig } from "@/lib/site";
 
@@ -12,6 +11,37 @@ export const metadata = buildMetadata({
 });
 
 export default function SupportPage() {
+  const supportTopics = [
+    {
+      title: "Artwork and file checks",
+      detail: "Best when you need help confirming size, bleed, file quality, or whether the artwork is ready to print.",
+      icon: "upload",
+      action: "Review guidelines",
+      href: "/artwork-guidelines",
+    },
+    {
+      title: "Quote and custom job help",
+      detail: "Use this when the specs are custom, the deadline is tight, or the safest path is not obvious yet.",
+      icon: "document",
+      action: "Request a quote",
+      href: "/quote-request",
+    },
+    {
+      title: "Pickup, delivery, and timing",
+      detail: "Good for urgent orders, local fulfillment questions, or deciding whether the deadline is realistic.",
+      icon: "clock",
+      action: "Call PrintMe",
+      href: siteConfig.phoneHref,
+    },
+    {
+      title: "Payments, receipts, and invoices",
+      detail: "Get help with checkout, payment confirmation, invoice access, or what happens after a quote becomes an order.",
+      icon: "card",
+      action: "Contact support",
+      href: "/contact",
+    },
+  ];
+
   const supportRoutes = [
     { title: "Need a quote clarified?", detail: "Use the quote form when the job is custom, the timing matters, or the file still needs review.", href: "/quote-request", cta: "Open Quote Request", icon: "document" },
     { title: "Need order or pickup help?", detail: "Use order status for upcoming tracking flows or contact the shop directly for the fastest update.", href: "/order-status", cta: "Check Order Status", icon: "clock" },
@@ -21,8 +51,8 @@ export default function SupportPage() {
   return (
     <>
       <PageHero
-        title="Get unstuck before your print deadline"
-        description="Find help with artwork setup, quote requests, online orders, payment, pickup, delivery, and custom printing."
+        title="Get the right kind of print help before the deadline gets tighter."
+        description="Find help with artwork setup, quote requests, online orders, payment, pickup, delivery, and custom printing without guessing where to start."
         ctaLabel="Talk to PrintMe"
         eyebrow="Support"
         highlights={["Artwork and file guidance", "Order and quote help", "Fastest path to a real answer"]}
@@ -38,10 +68,18 @@ export default function SupportPage() {
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-            {helpTopics.map((topic) => (
-              <article key={topic} className="premium-surface p-5">
-                <h2 className="text-lg font-black text-ink">{topic}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate">Get clear guidance before you submit files, approve a quote, or place an order.</p>
+            {supportTopics.map((topic) => (
+              <article key={topic.title} className="premium-surface flex h-full flex-col p-5">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
+                  <Icon name={topic.icon} className="h-4.5 w-4.5" />
+                </span>
+                <h2 className="mt-5 text-lg font-black text-ink">{topic.title}</h2>
+                <p className="mt-3 flex-1 text-sm leading-6 text-slate">{topic.detail}</p>
+                <div className="mt-5">
+                  <Button href={topic.href} variant="secondary" className="w-full px-4 py-2.5 text-xs">
+                    {topic.action}
+                  </Button>
+                </div>
               </article>
             ))}
             </div>
@@ -61,13 +99,49 @@ export default function SupportPage() {
                 </article>
               ))}
             </div>
+            <div className="rounded-[1.8rem] border border-line/90 bg-white p-6 shadow-soft">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="editorial-kicker">Support system</p>
+                  <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Built to support the real print workflow, not just answer generic questions.</h2>
+                </div>
+                <Button href="/order-status" variant="secondary">Track a Job</Button>
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {[
+                  {
+                    title: "Before ordering",
+                    detail: "Help choosing products, materials, timelines, sizes, and whether the job should start as a quote or direct order.",
+                  },
+                  {
+                    title: "During review",
+                    detail: "Support for artwork uploads, proof questions, print-readiness, and quote clarification before production begins.",
+                  },
+                  {
+                    title: "After payment",
+                    detail: "Updates for production, pickup, delivery, invoices, and repeat-order planning from the same support system.",
+                  },
+                ].map((item) => (
+                  <article key={item.title} className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                    <p className="text-sm font-black text-ink">{item.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
           <aside className="hero-panel h-fit p-6">
             <p className="editorial-kicker">Direct help</p>
             <h2 className="display-title mt-3 text-[2rem] font-black leading-[0.96]">Need a real person to look at it?</h2>
             <p className="mt-3 text-sm leading-7 text-slate">Call {siteConfig.phone}, email {siteConfig.email}, or send a quote request with the job details and deadline.</p>
+            <div className="mt-4 rounded-[1.3rem] border border-line bg-canvas p-4 text-xs leading-5 text-slate">
+              <p className="font-black text-ink">{siteConfig.shortAddress}</p>
+              <p className="mt-1">Use the shop for pickup, in-person questions, and local print support.</p>
+            </div>
             <div className="mt-6 grid gap-3">
-              <Button href="/quote-request">Get My Quote</Button>
+              <Button href={siteConfig.phoneHref}>Call PrintMe</Button>
+              <Button href="/quote-request" variant="secondary">Request a Quote</Button>
+              <Button href="/contact" variant="secondary">Email or Visit</Button>
               <Button href="/order-status" variant="secondary">Check My Order</Button>
             </div>
             <div className="mt-6 rounded-[1.3rem] border border-dashed border-line bg-canvas p-4">

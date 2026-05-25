@@ -53,6 +53,10 @@ export function AccountNav() {
           </Link>
         ))}
       </nav>
+      <div className="mt-5 rounded-[1rem] border border-line bg-canvas px-3 py-3 text-xs leading-5 text-slate">
+        <p className="font-black text-ink">Platform quick paths</p>
+        <p className="mt-1">Orders, quotes, files, invoices, and support are intentionally separated so repeat customers can move faster without losing context.</p>
+      </div>
       {isAdmin ? (
         <Button href="/admin" variant="secondary" className="mt-5 w-full">
           Open Admin Portal

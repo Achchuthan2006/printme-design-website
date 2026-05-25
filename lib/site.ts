@@ -3,7 +3,7 @@ import { FaqItem, ServiceItem, TestimonialItem, WhyChooseItem } from "@/types";
 export const siteConfig = {
   name: "PrintMe Design",
   brandName: "PrintMe",
-  tagline: "Professional print support that feels handled.",
+  tagline: "Scarborough print and design support with clear quotes and dependable local follow-through.",
   domain: "printmedesign.com",
   phone: "416-572-1999",
   phoneHref: "tel:+14165721999",
@@ -20,7 +20,7 @@ export const siteConfig = {
     "Sun: By appointment",
   ],
   description:
-    "A Scarborough one-stop print partner for sharp print work, practical guidance, fast turnarounds, and customer-first service from quote to pickup.",
+    "A Scarborough print shop for business printing, document printing, passport photos, banners, cheques, technical prints, and custom jobs with practical guidance from quote to pickup.",
 };
 
 export const navigation = [
@@ -36,11 +36,15 @@ export const serviceOptions = [
   "Document Printing",
   "Flyers",
   "Brochures",
+  "Postcards",
   "Posters",
   "Banners",
   "Envelopes",
   "Signs",
   "Stickers",
+  "Promotional Printing",
+  "Print & Mail Services",
+  "Graphic Design Services",
   "Passport Photos",
   "Engineering Drawing Prints",
   "Manual Cheques",
@@ -82,6 +86,13 @@ export const services: ServiceItem[] = [
     icon: "poster",
   },
   {
+    slug: "postcards",
+    title: "Postcards",
+    description: "Compact promo pieces for handouts, direct mail, event invites, reminders, and local campaigns.",
+    icon: "flyer",
+    badge: "Popular",
+  },
+  {
     slug: "banners",
     title: "Banners",
     description: "Durable banners that help your offer get noticed at openings, booths, sales, and events.",
@@ -107,6 +118,27 @@ export const services: ServiceItem[] = [
     icon: "sticker",
   },
   {
+    slug: "promotional-printing",
+    title: "Promotional Printing",
+    description: "Campaign bundles, event handouts, and branded outreach print that works across multiple touchpoints.",
+    icon: "custom",
+    badge: "Campaigns",
+  },
+  {
+    slug: "print-mail-services",
+    title: "Print & Mail Services",
+    description: "Print-led support for postcards, local campaign outreach, and mailing-ready promotional pieces.",
+    icon: "envelope",
+    badge: "Quote first",
+  },
+  {
+    slug: "graphic-design-services",
+    title: "Graphic Design Services",
+    description: "Print-focused design help for business cards, flyers, brochures, signs, postcards, and custom jobs.",
+    icon: "spark",
+    badge: "Design help",
+  },
+  {
     slug: "passport-photos",
     title: "Passport Photos",
     description: "Quick in-store passport and ID photos with a simple local service experience.",
@@ -129,7 +161,7 @@ export const services: ServiceItem[] = [
   {
     slug: "custom-orders",
     title: "Custom Orders",
-    description: "Not sure what category fits? Bring the idea and we will help shape the right print path.",
+    description: "Not sure what category fits? Bring the size, deadline, or rough idea and we will help shape the right print path.",
     icon: "custom",
     badge: "Custom",
   },
@@ -155,6 +187,16 @@ export const faqs: FaqItem[] = [
     question: "Do you offer design help?",
     answer:
       "Yes. We can help clean up supplied artwork or create print-ready layouts for business cards, flyers, brochures, signage, and other custom pieces.",
+  },
+  {
+    question: "Can PrintMe handle postcards or print-and-mail work?",
+    answer:
+      "Yes. We can support postcards, campaign print pieces, and print-and-mail planning. The best path is to request a quote with quantity, size, deadline, and whether address data or mailing coordination is involved.",
+  },
+  {
+    question: "Do you offer promotional printing for events or campaigns?",
+    answer:
+      "Yes. PrintMe can help combine flyers, postcards, banners, signs, handouts, and other branded print pieces into a cleaner campaign-ready package.",
   },
   {
     question: "Do you offer pickup and delivery?",
@@ -201,32 +243,32 @@ export const testimonials: TestimonialItem[] = [
 
 export const whyChooseUs: WhyChooseItem[] = [
   {
-    title: "High-Quality Printing",
-    description: "Print work that looks clean, feels professional, and is checked before it reaches your customer.",
+    title: "Professional print quality",
+    description: "Print work that looks clean, feels professional, and is reviewed before it reaches your customer.",
     icon: "check",
   },
   {
-    title: "Custom Solutions",
-    description: "If the job is not standard, we help clarify size, stock, finish, artwork, and production options.",
+    title: "Guidance for custom jobs",
+    description: "If the job is not standard, we help clarify size, stock, finish, artwork, and production options first.",
     icon: "custom",
   },
   {
-    title: "Fast Turnaround",
+    title: "Rush-aware turnaround",
     description: "Rush-friendly review for ready artwork, with honest timing before you commit.",
     icon: "clock",
   },
   {
-    title: "Attention to Detail",
+    title: "Careful order review",
     description: "Files, finishes, quantities, and instructions are reviewed so avoidable issues are caught early.",
     icon: "inspect",
   },
   {
-    title: "Innovative Techniques",
+    title: "Experienced production judgment",
     description: "Modern print methods backed by practical production judgment from 20+ years in the industry.",
     icon: "spark",
   },
   {
-    title: "Personalized Service",
+    title: "Local support you can reach",
     description: "Talk to a local team that understands your deadline, budget, file concerns, and final goal.",
     icon: "store",
   },

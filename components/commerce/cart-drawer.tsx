@@ -9,8 +9,10 @@ import { Icon } from "@/components/ui/icon";
 import { useCart } from "@/features/cart/cart-context";
 import { cn } from "@/lib/utils";
 
-export function CartDrawer() {
+export function CartDrawer({ compact = false }: { compact?: boolean }) {
   const { items, itemCount, subtotal, removeItem, isDrawerOpen, openCart, closeCart } = useCart();
+  const quoteReviewCount = items.filter((item) => item.quoteOnly).length;
+  const directCheckoutCount = items.length - quoteReviewCount;
   const titleId = useId();
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -42,11 +44,28 @@ export function CartDrawer() {
         onClick={openCart}
         aria-expanded={isDrawerOpen}
         aria-controls="printme-cart-drawer"
-        className="relative rounded-[1rem] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] text-ink transition hover:bg-brand-soft hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+        aria-label={itemCount > 0 ? `Open cart with ${itemCount} item${itemCount > 1 ? "s" : ""}` : "Open cart"}
+        className={cn(
+          "group relative inline-flex items-center text-xs font-extrabold uppercase tracking-[0.08em] text-ink transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+          compact
+            ? "h-11 w-11 justify-center rounded-[1rem] border border-line/80 bg-white/94 shadow-[0_10px_20px_rgba(22,19,17,0.04)] hover:-translate-y-0.5 hover:border-brand/25 hover:bg-brand-soft hover:text-brand hover:shadow-soft"
+            : "h-11 gap-2.5 rounded-[1.1rem] border border-line/80 bg-white/92 px-3.5 shadow-[0_10px_20px_rgba(22,19,17,0.04)] hover:-translate-y-0.5 hover:border-brand/25 hover:bg-brand-soft hover:text-brand hover:shadow-soft",
+        )}
       >
-        Cart
-        {itemCount > 0 ? (
-          <span className="ml-2 rounded-full bg-brand px-2 py-0.5 text-[10px] text-white">{itemCount}</span>
+        <span className={cn(
+          "relative inline-flex items-center justify-center rounded-full border border-brand/12 bg-brand-soft text-brand transition group-hover:bg-brand group-hover:text-white",
+          compact ? "h-8 w-8" : "h-7 w-7",
+        )}>
+          <Icon name="bag" className="h-4 w-4" />
+          {itemCount > 0 ? (
+            <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-black leading-none text-white">
+              {itemCount}
+            </span>
+          ) : null}
+        </span>
+        {!compact ? <span className="hidden sm:inline">Cart</span> : null}
+        {!compact && itemCount > 0 ? (
+          <span className="hidden rounded-full bg-brand px-2 py-0.5 text-[10px] text-white lg:inline-flex">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
         ) : null}
       </button>
 
@@ -85,6 +104,20 @@ export function CartDrawer() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
+          {items.length > 0 ? (
+            <div className="mb-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[1.2rem] border border-line bg-canvas p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate">Ready for checkout</p>
+                <p className="mt-2 text-2xl font-black text-ink">{directCheckoutCount}</p>
+                <p className="mt-1 text-xs leading-5 text-slate">Items that can move into secure payment now.</p>
+              </div>
+              <div className="rounded-[1.2rem] border border-line bg-canvas p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate">Needs review</p>
+                <p className="mt-2 text-2xl font-black text-ink">{quoteReviewCount}</p>
+                <p className="mt-1 text-xs leading-5 text-slate">Items that still need staff confirmation before production.</p>
+              </div>
+            </div>
+          ) : null}
           {items.length === 0 ? (
             <div className="rounded-[1.3rem] border border-dashed border-line bg-canvas p-5 text-sm text-slate">
               Your cart is empty. Start with a product, or request a quote if your job needs custom sizing, finishing, or file review.
@@ -121,6 +154,11 @@ export function CartDrawer() {
         </div>
 
         <div className="border-t border-line p-5">
+          {quoteReviewCount > 0 ? (
+            <div className="mb-4 rounded-[1.25rem] border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
+              {quoteReviewCount} item{quoteReviewCount === 1 ? "" : "s"} still need PrintMe review before final pricing or production approval.
+            </div>
+          ) : null}
           <div className="mb-4 rounded-[1.3rem] border border-line/80 bg-canvas p-4 text-sm">
             <div className="flex justify-between">
               <span className="font-bold text-slate">Estimated subtotal</span>
@@ -146,6 +184,9 @@ export function CartDrawer() {
           </Button>
           <Button href="/products" variant="secondary" className="mt-3 w-full" onClick={closeCart}>
             Continue Shopping
+          </Button>
+          <Button href="/quote-request" variant="secondary" className="mt-3 w-full" onClick={closeCart}>
+            Request a Custom Quote
           </Button>
           <Link href="/checkout" onClick={closeCart} className="mt-4 block text-center text-sm font-bold text-brand">
             Go to Secure Checkout

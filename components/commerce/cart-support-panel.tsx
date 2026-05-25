@@ -14,7 +14,7 @@ interface CartSupportPanelProps {
 const supportPoints = [
   {
     icon: "shield",
-    title: "Secure checkout",
+    title: "Secure payment",
     detail: "Stripe handles online payment and PrintMe reviews files before production starts.",
   },
   {
@@ -25,13 +25,13 @@ const supportPoints = [
   {
     icon: "upload",
     title: "Artwork help available",
-    detail: "Send files now or after checkout. We can flag anything that needs attention first.",
+    detail: "Send files now or after checkout. We can flag anything that needs attention before print.",
   },
 ];
 
 export function CartSupportPanel({ compact = false, className }: CartSupportPanelProps) {
   return (
-    <section className={cn("rounded-[1.45rem] border border-line/80 bg-[#fbf6f1] p-4", className)}>
+    <section className={cn("section-frame p-4", className)}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">PrintMe reassurance</p>
@@ -46,7 +46,7 @@ export function CartSupportPanel({ compact = false, className }: CartSupportPane
 
       <div className={cn("mt-4 grid gap-3", compact ? "sm:grid-cols-1" : "sm:grid-cols-3")}>
         {supportPoints.map((point) => (
-          <div key={point.title} className="rounded-[1.2rem] border border-white/90 bg-white/92 p-3">
+          <div key={point.title} className="rounded-[1.2rem] border border-white/90 bg-white/94 p-3 shadow-[0_10px_24px_rgba(18,17,16,0.045)]">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-brand/10 bg-brand-soft text-brand">
                 <Icon name={point.icon} className="h-4.5 w-4.5" />
@@ -62,7 +62,7 @@ export function CartSupportPanel({ compact = false, className }: CartSupportPane
 
       <div className={cn("mt-4 flex gap-3", compact ? "flex-col" : "flex-col sm:flex-row")}>
         <Button type="button" variant="secondary" className="flex-1" onClick={openSupportChat}>
-          Ask PrintMe a Question
+          Ask a Print Question
         </Button>
         <Button href={siteConfig.phoneHref} className="flex-1">
           Call {siteConfig.phone}
