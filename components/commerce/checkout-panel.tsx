@@ -35,6 +35,7 @@ export function CheckoutPanel() {
   const [orderNotes, setOrderNotes] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
 
   const payableItems = useMemo(() => items.filter((item) => !item.quoteOnly), [items]);
@@ -54,23 +55,34 @@ export function CheckoutPanel() {
   }
 
   function validate() {
-    if (items.length === 0) return "Your cart is empty.";
-    if (!customer.fullName || !customer.email || !customer.phone) return "Please enter your name, email, and phone number.";
-    if (fulfillmentMethod === "delivery" && (!deliveryAddress.addressLine1 || !deliveryAddress.city || !deliveryAddress.postalCode)) {
-      return "Please complete the delivery address.";
+    const nextErrors: Record<string, string> = {};
+    if (items.length === 0) return { message: "Your cart is empty.", errors: nextErrors };
+    if (!customer.fullName) nextErrors.fullName = "Enter the name we should use for this order.";
+    if (!customer.email) nextErrors.email = "Enter the best email for confirmations and questions.";
+    if (!customer.phone) nextErrors.phone = "Enter a phone number in case timing or files need a quick check.";
+    if (fulfillmentMethod === "delivery") {
+      if (!deliveryAddress.addressLine1) nextErrors.addressLine1 = "Enter the delivery address.";
+      if (!deliveryAddress.city) nextErrors.city = "Enter the delivery city.";
+      if (!deliveryAddress.postalCode) nextErrors.postalCode = "Enter the delivery postal code.";
     }
-    if (!accepted) return "Please acknowledge that PrintMe will review artwork and order details before production.";
-    return "";
+    if (!accepted) nextErrors.accepted = "Please confirm that PrintMe will review files and order details before production.";
+
+    return {
+      message: Object.keys(nextErrors).length > 0 ? "Please fix the highlighted checkout details before continuing." : "",
+      errors: nextErrors,
+    };
   }
 
   async function submitCheckout(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
+    const validation = validate();
+    if (validation.message) {
+      setFieldErrors(validation.errors);
+      setError(validation.message);
       return;
     }
 
+    setFieldErrors({});
     setError("");
 
     const payload: CheckoutPayload = {
@@ -148,7 +160,7 @@ export function CheckoutPanel() {
               ["phone", "Phone", "416-555-0123", "tel", "tel"],
               ["companyName", "Company", "Optional", "text", "organization"],
             ].map(([field, label, placeholder, inputType, autoComplete]) => (
-              <Field key={field} label={label}>
+              <Field key={field} label={label} error={fieldErrors[field]}>
                 <Input
                   value={customer[field as keyof CheckoutCustomer] ?? ""}
                   onChange={(event) => updateCustomer(field as keyof CheckoutCustomer, event.target.value)}
@@ -156,6 +168,7 @@ export function CheckoutPanel() {
                   type={inputType}
                   required={field !== "companyName"}
                   autoComplete={autoComplete}
+                  aria-invalid={Boolean(fieldErrors[field])}
                 />
               </Field>
             ))}
@@ -193,17 +206,17 @@ export function CheckoutPanel() {
 
           {fulfillmentMethod === "delivery" ? (
             <div className="hero-in mt-6 grid gap-5 md:grid-cols-2">
-              <Field label="Address line 1" className="md:col-span-2">
-                <Input value={deliveryAddress.addressLine1} onChange={(event) => updateAddress("addressLine1", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-line1" />
+              <Field label="Address line 1" className="md:col-span-2" error={fieldErrors.addressLine1}>
+                <Input value={deliveryAddress.addressLine1} onChange={(event) => updateAddress("addressLine1", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-line1" aria-invalid={Boolean(fieldErrors.addressLine1)} />
               </Field>
               <Field label="Address line 2" className="md:col-span-2">
                 <Input value={deliveryAddress.addressLine2 ?? ""} onChange={(event) => updateAddress("addressLine2", event.target.value)} autoComplete="address-line2" />
               </Field>
-              <Field label="City">
-                <Input value={deliveryAddress.city} onChange={(event) => updateAddress("city", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-level2" />
+              <Field label="City" error={fieldErrors.city}>
+                <Input value={deliveryAddress.city} onChange={(event) => updateAddress("city", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-level2" aria-invalid={Boolean(fieldErrors.city)} />
               </Field>
-              <Field label="Postal code">
-                <Input value={deliveryAddress.postalCode} onChange={(event) => updateAddress("postalCode", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="postal-code" />
+              <Field label="Postal code" error={fieldErrors.postalCode}>
+                <Input value={deliveryAddress.postalCode} onChange={(event) => updateAddress("postalCode", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="postal-code" aria-invalid={Boolean(fieldErrors.postalCode)} />
               </Field>
             </div>
           ) : null}
@@ -235,6 +248,7 @@ export function CheckoutPanel() {
               I understand PrintMe may review artwork, production details, pickup or delivery requirements, and quote-only items before production begins. This helps prevent avoidable print issues.
             </span>
           </CheckboxTile>
+          {fieldErrors.accepted ? <p className="mt-2 text-sm text-brand">{fieldErrors.accepted}</p> : null}
         </section>
       </div>
 
@@ -318,6 +332,11 @@ export function CheckoutPanel() {
         <Button type="submit" disabled={isPending} className="mt-6 w-full">
           {isPending ? "Starting secure checkout..." : payableSubtotal > 0 ? "Continue to Secure Payment" : "Send Order for Review"}
         </Button>
+        <p className="mt-3 text-xs leading-5 text-slate">
+          {payableSubtotal > 0
+            ? "You will be sent to Stripe for secure payment, then back to PrintMe for order review and fulfillment confirmation."
+            : "This sends the order details to PrintMe for review. The team will confirm pricing or next steps before production."}
+        </p>
         <Button type="button" variant="secondary" className="mt-3 w-full" onClick={openSupportChat}>
           Ask About Files or Turnaround
         </Button>

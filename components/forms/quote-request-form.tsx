@@ -124,6 +124,15 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
   return (
     <div className="surface-card p-6 sm:p-8">
       <form onSubmit={onSubmit} className="space-y-6" noValidate>
+        {prefillingService ? (
+          <div className="rounded-[1.4rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">Service already selected: {prefillingService}</p>
+            <p className="mt-1">
+              This quote request started from a service page, so PrintMe already knows which product family you are asking about.
+            </p>
+          </div>
+        ) : null}
+
         <div className="grid gap-3 md:grid-cols-3">
           {[
             { label: "Step 1", title: "Tell us the job", detail: "Service, quantity, and the real deadline." },
@@ -230,6 +239,17 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
 
         <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
           Files upload separately from the form so PrintMe can start reviewing artwork right away. If you are still waiting on final files, submit the request now and mention that in the project details.
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">What helps the team reply faster</p>
+            <p className="mt-1">Tell us the quantity, real deadline, whether pickup or delivery matters, and whether the artwork is final or still in progress.</p>
+          </div>
+          <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">What happens after you send this</p>
+            <p className="mt-1">PrintMe reviews the request first, then replies with pricing, timing, file questions, or the clearest next action.</p>
+          </div>
         </div>
 
         {uploadedFiles.length > 0 ? (

@@ -101,6 +101,9 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
   const price = useMemo(() => calculateProductPrice(product, options), [product, options]);
   const optionLabels = useMemo(() => buildOptionLabels(product, options), [product, options]);
   const canAddToCart = product.mode !== "quote-only" && product.ctaMode !== "contact";
+  const nextStepCopy = canAddToCart
+    ? "Use the order builder when the quantity, format, and basic finish are clear enough to move into cart."
+    : "This service is better handled through a quote or a direct conversation before pricing and production are confirmed.";
 
   function updateOption(name: string, value: string) {
     setStatus("idle");
@@ -148,6 +151,9 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
         <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
           Choose the practical details now. PrintMe still reviews files, timing, and special instructions before production, so you are not locked into guesswork.
+        </p>
+        <p className="mt-4 rounded-[1.2rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
+          <span className="font-black text-ink">Best next step:</span> {nextStepCopy}
         </p>
       </div>
 
@@ -215,9 +221,14 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
                 {canAddToCart ? "Add to Cart" : "Quote Required"}
               </Button>
               {status === "added" ? (
-                <Button type="button" variant="secondary" onClick={openCart}>
-                  Review Cart
-                </Button>
+                <>
+                  <Button href="/checkout" variant="secondary">
+                    Go to Secure Checkout
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={openCart}>
+                    Review Cart
+                  </Button>
+                </>
               ) : null}
               <Button href={`/quote-request?service=${product.slug}`} variant="secondary">
                 Request a Quote Instead

@@ -8,8 +8,8 @@ export function ProductActions({ product }: { product: PrintProduct }) {
   if (product.ctaMode === "direct-order") {
     return (
       <>
-        <Button href="#order-builder">Start My Order</Button>
-        <Button href={`/quote-request?service=${product.slug}`} variant="secondary">Request a Quote First</Button>
+        <Button href="#order-builder">Order Online Now</Button>
+        <Button href={uploadHref} variant="secondary">Upload Artwork First</Button>
       </>
     );
   }
@@ -17,8 +17,8 @@ export function ProductActions({ product }: { product: PrintProduct }) {
   if (product.ctaMode === "upload-first") {
     return (
       <>
-        <Button href={uploadHref}>Upload My Artwork</Button>
-        <Button href={`/quote-request?service=${product.slug}`} variant="secondary">Request a Quote First</Button>
+        <Button href={uploadHref}>Upload Artwork for Review</Button>
+        <Button href={`/quote-request?service=${product.slug}`} variant="secondary">Start with a Quote</Button>
       </>
     );
   }
@@ -34,8 +34,8 @@ export function ProductActions({ product }: { product: PrintProduct }) {
 
   return (
     <>
-      <Button href={`/quote-request?service=${product.slug}`}>Request a Quote</Button>
-      <Button href={siteConfig.phoneHref} variant="secondary">Talk to PrintMe</Button>
+      <Button href={`/quote-request?service=${product.slug}`}>Get a Custom Quote</Button>
+      <Button href={siteConfig.phoneHref} variant="secondary">Call About This Job</Button>
     </>
   );
 }

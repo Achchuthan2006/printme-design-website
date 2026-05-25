@@ -123,6 +123,17 @@ export function CartView() {
         <p className="editorial-kicker">Order review</p>
         <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Review before secure checkout</h2>
         <p className="mt-2 text-sm leading-6 text-slate">Pay online for orderable items now. If any item needs quote review, PrintMe confirms the details before production begins.</p>
+        <div className="mt-4 grid gap-2">
+          {[
+            "Secure checkout for online-payable items",
+            "File upload available during checkout",
+            "Pickup, delivery, and review details confirmed before production",
+          ].map((item) => (
+            <div key={item} className="rounded-[1rem] border border-line/80 bg-white/88 px-3 py-2 text-xs font-bold leading-5 text-slate">
+              {item}
+            </div>
+          ))}
+        </div>
         <div className="mt-5 space-y-3 text-sm">
           <div className="flex justify-between">
             <span>Estimated subtotal</span>

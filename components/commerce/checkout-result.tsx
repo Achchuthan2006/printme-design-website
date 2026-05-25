@@ -78,6 +78,7 @@ export function CheckoutResult({
         {status === "success" ? (
           <>
             <Button href="/account">View My Account</Button>
+            <Button href="/order-status" variant="secondary">Check Order Status</Button>
             <Button href="/products" variant="secondary">Order More Prints</Button>
           </>
         ) : (

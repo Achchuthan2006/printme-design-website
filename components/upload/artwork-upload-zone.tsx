@@ -62,6 +62,18 @@ export function ArtworkUploadZone({
   const [isPending, startTransition] = useTransition();
   const uploadedCount = items.filter((item) => item.state === "uploaded").length;
   const hasError = items.some((item) => item.state === "error");
+  const continuationCopy =
+    context.scope === "quote"
+      ? "After upload, continue the quote request so PrintMe can review the files with your quantity, deadline, and project notes together."
+      : context.scope === "order"
+        ? "After upload, continue checkout so PrintMe can review the files with your order details and fulfillment instructions."
+        : "After upload, PrintMe can review the files and confirm the best next step.";
+  const nextStepTitle =
+    context.scope === "quote"
+      ? "Next: finish the quote request"
+      : context.scope === "order"
+        ? "Next: finish checkout"
+        : "What happens next";
 
   function removeItem(id: string) {
     setItems((current) => {
@@ -170,6 +182,7 @@ export function ArtworkUploadZone({
         <p className="mt-2 text-xs leading-5 text-slate">
           If a file is not final yet, you can still continue. PrintMe can review what you have first and tell you what still needs attention.
         </p>
+        <p className="mt-2 text-xs leading-5 text-slate">{continuationCopy}</p>
       </div>
 
       {items.length > 0 ? (
@@ -215,7 +228,7 @@ export function ArtworkUploadZone({
       {items.length > 0 ? (
         <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto]">
           <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
-            <p className="font-black text-ink">What happens next</p>
+            <p className="font-black text-ink">{nextStepTitle}</p>
             <p className="mt-1">
               Uploaded files are matched to your quote or order so the team can check size, bleed, quality, and production fit before anything moves forward.
             </p>
