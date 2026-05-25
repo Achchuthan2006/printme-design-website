@@ -6,6 +6,7 @@ import { FinalCta } from "@/components/catalog/final-cta";
 import { ProductActions } from "@/components/catalog/product-actions";
 import { RelatedServices } from "@/components/catalog/related-services";
 import { SpecList } from "@/components/catalog/spec-list";
+import { ServiceSupportPanel } from "@/components/catalog/service-support-panel";
 import { TrustStrip } from "@/components/catalog/trust-strip";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,31 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const category = getCategoryBySlug(product.categorySlug);
   const related = getRelatedProducts(product.related);
+  const highlightedOptions = product.options
+    .filter((option) => option.choices && option.choices.length > 1)
+    .slice(0, 3);
+  const supportPathCopy =
+    product.ctaMode === "direct-order"
+      ? "Best when the size, quantity, and basic finish are already clear and you want the fastest route into cart."
+      : product.ctaMode === "upload-first"
+        ? "Best when the artwork is ready and you want PrintMe to review the file early before the job moves forward."
+        : product.ctaMode === "contact"
+          ? "Best when this is mainly an in-store or call-first service and timing or requirements should be confirmed directly."
+          : "Best when this job still needs advice on specs, stock, finish, delivery, mailing, or design support before production.";
+  const serviceFitGuides = [
+    {
+      title: "Best for",
+      detail: `Customers who need ${product.idealFor.slice(0, 3).join(", ").toLowerCase()}.`,
+    },
+    {
+      title: "Most useful when",
+      detail: product.overview,
+    },
+    {
+      title: "Safest next step",
+      detail: supportPathCopy,
+    },
+  ];
 
   return (
     <>
@@ -64,6 +90,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </div>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <ProductActions product={product} />
+                </div>
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  {serviceFitGuides.map((item) => (
+                    <div key={item.title} className="rounded-[1.2rem] border border-line/80 bg-canvas/75 p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">{item.title}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
               <ServiceProductVisual slug={product.slug} />
@@ -129,6 +163,29 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="container-shell mt-8">
           <PrintReadyChecklist compact />
         </div>
+        {highlightedOptions.length > 0 ? (
+          <div className="container-shell mt-8">
+            <div className="surface-card p-6">
+              <p className="editorial-kicker">Common decisions</p>
+              <h2 className="mt-2 text-3xl font-black text-ink">What customers usually compare before they order</h2>
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {highlightedOptions.map((option) => (
+                  <article key={option.name} className="rounded-[1.2rem] border border-line bg-canvas p-4">
+                    <p className="text-sm font-black text-ink">{option.label}</p>
+                    {option.helperText ? <p className="mt-2 text-sm leading-6 text-slate">{option.helperText}</p> : null}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {option.choices?.slice(0, 4).map((choice) => (
+                        <span key={choice.value} className="value-chip">
+                          {choice.label}
+                        </span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="border-y border-line bg-canvas section-space">
@@ -149,12 +206,37 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </section>
 
       <section className="bg-white section-space">
-        <div className="container-shell">
-          <FaqAccordion items={product.faqs} />
+        <div className="container-shell grid gap-8 lg:grid-cols-[1fr_0.95fr]">
+          <section className="surface-card p-6">
+            <p className="editorial-kicker">How customers usually use this service</p>
+            <h2 className="mt-2 text-3xl font-black text-ink">Common order scenarios</h2>
+            <div className="mt-6 grid gap-4">
+              {product.idealFor.map((item, index) => (
+                <article key={item} className="rounded-[1.2rem] border border-line bg-canvas p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Scenario {index + 1}</p>
+                  <p className="mt-2 text-sm font-black text-ink">{item}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate">
+                    {index === 0
+                      ? "Best when the job needs to look polished and move forward with fewer production questions."
+                      : index === 1
+                        ? "Helpful when the format, message, or finish should match a specific business or campaign goal."
+                        : "A strong fit when local support, file review, or timing guidance matters before the order is locked in."}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+          <ServiceSupportPanel product={product} />
         </div>
       </section>
 
-      <RelatedServices products={related} />
+      <section className="bg-white section-space">
+        <div className="container-shell">
+          <FaqAccordion items={product.faqs} title={`${product.title} FAQ`} />
+        </div>
+      </section>
+
+      <RelatedServices products={related} title="Related services and smart next options" />
       <FinalCta product={product} />
     </>
   );

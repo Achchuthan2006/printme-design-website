@@ -28,6 +28,13 @@ export function CategoryDirectory() {
               <p className="font-black text-ink">Best for</p>
               <p className="mt-1">{category.highlight}</p>
             </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {category.trustNotes.map((note) => (
+                <span key={note} className="value-chip">
+                  {note}
+                </span>
+              ))}
+            </div>
             <div className="mt-4 flex items-center justify-between border-t border-line/75 pt-4">
               <span className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Browse category</span>
               <span className="text-sm font-black text-ink">View details</span>

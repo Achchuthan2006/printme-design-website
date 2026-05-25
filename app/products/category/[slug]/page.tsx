@@ -87,6 +87,9 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
                   </span>
                 ))}
               </div>
+              <div className="mt-5 rounded-[1.2rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                Not sure which one matches your job? Use the quote path when the size, finish, or final use is still unclear and PrintMe can help narrow it down before the order starts.
+              </div>
             </div>
           </div>
         </div>
