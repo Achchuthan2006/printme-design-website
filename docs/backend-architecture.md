@@ -41,6 +41,8 @@
   Artwork upload validation, secure storage path rules, and signed-upload generation
 - `lib/backend/workflow-engine.ts`
   Workflow transition guardrails for payment and order state mutation
+- `lib/backend/billing.ts`
+  Private Stripe customer/payment orchestration and checkout-to-billing linkage
 
 ## Current Frontend Platform Direction
 
@@ -87,6 +89,19 @@
   Delivery attempts, trigger names, status, and provider payload metadata
 - `idempotency_keys`
   Replay protection and cached API responses for critical write paths
+
+## Private Operational Schema
+
+Sensitive provider and audit records should live outside the customer-readable public workflow tables.
+
+- `private.billing_customers`
+  Stripe customer identifiers and backend-only billing linkage
+- `private.payment_records`
+  Checkout session, payment intent, charge, refund, and captured/refunded amount tracking
+- `private.webhook_events`
+  Immutable receipt log for verified provider webhooks and processing results
+- `private.email_deliveries`
+  Provider-level delivery metadata separate from customer-visible notification state
 - `catalog_products`
   Internal source-of-truth for product/service records, storefront state, and operational metadata
 - `catalog_variant_groups`
@@ -210,9 +225,11 @@ Every artwork file should eventually support:
 - Frontend creates checkout through `/api/checkout/session`
 - Backend stores order draft before redirect
 - Checkout requests now support backend idempotency keys and can pass that protection through to Stripe session creation
+- Backend creates or reuses a Stripe customer and persists that linkage in `private.billing_customers`
 - Stripe session metadata carries `orderNumber`, `paymentMode`, and review flags
 - Webhook route verifies signatures and updates backend payment truth
 - Webhook events should be processed exactly once using event-id replay protection before mutating payment state
+- Private payment records are updated from verified webhook events and remain server-controlled
 - Redirect pages are treated as UX, not source-of-truth payment state
 
 ## Automation Triggers
@@ -235,6 +252,7 @@ Prepared trigger points:
 - Shared Zod schemas validate cart, quote, request metadata, upload metadata, and Stripe session metadata
 - Idempotency records protect quote submission, checkout session creation, and webhook replays from duplicate writes
 - Notification delivery attempts are persisted so operational issues can be diagnosed without reading provider logs first
+- Storage access is path-scoped through signed upload URLs and bucket policies rather than broad client write access
 - Payment confirmation should always be webhook-driven and never inferred from success-page visits
 
 ## Recommended Next Build Steps

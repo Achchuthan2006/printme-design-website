@@ -115,6 +115,22 @@ export function buildPaymentConfirmedEmail(orderNumber: string, email: string, f
   };
 }
 
+export function buildWelcomeEmail(email: string, fullName?: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `Welcome to ${siteConfig.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Welcome to ${siteConfig.name}</h2>
+        <p>${fullName ? `Hi ${escapeHtml(fullName)},` : "Hi,"}</p>
+        <p>Your PrintMe account is ready. You can now track quotes, orders, artwork files, invoices, and repeat jobs in one place.</p>
+        <p>If you need help getting started, call ${siteConfig.phone} and our team will help you move the first job forward.</p>
+      </div>
+    `,
+  };
+}
+
 export function buildStatusUpdateEmail(orderNumber: string, email: string, status: string) {
   return {
     to: email,
@@ -139,6 +155,67 @@ export function buildUploadReceivedEmail(email: string, fileName: string, relate
         <h2>Artwork upload received</h2>
         <p>We received your file <strong>${escapeHtml(fileName)}</strong>${relatedLabel ? ` for <strong>${escapeHtml(relatedLabel)}</strong>` : ""}.</p>
         <p>Our team will review the file for size, bleed, resolution, and print readiness. If anything needs attention, we will let you know with the next step.</p>
+      </div>
+    `,
+  };
+}
+
+export function buildArtworkIssueEmail(email: string, fileName: string, issueSummary: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `Artwork update needed | ${siteConfig.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Artwork update needed</h2>
+        <p>We reviewed <strong>${escapeHtml(fileName)}</strong> and need one update before production can move forward.</p>
+        <p><strong>What needs attention:</strong> ${escapeHtml(issueSummary)}</p>
+        <p>You can reupload the corrected file or contact PrintMe if you want our team to help prepare it.</p>
+      </div>
+    `,
+  };
+}
+
+export function buildReadyForPickupEmail(orderNumber: string, email: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `Ready for pickup | ${escapeHtml(orderNumber)}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Your order is ready for pickup</h2>
+        <p>Order <strong>${escapeHtml(orderNumber)}</strong> is ready at the PrintMe shop.</p>
+        <p>Please bring your order number when you arrive. If you need pickup timing confirmed first, call ${siteConfig.phone}.</p>
+      </div>
+    `,
+  };
+}
+
+export function buildSupportAcknowledgementEmail(email: string, subject: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `We received your support request | ${siteConfig.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Support request received</h2>
+        <p>We received your request about <strong>${escapeHtml(subject)}</strong>.</p>
+        <p>A PrintMe team member will review it and reply with the next step as soon as possible.</p>
+      </div>
+    `,
+  };
+}
+
+export function buildInvoiceReceiptEmail(email: string, invoiceNumber: string, orderNumber?: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `Invoice receipt | ${escapeHtml(invoiceNumber)}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Your invoice is ready</h2>
+        <p>Invoice <strong>${escapeHtml(invoiceNumber)}</strong>${orderNumber ? ` for order <strong>${escapeHtml(orderNumber)}</strong>` : ""} is now available.</p>
+        <p>If you need a copy or have a billing question, reply to this email or call ${siteConfig.phone}.</p>
       </div>
     `,
   };

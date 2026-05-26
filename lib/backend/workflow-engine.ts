@@ -1,6 +1,8 @@
 import {
   createPaymentAuditRecord,
+  getPrivatePaymentRecordByOrderNumber,
   recordNotificationEvent,
+  upsertPrivatePaymentRecord,
   updateOrderPaymentState,
 } from "@/lib/backend/repository";
 import { OrderWorkflowStatus, PaymentWorkflowStatus, WorkflowEventType } from "@/lib/backend/workflows";
@@ -64,5 +66,25 @@ export async function applyPaymentWorkflowTransition(params: {
     amountCents: params.amountCents,
     currency: params.currency,
     rawEventType: params.rawEventType,
+  });
+
+  const existing = await getPrivatePaymentRecordByOrderNumber(params.orderNumber);
+  await upsertPrivatePaymentRecord({
+    orderNumber: params.orderNumber,
+    profileId: existing?.profile_id ?? null,
+    providerCustomerId: existing?.provider_customer_id ?? null,
+    providerCheckoutSessionId: params.stripeSessionId ?? existing?.provider_checkout_session_id ?? null,
+    providerPaymentIntentId: params.stripePaymentIntentId ?? existing?.provider_payment_intent_id ?? null,
+    paymentMode: existing?.payment_mode ?? "full",
+    status: params.toStatus,
+    amountAuthorizedCents: existing?.amount_authorized_cents ?? params.amountCents ?? null,
+    amountCapturedCents: params.toStatus === "paid" ? params.amountCents ?? existing?.amount_captured_cents ?? null : existing?.amount_captured_cents ?? null,
+    amountRefundedCents: params.toStatus === "refunded" ? params.amountCents ?? existing?.amount_refunded_cents ?? 0 : existing?.amount_refunded_cents ?? 0,
+    currency: params.currency ?? existing?.currency ?? "cad",
+    billingEmail: existing?.billing_email ?? null,
+    metadata: {
+      ...((existing?.metadata as Record<string, unknown> | undefined) ?? {}),
+      lastWebhookEventType: params.rawEventType,
+    },
   });
 }

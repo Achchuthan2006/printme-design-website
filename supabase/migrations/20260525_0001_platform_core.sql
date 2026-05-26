@@ -181,6 +181,26 @@ create table if not exists public.notifications (
   created_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.internal_notes (
+  id uuid primary key default gen_random_uuid(),
+  entity_type text not null,
+  entity_id text not null,
+  author_profile_id uuid references public.profiles(id) on delete set null,
+  note text not null,
+  visibility text not null default 'internal',
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.admin_activity_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_profile_id uuid references public.profiles(id) on delete set null,
+  entity_type text not null,
+  entity_id text not null,
+  action text not null,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.support_requests (
   id uuid primary key default gen_random_uuid(),
   ticket_number text not null unique,

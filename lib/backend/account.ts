@@ -1,4 +1,6 @@
 import { resolveAppRole } from "@/lib/authz";
+import { dispatchWelcomeNotification } from "@/lib/backend/notifications";
+import { getProfileByEmail } from "@/lib/backend/repository";
 import { isSupabaseServerConfigured } from "@/lib/env";
 import { logWarn } from "@/lib/logger";
 import { getSupabaseServerClient } from "@/lib/supabase";
@@ -107,6 +109,7 @@ export async function syncCustomerProfile(user: User, overrides?: Partial<Custom
 
   const baseProfile = buildProfileDraftFromUser(user, resolveAppRole(user.email));
   const profile = { ...baseProfile, ...overrides };
+  const existingProfile = await getProfileByEmail(user.email);
 
   const payload = {
     auth_user_id: user.id,
@@ -140,7 +143,7 @@ export async function syncCustomerProfile(user: User, overrides?: Partial<Custom
     account_status?: "active" | "pending" | "paused";
   } | null;
 
-  return {
+  const resolvedProfile = {
     id: record?.id,
     authUserId: record?.auth_user_id ?? user.id,
     fullName: record?.full_name ?? profile.fullName,
@@ -151,6 +154,16 @@ export async function syncCustomerProfile(user: User, overrides?: Partial<Custom
     accountStatus: record?.account_status ?? "active",
     communicationPreferences: profile.communicationPreferences,
   } satisfies CustomerProfile;
+
+  if (!existingProfile && record?.id && record?.email) {
+    await dispatchWelcomeNotification({
+      profileId: record.id,
+      customerEmail: record.email,
+      customerFullName: record.full_name ?? profile.fullName,
+    });
+  }
+
+  return resolvedProfile;
 }
 
 export async function getCustomerDashboardData(user: User): Promise<AccountDashboardData> {

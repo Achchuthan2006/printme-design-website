@@ -45,7 +45,8 @@ Recommended production rule:
 3. Create the private `print-files` storage bucket or set `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` to the production bucket name.
 4. Enable Row Level Security for customer-facing tables before storing live customer data.
 5. Apply the profile, address, order, quote, upload, invoice, and support policies from the migration set before launch.
-6. Plan the migration from email allowlists to `profiles.role` or equivalent claims before scaling staff workflows.
+6. Confirm the private schema tables for Stripe customers, payment records, webhook events, and email deliveries are present and only server-controlled.
+7. Plan the migration from email allowlists to `profiles.role` or equivalent claims before scaling staff workflows.
 
 ## Payments and webhook readiness
 
@@ -54,13 +55,15 @@ Recommended production rule:
 3. Confirm webhook signatures with `STRIPE_WEBHOOK_SECRET`.
 4. Verify that checkout session metadata includes the order identifiers needed by internal operations.
 5. Test failed payment, deposit payment, cancelled checkout, and repeated webhook delivery paths before launch.
+6. Verify that webhook receipts are written to the private webhook event log and that private payment records update with captured/refunded values.
 
 ## Email and notifications
 
 1. Verify SendGrid sender authentication for the PrintMe domain.
 2. Confirm admin recipients for quote, checkout, and support notifications.
-3. Test customer-facing emails for quote received, order placed, upload received, and payment confirmation.
-4. Add monitoring or alerting around failed notification sends before depending on them operationally.
+3. Test customer-facing emails for welcome, quote received, order placed, upload received, payment confirmation, artwork issue, and pickup-ready notifications.
+4. Confirm provider-level delivery metadata is stored in the private email delivery log.
+5. Add monitoring or alerting around failed notification sends before depending on them operationally.
 
 ## Release checklist
 

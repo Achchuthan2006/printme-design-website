@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/backend/auth";
+import { dispatchUploadReceivedNotification } from "@/lib/backend/notifications";
 import { uploadMetadataSchema } from "@/lib/backend/schemas";
-import { persistArtworkMetadataRecord } from "@/lib/backend/repository";
+import { getUploadNotificationContext, persistArtworkMetadataRecord } from "@/lib/backend/repository";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
 
@@ -21,6 +22,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Upload metadata is incomplete." }, { status: 400 });
     }
 
+    const auth = await authenticateRequest(request);
+    const profileId = auth?.user.id ?? parsed.data.context.customerId;
     const result = await persistArtworkMetadataRecord({
       fileId: parsed.data.id,
       fileName: parsed.data.fileName,
@@ -32,9 +35,24 @@ export async function POST(request: Request) {
       scope: parsed.data.context.scope,
       quoteId: parsed.data.context.quoteId,
       orderId: parsed.data.context.orderId,
-      customerId: (await authenticateRequest(request))?.user.id ?? parsed.data.context.customerId,
+      customerId: profileId,
       productSlug: parsed.data.context.productSlug,
     });
+
+    const notificationContext = await getUploadNotificationContext({
+      profileId,
+      quoteNumber: parsed.data.context.quoteId,
+      orderNumber: parsed.data.context.orderId,
+    });
+
+    if (notificationContext?.customerEmail) {
+      await dispatchUploadReceivedNotification({
+        fileId: parsed.data.id,
+        customerEmail: notificationContext.customerEmail,
+        fileName: parsed.data.fileName,
+        relatedLabel: parsed.data.context.orderId ?? parsed.data.context.quoteId ?? parsed.data.context.productSlug,
+      });
+    }
 
     logInfo("Upload metadata received", {
       fileName: parsed.data.fileName,

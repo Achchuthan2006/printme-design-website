@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkoutRequestSchema } from "@/lib/backend/schemas";
+import { ensureStripeCustomer, recordCheckoutBillingRecord } from "@/lib/backend/billing";
 import { dispatchOrderReceivedNotifications } from "@/lib/backend/notifications";
 import { createPayloadFingerprint, resolveIdempotencyKey } from "@/lib/backend/idempotency";
 import {
@@ -67,6 +68,11 @@ export async function POST(request: Request) {
 
     const successUrl = `${env.siteUrl}/checkout/success?order=${encodeURIComponent(order.orderNumber)}`;
     const cancelUrl = `${env.siteUrl}/checkout/cancel?order=${encodeURIComponent(order.orderNumber)}`;
+    const billingCustomer = await ensureStripeCustomer({
+      email: parsed.data.customer.email,
+      fullName: parsed.data.customer.fullName,
+      phone: parsed.data.customer.phone,
+    });
 
     const session = await createCheckoutSession({
       order,
@@ -74,6 +80,7 @@ export async function POST(request: Request) {
       successUrl,
       cancelUrl,
       idempotencyKey,
+      customerId: billingCustomer.stripeCustomerId,
     });
 
     if ("sessionId" in session && session.sessionId) {
@@ -82,6 +89,14 @@ export async function POST(request: Request) {
         stripeSessionId: session.sessionId,
       });
     }
+
+    await recordCheckoutBillingRecord({
+      order,
+      paymentMode: parsed.data.paymentMode,
+      stripeCustomerId: billingCustomer.stripeCustomerId,
+      stripeSessionId: "sessionId" in session ? session.sessionId : null,
+      currency: "cad",
+    });
 
     if (!persistence.persisted) {
       await recordOperationalWarning("Order draft could not be persisted to the primary repository.", {

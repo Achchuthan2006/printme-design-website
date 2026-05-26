@@ -9,9 +9,10 @@ export interface CheckoutSessionInput {
   successUrl: string;
   cancelUrl: string;
   idempotencyKey?: string;
+  customerId?: string | null;
 }
 
-function getStripeClient() {
+export function getStripeClient() {
   if (!env.stripeSecretKey) return null;
   return new Stripe(env.stripeSecretKey);
 }
@@ -64,7 +65,7 @@ export async function createCheckoutSession(input: CheckoutSessionInput) {
   const session = await stripe.checkout.sessions.create(
     {
       mode: "payment",
-      customer_email: input.order.customer.email,
+      ...(input.customerId ? { customer: input.customerId } : { customer_email: input.order.customer.email }),
       line_items: lineItems,
       success_url: input.successUrl,
       cancel_url: input.cancelUrl,

@@ -65,6 +65,44 @@ export interface NotificationRecordInput {
   deliveredAt?: string;
 }
 
+export interface PrivateBillingCustomerInput {
+  profileId?: string | null;
+  email: string;
+  stripeCustomerId: string;
+  customerName?: string;
+  phone?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PrivatePaymentRecordInput {
+  orderNumber: string;
+  profileId?: string | null;
+  invoiceId?: string | null;
+  providerCustomerId?: string | null;
+  providerCheckoutSessionId?: string | null;
+  providerPaymentIntentId?: string | null;
+  providerChargeId?: string | null;
+  paymentMode: "full" | "deposit";
+  status: PaymentWorkflowStatus;
+  amountAuthorizedCents?: number | null;
+  amountCapturedCents?: number | null;
+  amountRefundedCents?: number | null;
+  currency?: string | null;
+  billingEmail?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface WebhookEventInput {
+  provider: "stripe";
+  providerEventId: string;
+  eventType: string;
+  livemode: boolean;
+  relatedOrderNumber?: string | null;
+  processingStatus?: "received" | "processed" | "ignored" | "failed";
+  payload: Record<string, unknown>;
+  processingError?: string | null;
+}
+
 async function insertWorkflowEvent(event: Omit<WorkflowEventRecord, "id">) {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
@@ -99,6 +137,32 @@ async function resolveProfileIdByEmail(email?: string | null) {
   return record?.id ?? null;
 }
 
+export async function getProfileByEmail(email?: string | null) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured() || !email) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, auth_user_id, full_name, email, phone, company_name, role")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (error) {
+    logWarn("Profile lookup by email skipped", { email, reason: error.message });
+    return null;
+  }
+
+  return (data as {
+    id: string;
+    auth_user_id?: string | null;
+    full_name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    company_name?: string | null;
+    role?: string | null;
+  } | null) ?? null;
+}
+
 export async function recordNotificationEvent(input: NotificationRecordInput) {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
@@ -120,6 +184,190 @@ export async function recordNotificationEvent(input: NotificationRecordInput) {
       triggerName: input.triggerName,
       reason: error.message,
     });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function recordEmailDeliveryEvent(input: {
+  notificationId?: string | null;
+  entityType: "quote" | "order" | "upload" | "support";
+  entityId: string;
+  triggerName: string;
+  recipient: string;
+  provider: "sendgrid";
+  providerMessageId?: string;
+  deliveryStatus: "pending" | "sent" | "failed" | "skipped";
+  payload?: Record<string, unknown>;
+  sentAt?: string;
+}) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("private.email_deliveries").insert([{
+    notification_id: input.notificationId ?? null,
+    entity_type: input.entityType,
+    entity_id: input.entityId,
+    trigger_name: input.triggerName,
+    recipient: input.recipient,
+    provider: input.provider,
+    provider_message_id: input.providerMessageId ?? null,
+    delivery_status: input.deliveryStatus,
+    payload: input.payload ?? {},
+    sent_at: input.sentAt ?? null,
+  }] as never[]);
+
+  if (error) {
+    logWarn("Private email delivery persistence skipped", { entityId: input.entityId, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function getPrivateBillingCustomer(params: { profileId?: string | null; email?: string | null }) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return null;
+
+  let query = supabase.from("private.billing_customers").select(
+    "id, profile_id, email, stripe_customer_id, customer_name, phone, metadata, created_at",
+  );
+
+  if (params.profileId) {
+    query = query.eq("profile_id", params.profileId);
+  } else if (params.email) {
+    query = query.eq("email", params.email);
+  } else {
+    return null;
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (error) {
+    logWarn("Private billing customer lookup skipped", { reason: error.message });
+    return null;
+  }
+
+  return (data as {
+    id: string;
+    profile_id?: string | null;
+    email: string;
+    stripe_customer_id: string;
+    customer_name?: string | null;
+    phone?: string | null;
+    metadata?: Record<string, unknown> | null;
+  } | null) ?? null;
+}
+
+export async function upsertPrivateBillingCustomer(input: PrivateBillingCustomerInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("private.billing_customers").upsert([{
+    profile_id: input.profileId ?? null,
+    email: input.email,
+    stripe_customer_id: input.stripeCustomerId,
+    customer_name: input.customerName ?? null,
+    phone: input.phone ?? null,
+    metadata: input.metadata ?? {},
+  }] as never[], {
+    onConflict: "stripe_customer_id",
+  });
+
+  if (error) {
+    logWarn("Private billing customer upsert skipped", { email: input.email, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function upsertPrivatePaymentRecord(input: PrivatePaymentRecordInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const payload = {
+    order_number: input.orderNumber,
+    invoice_id: input.invoiceId ?? null,
+    profile_id: input.profileId ?? null,
+    provider: "stripe",
+    provider_customer_id: input.providerCustomerId ?? null,
+    provider_checkout_session_id: input.providerCheckoutSessionId ?? null,
+    provider_payment_intent_id: input.providerPaymentIntentId ?? null,
+    provider_charge_id: input.providerChargeId ?? null,
+    payment_mode: input.paymentMode,
+    status: input.status,
+    amount_authorized_cents: input.amountAuthorizedCents ?? null,
+    amount_captured_cents: input.amountCapturedCents ?? null,
+    amount_refunded_cents: input.amountRefundedCents ?? 0,
+    currency: input.currency ?? "cad",
+    billing_email: input.billingEmail ?? null,
+    metadata: input.metadata ?? {},
+  };
+
+  const { error } = await supabase.from("private.payment_records").upsert([payload] as never[], {
+    onConflict: "provider_checkout_session_id",
+  });
+
+  if (error) {
+    logWarn("Private payment record upsert skipped", { orderNumber: input.orderNumber, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function getPrivatePaymentRecordByOrderNumber(orderNumber: string) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return null;
+
+  const { data, error } = await supabase.from("private.payment_records").select(
+    "id, order_number, profile_id, provider_customer_id, provider_checkout_session_id, provider_payment_intent_id, payment_mode, status, amount_authorized_cents, amount_captured_cents, amount_refunded_cents, currency, billing_email, metadata",
+  ).eq("order_number", orderNumber).order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+  if (error) {
+    logWarn("Private payment record lookup skipped", { orderNumber, reason: error.message });
+    return null;
+  }
+
+  return data as {
+    id: string;
+    order_number: string;
+    profile_id?: string | null;
+    provider_customer_id?: string | null;
+    provider_checkout_session_id?: string | null;
+    provider_payment_intent_id?: string | null;
+    payment_mode: "full" | "deposit";
+    status: PaymentWorkflowStatus;
+    amount_authorized_cents?: number | null;
+    amount_captured_cents?: number | null;
+    amount_refunded_cents?: number | null;
+    currency?: string | null;
+    billing_email?: string | null;
+    metadata?: Record<string, unknown> | null;
+  } | null;
+}
+
+export async function persistWebhookEventRecord(input: WebhookEventInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("private.webhook_events").upsert([{
+    provider: input.provider,
+    provider_event_id: input.providerEventId,
+    event_type: input.eventType,
+    livemode: input.livemode,
+    related_order_number: input.relatedOrderNumber ?? null,
+    processing_status: input.processingStatus ?? "received",
+    payload: input.payload,
+    processing_error: input.processingError ?? null,
+    processed_at: input.processingStatus === "processed" || input.processingStatus === "ignored" ? new Date().toISOString() : null,
+  }] as never[], {
+    onConflict: "provider_event_id",
+  });
+
+  if (error) {
+    logWarn("Webhook event persistence skipped", { providerEventId: input.providerEventId, reason: error.message });
     return { persisted: false };
   }
 
@@ -566,6 +814,53 @@ export async function getOrderNotificationContext(orderNumber: string) {
     workflowStatus: record.workflow_status,
     paymentStatus: record.payment_status,
   };
+}
+
+export async function getUploadNotificationContext(params: {
+  profileId?: string;
+  quoteNumber?: string;
+  orderNumber?: string;
+}) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return null;
+
+  if (params.profileId) {
+    const { data } = await supabase.from("profiles").select("email, full_name").eq("id", params.profileId).maybeSingle();
+    const profile = data as { email?: string | null; full_name?: string | null } | null;
+    if (profile?.email) {
+      return {
+        customerEmail: profile.email,
+        customerFullName: profile.full_name ?? undefined,
+      };
+    }
+  }
+
+  if (params.orderNumber) {
+    const order = await getOrderNotificationContext(params.orderNumber);
+    if (order?.customerEmail) {
+      return {
+        customerEmail: order.customerEmail,
+        customerFullName: order.customerFullName,
+      };
+    }
+  }
+
+  if (params.quoteNumber) {
+    const { data } = await supabase
+      .from("quote_requests")
+      .select("email, full_name")
+      .eq("quote_number", params.quoteNumber)
+      .maybeSingle();
+    const quote = data as { email?: string | null; full_name?: string | null } | null;
+    if (quote?.email) {
+      return {
+        customerEmail: quote.email,
+        customerFullName: quote.full_name ?? undefined,
+      };
+    }
+  }
+
+  return null;
 }
 
 export async function getOrderPaymentSnapshot(orderNumber: string) {
