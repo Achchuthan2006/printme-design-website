@@ -12,7 +12,7 @@ import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { useAuth } from "@/components/account/auth-provider";
 import { siteConfig } from "@/lib/site";
 import { timelineRules } from "@/data/experience";
-import { ArtworkUploadMetadata } from "@/types";
+import { ArtworkUploadMetadata, ProductOrderMethod } from "@/types";
 
 const initialState = {
   fullName: "",
@@ -28,12 +28,31 @@ const initialState = {
 
 type FormState = typeof initialState;
 
-export function QuoteRequestForm({ initialService = "" }: { initialService?: string }) {
+const orderMethodLabels: Record<ProductOrderMethod, string> = {
+  "ready-template": "Use a ready template",
+  "customize-template": "Choose a design and customize it",
+  "upload-finished-design": "Upload my finished design",
+  "request-custom-design": "Request a full custom design",
+};
+
+export function QuoteRequestForm({
+  initialService = "",
+  initialMethod = "",
+  initialTemplate = "",
+  initialBrief = "",
+}: {
+  initialService?: string;
+  initialMethod?: string;
+  initialTemplate?: string;
+  initialBrief?: string;
+}) {
   const { user, configured } = useAuth();
   const normalizedInitialService = initialService.trim();
   const matchedProduct = products.find((product) => product.slug === normalizedInitialService);
   const matchedService = serviceOptions.find((service) => service.toLowerCase() === normalizedInitialService.toLowerCase());
   const prefillingService = matchedProduct?.title ?? matchedService ?? initialService;
+  const normalizedMethod = initialMethod as ProductOrderMethod | "";
+  const methodLabel = normalizedMethod ? orderMethodLabels[normalizedMethod] : "";
 
   const [form, setForm] = useState<FormState>(initialState);
   const [status, setStatus] = useState<{ type: "idle" | "success" | "error"; message?: string }>({
@@ -47,6 +66,11 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
     if (!prefillingService) return;
     setForm((current) => (current.serviceNeeded === prefillingService ? current : { ...current, serviceNeeded: prefillingService }));
   }, [prefillingService]);
+
+  useEffect(() => {
+    if (!initialBrief) return;
+    setForm((current) => (current.projectDetails === initialBrief ? current : { ...current, projectDetails: initialBrief }));
+  }, [initialBrief]);
 
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -79,12 +103,23 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
 
     startTransition(async () => {
       try {
+        const structuredProjectDetails = [
+          normalizedMethod ? `Order method: ${methodLabel}.` : null,
+          initialTemplate ? `Selected template: ${initialTemplate}.` : null,
+          validated.data.projectDetails,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
         const response = await fetch("/api/quote-request", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(validated.data),
+          body: JSON.stringify({
+            ...validated.data,
+            projectDetails: structuredProjectDetails,
+          }),
         });
 
         const result = (await response.json()) as { message?: string };
@@ -135,11 +170,21 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
           </div>
         ) : null}
 
+        {normalizedMethod ? (
+          <div className="rounded-[1.4rem] border border-brand/15 bg-brand-soft px-4 py-4 text-sm leading-6 text-brand">
+            <p className="font-black text-ink">Order method already selected: {methodLabel}</p>
+            <p className="mt-1">
+              This request started from the product order studio, so the team will receive a clearer structured brief instead of a generic message.
+              {initialTemplate ? ` Template selected: ${initialTemplate}.` : ""}
+            </p>
+          </div>
+        ) : null}
+
         <div className="grid gap-3 md:grid-cols-3">
             {[
-            { label: "Step 1", title: "Tell us the job", detail: "Service, quantity, and turnaround window." },
+            { label: "Step 1", title: "Tell us the job", detail: normalizedMethod ? "Product, order method, quantity, and turnaround window." : "Service, quantity, and turnaround window." },
             { label: "Step 2", title: "Upload files if ready", detail: "Helpful for more accurate review, but optional." },
-            { label: "Step 3", title: "Get the next step", detail: "Quote, clarification, or the safest production path." },
+            { label: "Step 3", title: "Get the next step", detail: "Quote, clarification, proof path, or the safest production route." },
           ].map((item) => (
             <div key={item.title} className="signal-card">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{item.label}</p>

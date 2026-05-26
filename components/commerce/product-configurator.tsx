@@ -107,8 +107,8 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
     [product.options],
   );
   const nextStepCopy = canAddToCart
-    ? "Use the order builder when the quantity, format, and basic finish are clear enough to move into cart."
-    : "This service is better handled through a quote or a direct conversation before pricing and production are confirmed.";
+    ? "Choose the practical specs here first, then use the order studio to decide whether you want a template, an upload path, or a custom design handoff."
+    : "Confirm the practical specs here first, then use the order studio to choose the clearest quote, upload, or custom-design path.";
 
   function updateOption(name: string, value: string) {
     setStatus("idle");
@@ -155,11 +155,16 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
         <p className="editorial-kicker">Build your order</p>
         <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
-          Choose the practical details now. PrintMe still reviews files, timing, and special instructions before production, so you are not locked into guesswork.
+          Step 1 is always product specs. Confirm the size, quantity, finish, and fulfillment basics here before you choose the final order method.
         </p>
         <p className="mt-4 rounded-[1.2rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
           <span className="font-black text-ink">Best next step:</span> {nextStepCopy}
         </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <Button href="#order-studio" variant="secondary" className="px-4 py-2.5 text-xs">
+            Step 2: Choose Order Method
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[1fr_330px]">
@@ -235,6 +240,9 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
             <div className="mt-5 grid gap-3">
               <Button type="button" onClick={addToCart} disabled={!canAddToCart}>
                 {canAddToCart ? "Add to Cart" : "Quote Required"}
+              </Button>
+              <Button href="#order-studio" variant="secondary">
+                Review Order Methods
               </Button>
               {status === "added" ? (
                 <>

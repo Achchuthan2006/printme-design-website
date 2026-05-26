@@ -23,8 +23,8 @@ import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { buildMetadata } from "@/lib/metadata";
 import { getCategoryBySlug, getProductBySlug, getRelatedProducts, products } from "@/data/products";
 
-const WebToPrintStudio = dynamic(
-  () => import("@/components/catalog/web-to-print-studio").then((module) => module.WebToPrintStudio),
+const ProductOrderStudio = dynamic(
+  () => import("@/components/catalog/product-order-studio").then((module) => module.ProductOrderStudio),
   {
     loading: () => <div className="surface-card h-80 animate-pulse p-6" />,
   },
@@ -211,7 +211,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         ) : null}
         <div className="container-shell mt-8">
-          <WebToPrintStudio product={product} />
+          <ProductOrderStudio product={product} />
         </div>
       </section>
 

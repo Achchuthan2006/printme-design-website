@@ -3,13 +3,14 @@ import { siteConfig } from "@/lib/site";
 import { PrintProduct } from "@/types";
 
 export function ProductActions({ product }: { product: PrintProduct }) {
-  const uploadHref = `/quote-request?service=${product.slug}#upload`;
+  const uploadHref = `/quote-request?service=${product.slug}&method=upload-finished-design#upload`;
+  const customDesignHref = `/quote-request?service=${product.slug}&method=request-custom-design`;
 
   if (product.ctaMode === "direct-order") {
     return (
       <>
-        <Button href="#order-builder">Order Online Now</Button>
-        <Button href={uploadHref} variant="secondary">Upload Artwork First</Button>
+        <Button href="#order-studio">Choose Order Method</Button>
+        <Button href="#order-builder" variant="secondary">Jump to Specs</Button>
       </>
     );
   }
@@ -17,8 +18,8 @@ export function ProductActions({ product }: { product: PrintProduct }) {
   if (product.ctaMode === "upload-first") {
     return (
       <>
-        <Button href={uploadHref}>Upload Artwork for Review</Button>
-        <Button href={`/quote-request?service=${product.slug}`} variant="secondary">Start with a Quote</Button>
+        <Button href="#order-studio">Choose Order Method</Button>
+        <Button href={uploadHref} variant="secondary">Upload Artwork for Review</Button>
       </>
     );
   }
@@ -34,8 +35,8 @@ export function ProductActions({ product }: { product: PrintProduct }) {
 
   return (
     <>
-      <Button href={`/quote-request?service=${product.slug}`}>Get a Custom Quote</Button>
-      <Button href={siteConfig.phoneHref} variant="secondary">Call About This Job</Button>
+      <Button href="#order-studio">Choose Order Method</Button>
+      <Button href={customDesignHref} variant="secondary">Request Custom Design</Button>
     </>
   );
 }

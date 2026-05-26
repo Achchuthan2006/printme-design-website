@@ -35,6 +35,24 @@ export default function ProductsPage() {
       description: "If the job is custom, specialty, or uncertain, move into a guided quote request instead of forcing a direct order.",
     },
   ];
+  const orderMethodSignals = [
+    {
+      title: "Use a ready template",
+      detail: "Fastest when you want a stored layout and only light editable details.",
+    },
+    {
+      title: "Choose a design and customize it",
+      detail: "Best when you want a template direction but still need PrintMe to adapt it.",
+    },
+    {
+      title: "Upload a finished file",
+      detail: "For customers who already have final artwork and need file review plus the right specs.",
+    },
+    {
+      title: "Request a full custom design",
+      detail: "For products that still need creative work, layout help, or brand setup from scratch.",
+    },
+  ];
 
   return (
     <>
@@ -82,6 +100,25 @@ export default function ProductsPage() {
                   <p className="mt-3 text-sm leading-6 text-slate">{category.description}</p>
                 </a>
               ))}
+            </div>
+          </div>
+          <div className="rounded-[1.9rem] border border-line/80 bg-white p-6 shadow-soft">
+            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+              <div>
+                <p className="editorial-kicker">Ordering architecture</p>
+                <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Every major product now follows the same guided logic.</h2>
+                <p className="mt-3 text-sm leading-7 text-slate">
+                  Choose the product first. Confirm the specs. Pick the right order method. Preview what you can. Then submit a clearer order, upload, or custom request for the team.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {orderMethodSignals.map((item) => (
+                  <div key={item.title} className="signal-card">
+                    <p className="text-sm font-black text-ink">{item.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

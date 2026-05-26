@@ -67,6 +67,11 @@ export type PaymentWorkflowStatus =
 
 export type ProductMode = "direct-order" | "quote-only" | "hybrid";
 export type ProductCtaMode = "direct-order" | "quote-first" | "upload-first" | "contact";
+export type ProductOrderMethod =
+  | "ready-template"
+  | "customize-template"
+  | "upload-finished-design"
+  | "request-custom-design";
 
 export interface ProductCategory {
   slug: string;
@@ -139,6 +144,8 @@ export interface ProductTemplate {
   summary: string;
   recommendedSize: string;
   tags: string[];
+  editableFields?: Array<"fullName" | "companyName" | "phone" | "email" | "website" | "headline">;
+  styleDirection?: string;
   views: ProductTemplateView[];
 }
 

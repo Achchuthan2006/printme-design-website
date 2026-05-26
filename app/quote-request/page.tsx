@@ -13,9 +13,9 @@ export const metadata = buildMetadata({
 export default async function QuoteRequestPage({
   searchParams,
 }: {
-  searchParams: Promise<{ service?: string }>;
+  searchParams: Promise<{ service?: string; method?: string; template?: string; brief?: string }>;
 }) {
-  const { service } = await searchParams;
+  const { service, method, template, brief } = await searchParams;
   const quoteExpectations = [
     "A clearer request helps us reply with fewer follow-up questions.",
     "Artwork is helpful but not required. You can still send the project first.",
@@ -34,7 +34,12 @@ export default async function QuoteRequestPage({
       />
       <section className="section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-          <QuoteRequestForm initialService={service ?? ""} />
+          <QuoteRequestForm
+            initialService={service ?? ""}
+            initialMethod={method ?? ""}
+            initialTemplate={template ?? ""}
+            initialBrief={brief ?? ""}
+          />
           <aside className="space-y-6">
             <div className="surface-card p-6">
               <p className="editorial-kicker">Quote quality</p>
