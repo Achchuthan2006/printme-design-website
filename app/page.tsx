@@ -2,16 +2,18 @@ import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { LocalContactCard } from "@/components/conversion/local-contact-card";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
+import { ReviewProofPanel } from "@/components/conversion/review-proof-panel";
 import { MobileBottomCta } from "@/components/sections/mobile-bottom-cta";
 import { HeroPrintComposition } from "@/components/sections/print-product-visual";
 import { ServiceCard } from "@/components/sections/service-card";
 import { TrustBadge } from "@/components/sections/trust-badge";
+import { BrandArchitecturePanel } from "@/components/catalog/brand-architecture-panel";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { analyticsEvents, homeHeroVariants } from "@/data/cro";
 import { buildMetadata } from "@/lib/metadata";
-import { processSteps, services, siteConfig, testimonials, whyChooseUs } from "@/lib/site";
+import { processSteps, services, siteConfig, whyChooseUs } from "@/lib/site";
 
 const heroCopy = homeHeroVariants.default;
 
@@ -72,10 +74,10 @@ export default function HomePage() {
                   <span className="headline-accent">{heroCopy.headline}</span>
                 </h1>
                 <p className="hero-in mt-5 max-w-xl text-[15px] leading-8 text-slate [--delay:210ms] sm:text-lg">
-                  {heroCopy.subheadline}
+                  Premium print, signs, and design support with clear paths for quote-first, direct order, and local pickup.
                 </p>
                 <p className="hero-in mt-4 max-w-2xl text-sm font-bold leading-6 text-ink [--delay:250ms]">
-                  Order online when the specs are clear, request a quote when the job is custom, or call the shop when you need a fast local answer before the deadline moves.
+                  Order when the specs are clear. Quote when the job is custom. Call when timing matters.
                 </p>
                 <div className="hero-in mt-7 flex flex-col gap-3 [--delay:300ms] sm:flex-row">
                   <Button href="/quote-request" data-event={analyticsEvents.heroQuoteClick}>
@@ -129,9 +131,9 @@ export default function HomePage() {
           <div className="section-frame grid gap-5 p-5 xl:grid-cols-[0.92fr_1.08fr] xl:p-6">
             <div className="editorial-panel pl-7 pr-5 py-5">
               <p className="editorial-kicker">Start the right way</p>
-              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink sm:text-[2.5rem]">Three clear ways to start, depending on how ready the job is.</h2>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink sm:text-[2.5rem]">Three clear ways to start.</h2>
               <p className="mt-3 max-w-xl text-sm leading-7 text-slate">
-                Some customers are ready to order now. Others need sizing, timing, finishing, or artwork help first. Pick the path that matches your job instead of forcing the wrong checkout flow.
+                Pick the path that matches the job instead of forcing the wrong checkout flow.
               </p>
               <div className="mt-5 rounded-[1.25rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
                 <p className="font-black text-ink">Simple rule for faster progress</p>
@@ -194,14 +196,12 @@ export default function HomePage() {
 
       <section className="reveal-up bg-white section-space">
         <div className="container-shell">
-          <SectionHeading
-            eyebrow="Service breadth, presented cleanly"
-            title="A broader print platform than a basic local shop menu."
-            description="Business essentials, marketing materials, postcards, promotional printing, print-and-mail support, technical documents, design help, and custom jobs organized into clear service families."
-            align="center"
-          />
+          <SectionHeading eyebrow="Service families" title="Clear product pillars, not a noisy catalog." description="Core print, signage, design-led custom work, and local essentials organized into cleaner service groups." align="center" />
           <div className="mt-10">
             <CategoryDirectory />
+          </div>
+          <div className="mt-8">
+            <BrandArchitecturePanel />
           </div>
         </div>
       </section>
@@ -345,46 +345,7 @@ export default function HomePage() {
 
       <section id="reviews" className="reveal-up bg-canvas section-space">
         <div className="container-shell">
-          <SectionHeading
-            eyebrow="Local proof"
-            title="Trusted by customers who need the work to feel polished, fast, and under control."
-            description="The kind of local print support people come back for when the deadline is real and the finished result needs to represent their business well."
-            align="center"
-          />
-          <div className="mt-10 grid gap-5 xl:grid-cols-[0.82fr_1.18fr]">
-            <div className="editorial-panel pl-7 pr-5 py-5">
-              <p className="editorial-kicker">What people value most</p>
-              <h3 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Speed matters. Clarity matters more.</h3>
-              <p className="mt-3 text-sm leading-7 text-slate">
-                Repeat customers come back because the process feels calmer: timing is discussed honestly, files are reviewed, and the finished work lands with more confidence.
-              </p>
-              <div className="mt-5 grid gap-3">
-                {["Honest timing before commitment", "Artwork reviewed together"].map((item) => (
-                  <div key={item} className="value-chip w-fit">
-                    <Icon name="check" className="h-3.5 w-3.5 text-brand" />
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-5 md:grid-cols-3">
-              {testimonials.map((item) => (
-                <article key={item.name} className="premium-card premium-depth rounded-[1.7rem] border border-line bg-white p-6 hover:border-brand/30 hover:shadow-card">
-                  <p className="font-display text-5xl leading-none text-brand">"</p>
-                  <p className="mt-3 text-sm leading-7 text-slate">{item.quote}</p>
-                  <div className="mt-6 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-sm font-black text-brand">
-                      {item.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-ink">{item.name}</p>
-                      <p className="text-xs text-slate">{item.company}</p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
+          <ReviewProofPanel />
         </div>
       </section>
 

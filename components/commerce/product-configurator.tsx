@@ -13,6 +13,7 @@ import {
 } from "@/lib/pricing";
 import { ProductOption, PrintProduct } from "@/types";
 import { cn } from "@/lib/utils";
+import { timelineRules } from "@/data/experience";
 
 function OptionField({
   option,
@@ -101,6 +102,10 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
   const price = useMemo(() => calculateProductPrice(product, options), [product, options]);
   const optionLabels = useMemo(() => buildOptionLabels(product, options), [product, options]);
   const canAddToCart = product.mode !== "quote-only" && product.ctaMode !== "contact";
+  const configurableOptions = useMemo(
+    () => product.options.filter((option) => option.group !== "turnaround"),
+    [product.options],
+  );
   const nextStepCopy = canAddToCart
     ? "Use the order builder when the quantity, format, and basic finish are clear enough to move into cart."
     : "This service is better handled through a quote or a direct conversation before pricing and production are confirmed.";
@@ -159,8 +164,8 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
 
       <div className="grid gap-0 lg:grid-cols-[1fr_330px]">
         <div className="space-y-6 p-6">
-          {product.options.length > 0 ? (
-            product.options.map((option) => (
+          {configurableOptions.length > 0 ? (
+            configurableOptions.map((option) => (
               <OptionField
                 key={option.name}
                 option={option}
@@ -174,6 +179,17 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
               <p className="mt-2 text-sm leading-6 text-slate">Send the details and we will confirm the safest production path before you commit.</p>
             </div>
           )}
+          <div className="rounded-[1.3rem] border border-line bg-canvas p-4">
+            <p className="text-sm font-black text-ink">Turnaround is confirmed by PrintMe, not selected here.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {timelineRules.map((rule) => (
+                <div key={rule.title} className="rounded-[1rem] border border-line/80 bg-white px-3 py-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-brand">{rule.title}</p>
+                  <p className="mt-1 text-sm font-black text-ink">{rule.window}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <aside className="border-t border-line bg-[#f7f1ea] p-5 lg:border-l lg:border-t-0">

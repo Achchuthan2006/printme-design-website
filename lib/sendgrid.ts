@@ -34,7 +34,7 @@ export function buildCustomerConfirmationEmail(data: QuoteRequestInput) {
         <h2 style="margin-bottom: 12px;">Thanks for contacting ${siteConfig.name}</h2>
         <p>Hi ${fullName},</p>
         <p>We received your quote request for <strong>${serviceNeeded}</strong>. Our team will review your details and follow up with pricing, turnaround, and next steps.</p>
-        <p><strong>Requested deadline:</strong> ${preferredDeadline}<br />
+        <p><strong>Requested turnaround window:</strong> ${preferredDeadline}<br />
         <strong>Fulfillment:</strong> ${fulfillmentMethod}<br />
         <strong>Quantity:</strong> ${quantity}</p>
         <p>If you need to add more details before we reply, call us at ${siteConfig.phone}.</p>
@@ -60,7 +60,7 @@ export function buildAdminNotificationEmail(data: QuoteRequestInput) {
         <p><strong>Company:</strong> ${data.companyName ? escapeHtml(data.companyName) : "Not provided"}</p>
         <p><strong>Service:</strong> ${escapeHtml(data.serviceNeeded)}</p>
         <p><strong>Quantity:</strong> ${escapeHtml(data.quantity)}</p>
-        <p><strong>Deadline:</strong> ${escapeHtml(data.preferredDeadline)}</p>
+        <p><strong>Turnaround window:</strong> ${escapeHtml(data.preferredDeadline)}</p>
         <p><strong>Fulfillment:</strong> ${escapeHtml(data.fulfillmentMethod)}</p>
         <p><strong>Project details:</strong><br />${projectDetails}</p>
       </div>

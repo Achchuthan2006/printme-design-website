@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { CategoryHero } from "@/components/catalog/category-hero";
 import { FinalCta } from "@/components/catalog/final-cta";
+import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
+import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { ProductCard } from "@/components/commerce/product-card";
 import { Button } from "@/components/ui/button";
+import { signageFocusPoints } from "@/data/experience";
 import { buildMetadata } from "@/lib/metadata";
 import { getCategoryBySlug, getProductsByCategory, productCategories } from "@/data/products";
 
@@ -91,6 +94,23 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
                 Not sure which one matches your job? Use the quote path when the size, finish, or final use is still unclear and PrintMe can help narrow it down before the order starts.
               </div>
             </div>
+          </div>
+          {category.slug === "signs-banners" ? (
+            <div className="mt-8 surface-card p-6">
+              <p className="editorial-kicker">Signage focus</p>
+              <h3 className="mt-2 text-2xl font-black text-ink">Treat signage like its own service pillar.</h3>
+              <div className="mt-5 grid gap-3 lg:grid-cols-3">
+                {signageFocusPoints.map((item) => (
+                  <div key={item} className="signal-card text-sm leading-6 text-slate">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <TimelineRulesPanel />
+            <PaymentClarityPanel />
           </div>
         </div>
       </section>

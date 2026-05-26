@@ -11,6 +11,7 @@ import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { useAuth } from "@/components/account/auth-provider";
 import { siteConfig } from "@/lib/site";
+import { timelineRules } from "@/data/experience";
 import { ArtworkUploadMetadata } from "@/types";
 
 const initialState = {
@@ -120,7 +121,6 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
     { label: "Phone number", name: "phone", type: "tel", placeholder: "(416) 555-0123", required: true, hint: "Best number for urgent timing or clarification." },
     { label: "Company name", name: "companyName", placeholder: "Optional", hint: "Helpful for repeat orders, business printing, or invoicing." },
     { label: "Quantity", name: "quantity", placeholder: "Example: 500", required: true, hint: "Approximate quantity is enough if you are still deciding." },
-    { label: "Preferred deadline", name: "preferredDeadline", type: "date", required: true, hint: "Tell us the real date you need it in hand." },
   ];
 
   return (
@@ -136,8 +136,8 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
         ) : null}
 
         <div className="grid gap-3 md:grid-cols-3">
-          {[
-            { label: "Step 1", title: "Tell us the job", detail: "Service, quantity, and the real deadline." },
+            {[
+            { label: "Step 1", title: "Tell us the job", detail: "Service, quantity, and turnaround window." },
             { label: "Step 2", title: "Upload files if ready", detail: "Helpful for more accurate review, but optional." },
             { label: "Step 3", title: "Get the next step", detail: "Quote, clarification, or the safest production path." },
           ].map((item) => (
@@ -150,7 +150,7 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
         </div>
 
         <div className="rounded-[1.5rem] border border-brand/15 bg-brand-soft px-4 py-4 text-sm leading-6 text-brand">
-          <span className="font-black text-ink">Fastest path to an accurate quote:</span> include the quantity, deadline, pickup or delivery preference, and artwork if you have it. More clarity here means fewer follow-up messages later.
+          <span className="font-black text-ink">Fastest path to an accurate quote:</span> include the quantity, turnaround window, pickup or delivery preference, and artwork if you have it. More clarity here means fewer follow-up messages later.
         </div>
 
         {configured && !user ? (
@@ -170,7 +170,7 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
           <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
             <p className="font-black text-ink">Best for custom, rush, or not-quite-standard jobs</p>
             <p className="mt-1">
-              Use this form when the specs are still taking shape, the product needs review, or you want PrintMe to confirm the safest path before you pay.
+              Use this form when the specs are still taking shape, the product needs review, or you want PrintMe to confirm the safest path before payment is requested.
             </p>
           </div>
           <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
@@ -183,8 +183,8 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
 
         <div className="grid gap-5 md:grid-cols-2">
           {fields.map((field) => (
-            <Field key={field.name} label={field.label} hint={field.hint} error={fieldErrors[field.name]}>
-              <Input
+              <Field key={field.name} label={field.label} hint={field.hint} error={fieldErrors[field.name]}>
+                <Input
                 type={field.type ?? "text"}
                 value={form[field.name]}
                 onChange={(event) => updateField(field.name, event.target.value)}
@@ -193,8 +193,24 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
                 autoComplete={field.name === "email" ? "email" : field.name === "phone" ? "tel" : field.name === "fullName" ? "name" : "on"}
                 aria-invalid={Boolean(fieldErrors[field.name])}
               />
-            </Field>
-          ))}
+              </Field>
+            ))}
+
+          <Field label="Turnaround window" hint="Choose the nearest production window. If the job is date-sensitive, mention the in-hand date in your project details." error={fieldErrors.preferredDeadline}>
+            <Select
+              value={form.preferredDeadline}
+              onChange={(event) => updateField("preferredDeadline", event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.preferredDeadline)}
+            >
+              <option value="">Choose a turnaround window</option>
+              {timelineRules.map((rule) => (
+                <option key={rule.title} value={`${rule.title} — ${rule.window}`}>
+                  {rule.title} - {rule.window}
+                </option>
+              ))}
+            </Select>
+          </Field>
 
           <Field label="Service needed" hint="Choose the closest match. If you came from a product page, this may already be filled in." error={fieldErrors.serviceNeeded}>
             <Select
@@ -259,7 +275,7 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
             <p className="font-black text-ink">What helps the team reply faster</p>
-            <p className="mt-1">Tell us the quantity, real deadline, whether pickup or delivery matters, and whether the artwork is final or still in progress.</p>
+            <p className="mt-1">Tell us the quantity, turnaround window, whether pickup or delivery matters, and whether the artwork is final or still in progress.</p>
           </div>
           <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
             <p className="font-black text-ink">What happens after you send this</p>

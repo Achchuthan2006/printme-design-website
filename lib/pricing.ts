@@ -65,7 +65,7 @@ export function calculateProductPrice(product: PrintProduct, selectedOptions: Re
 
 export function buildOptionLabels(product: PrintProduct, selectedOptions: Record<string, string>) {
   return product.options
-    .filter((option) => selectedOptions[option.name])
+    .filter((option) => selectedOptions[option.name] && option.group !== "turnaround")
     .map((option) => ({
       label: option.label,
       value: getDisplayValue(option, selectedOptions[option.name]),

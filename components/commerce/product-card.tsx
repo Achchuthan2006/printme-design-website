@@ -23,8 +23,11 @@ export function ProductCard({ product }: { product: PrintProduct }) {
         <div className="focus-band mt-4 flex items-start gap-2 p-3">
           <Icon name={product.ctaMode === "upload-first" ? "document" : product.ctaMode === "contact" ? "store" : "clock"} className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
           <p className="text-xs leading-5 text-slate">
-            {product.turnaround} {product.mode !== "direct-order" ? "If the job is custom or unclear, switch to a quote-first path." : ""}
+            {product.turnaround}
           </p>
+        </div>
+        <div className="mt-3 rounded-[1.25rem] border border-brand/12 bg-brand-soft/45 p-3 text-xs leading-5 text-slate">
+          <span className="font-black text-ink">Payment path:</span> {product.mode === "direct-order" ? "secure checkout available" : "review first, pay after confirmation"}
         </div>
         <div className="mt-3 rounded-[1.25rem] border border-white/80 bg-white/82 p-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_16px_rgba(18,17,16,0.04)]">
           {product.pickupDeliveryNote}

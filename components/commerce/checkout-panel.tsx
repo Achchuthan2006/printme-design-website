@@ -9,6 +9,7 @@ import { useCart } from "@/features/cart/cart-context";
 import { openSupportChat } from "@/lib/chat";
 import { CheckoutAddress, CheckoutCustomer, CheckoutPayload } from "@/types";
 import { siteConfig } from "@/lib/site";
+import { timelineRules } from "@/data/experience";
 
 const emptyCustomer: CheckoutCustomer = {
   fullName: "",
@@ -136,11 +137,11 @@ export function CheckoutPanel() {
         <CartSupportPanel />
 
         <section className="grid gap-3 md:grid-cols-3">
-          {[
-            { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, questions, and pickup updates." },
-            { label: "Step 2", title: "Fulfillment choice", detail: "Choose pickup or delivery so timing and logistics can be confirmed." },
-            { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or leave guidance so PrintMe knows what is coming next." },
-          ].map((item) => (
+            {[
+              { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, questions, and pickup updates." },
+              { label: "Step 2", title: "Fulfillment choice", detail: "Choose pickup or delivery so timing and logistics can be confirmed." },
+              { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or leave guidance so PrintMe knows what is coming next." },
+            ].map((item) => (
             <div key={item.title} className="signal-card">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{item.label}</p>
               <p className="mt-2 text-sm font-black text-ink">{item.title}</p>
@@ -223,6 +224,20 @@ export function CheckoutPanel() {
         </section>
 
         <section className="surface-card p-6">
+          <p className="editorial-kicker">Turnaround rules</p>
+          <h2 className="mt-2 text-2xl font-black text-ink">Production windows are set by PrintMe</h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {timelineRules.map((rule) => (
+              <div key={rule.title} className="rounded-[1.2rem] border border-line bg-canvas p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{rule.title}</p>
+                <p className="mt-2 text-sm font-black text-ink">{rule.window}</p>
+                <p className="mt-2 text-xs leading-5 text-slate">{rule.detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="surface-card p-6">
           <p className="editorial-kicker">Step 3</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Artwork and production notes</h2>
           <Field label="Anything we should confirm before print?" hint="Use this for deadlines, colour notes, file naming, packaging details, or anything else we should double-check." className="mt-5">
@@ -276,7 +291,7 @@ export function CheckoutPanel() {
           <div className="flex justify-between text-slate"><span>Payable online</span><span>${payableSubtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Quote review items</span><span>{quoteItems.length}</span></div>
           <div className="rounded-[1.25rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
-            After checkout, PrintMe confirms files, fulfillment, and any review items before production begins.
+            After checkout, PrintMe confirms files, fulfillment, production window, and any review items before production begins.
           </div>
           <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">
             Secure checkout is powered by Stripe. PrintMe still confirms files, fulfillment, and any quote-review items before production begins.
@@ -287,8 +302,8 @@ export function CheckoutPanel() {
           <legend className="mb-2 text-sm font-black text-ink">Payment option</legend>
           <div className="grid gap-2">
             {[
-              { value: "full", label: "Pay online now", description: "Use Stripe Checkout for online-payable items." },
-              { value: "deposit", label: "Deposit mode", description: "Coming soon. Online full payment is currently the supported checkout path.", disabled: true },
+              { value: "full", label: "Pay online now", description: "Use Stripe Checkout for direct-order items that are ready for payment." },
+              { value: "deposit", label: "Pay after review", description: "Used for custom or quote-first jobs after PrintMe confirms specs, timing, and any extra costs.", disabled: true },
             ].map((choice) => (
               <label
                 key={choice.value}

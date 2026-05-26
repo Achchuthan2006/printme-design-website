@@ -1,5 +1,8 @@
 import { ProductCard } from "@/components/commerce/product-card";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
+import { BrandArchitecturePanel } from "@/components/catalog/brand-architecture-panel";
+import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
+import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { FinalCta } from "@/components/catalog/final-cta";
 import { TrustStrip } from "@/components/catalog/trust-strip";
@@ -41,12 +44,8 @@ export default function ProductsPage() {
             <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
                 <Badge>PrintMe catalog</Badge>
-                <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">
-                  Browse print products by category, specs, timing, and how to get started.
-                </h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">
-                  Find the right product, review file requirements, compare turnaround notes, then choose the safest next step: direct order, artwork upload, quote request, or a quick call to the shop.
-                </p>
+                <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">Simple product structure. Clear next steps.</h1>
+                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">Browse by product family, compare common sizes and timing, then order, quote, or upload with less guesswork.</p>
               </div>
               <TrustStrip items={["20+ years of print experience", "Quote, upload, and direct-order paths", "Pickup and delivery support"]} />
             </div>
@@ -59,9 +58,9 @@ export default function ProductsPage() {
           <div className="mb-10 grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
             <div className="story-panel pl-7">
               <p className="editorial-kicker">Browse smarter</p>
-              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Use the catalog to reduce guesswork before the order starts.</h2>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Use the catalog to reduce guesswork.</h2>
               <p className="mt-3 text-sm leading-7 text-slate">
-                Every product page is built to answer the practical questions first: What is this for? How fast can it move? Can I order online or should I request a quote?
+                Every product page should answer four things fast: what it is for, what sizes matter, how long it usually takes, and whether payment happens now or after review.
               </p>
               <div className="mt-5 space-y-3">
                 {catalogGuides.map((guide) => (
@@ -91,12 +90,22 @@ export default function ProductsPage() {
         <div className="container-shell">
           <div className="mb-8">
             <p className="editorial-kicker">Browse by service family</p>
-            <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">A cleaner way to explore a wider print catalog</h2>
+            <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">A cleaner way to explore PrintMe</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-              PrintMe covers more than the basics: postcards, promotional print, print-and-mail support, design help, technical documents, local shop essentials, and custom production paths.
+              Product families stay under one brand, but each major pillar gets a clearer landing path so signage, core print, and custom design work do not blur together.
             </p>
           </div>
           <CategoryDirectory />
+          <div className="mt-8">
+            <BrandArchitecturePanel />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-canvas section-space">
+        <div className="container-shell grid gap-6 lg:grid-cols-2">
+          <TimelineRulesPanel />
+          <PaymentClarityPanel />
         </div>
       </section>
 

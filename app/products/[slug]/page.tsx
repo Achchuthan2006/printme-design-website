@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
+import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
+import { ProductSizePreview } from "@/components/catalog/product-size-preview";
 import { ProductConfigurator } from "@/components/commerce/product-configurator";
+import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { FaqAccordion } from "@/components/catalog/faq-accordion";
 import { FinalCta } from "@/components/catalog/final-cta";
@@ -81,9 +84,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div>
                 <p className="editorial-kicker">{product.category}</p>
                 <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.92] sm:text-[4.3rem]">{product.title}</h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{product.longDescription}</p>
+                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{product.description}</p>
                 <p className="mt-4 max-w-2xl rounded-[1.4rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm font-bold leading-6 text-brand">
-                  Send artwork when you have it. PrintMe reviews files and specs before production so your order starts with fewer unknowns and a clearer next step.
+                  PrintMe reviews files, timing, and specs before production. Payment only happens on the path that matches the job.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {product.badges?.map((badge) => <Badge key={badge}>{badge}</Badge>)}
@@ -163,6 +166,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="container-shell mt-8">
           <PrintReadyChecklist compact />
         </div>
+        <div className="container-shell mt-8">
+          <ProductSizePreview slug={product.slug} title={product.title} />
+        </div>
         {highlightedOptions.length > 0 ? (
           <div className="container-shell mt-8">
             <div className="surface-card p-6">
@@ -189,17 +195,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </section>
 
       <section className="border-y border-line bg-canvas section-space">
-        <div className="container-shell grid gap-8 lg:grid-cols-3">
+        <div className="container-shell grid gap-6 lg:grid-cols-2">
+          <TimelineRulesPanel />
+          <PaymentClarityPanel />
+        </div>
+        <div className="container-shell mt-6 grid gap-4 lg:grid-cols-3">
           <article className="premium-surface p-6">
-            <h2 className="text-2xl font-black text-ink">Standard turnaround</h2>
+            <h2 className="text-2xl font-black text-ink">This product usually runs on</h2>
             <p className="mt-3 text-sm leading-7 text-slate">{product.turnaround}</p>
           </article>
           <article className="premium-surface p-6">
-            <h2 className="text-2xl font-black text-ink">Rush note</h2>
+            <h2 className="text-2xl font-black text-ink">Rush policy</h2>
             <p className="mt-3 text-sm leading-7 text-slate">{product.rushNote ?? "Rush timing is reviewed after artwork, quantity, and finishing are confirmed."}</p>
           </article>
           <article className="premium-surface p-6">
-            <h2 className="text-2xl font-black text-ink">Pickup and delivery</h2>
+            <h2 className="text-2xl font-black text-ink">Pickup or delivery</h2>
             <p className="mt-3 text-sm leading-7 text-slate">{product.pickupDeliveryNote}</p>
           </article>
         </div>

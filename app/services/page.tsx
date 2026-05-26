@@ -1,6 +1,8 @@
+import { BrandArchitecturePanel } from "@/components/catalog/brand-architecture-panel";
 import { PageHero } from "@/components/ui/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { CategoryDirectory } from "@/components/catalog/category-directory";
+import { ReviewProofPanel } from "@/components/conversion/review-proof-panel";
 import { ServiceCard } from "@/components/sections/service-card";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { buildMetadata } from "@/lib/metadata";
@@ -74,11 +76,17 @@ export default function ServicesPage() {
         <div className="container-shell">
           <SectionHeading
             eyebrow="Full service families"
-            title="Broader coverage than a simple print menu, organized for faster decisions."
-            description="Instead of one giant product list, PrintMe groups service families by business goal so you can find the right path faster."
+            title="Structured service pillars, not one giant menu."
+            description="PrintMe keeps one core brand, but major service families get their own clearer landing paths."
           />
           <div className="mt-8">
             <CategoryDirectory />
+          </div>
+          <div className="mt-8">
+            <BrandArchitecturePanel />
+          </div>
+          <div className="mt-8">
+            <ReviewProofPanel />
           </div>
         </div>
       </section>
