@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { brandVisuals, getBrandVisualForProduct } from "@/data/brand-visuals";
 import { cn } from "@/lib/utils";
 
 const serviceVisualStyles: Record<string, { bg: string; label: string; accent?: string }> = {
@@ -22,6 +24,27 @@ const serviceVisualStyles: Record<string, { bg: string; label: string; accent?: 
 
 export function ServiceProductVisual({ slug }: { slug: string }) {
   const visual = serviceVisualStyles[slug] ?? serviceVisualStyles["custom-orders"];
+  const photoVisual = getBrandVisualForProduct(slug);
+
+  if (photoVisual) {
+    return (
+      <div className="relative flex h-36 items-end overflow-hidden rounded-[1.35rem] border border-line/80 bg-[#f4efe8]">
+        <Image
+          src={photoVisual.src}
+          alt={photoVisual.alt}
+          fill
+          sizes="(min-width: 1280px) 280px, (min-width: 768px) 33vw, 100vw"
+          className={cn("object-cover", photoVisual.focalClassName)}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(20,18,16,0.45))]" />
+        <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-white/32 to-transparent" />
+        <div className="relative m-3 inline-flex max-w-[76%] items-center gap-2 rounded-full border border-white/60 bg-white/84 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_22px_rgba(18,17,16,0.08)] backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+          Premium print detail
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("relative flex h-36 items-center justify-center overflow-hidden rounded-[1.35rem] border border-line/80", visual.bg)}>
@@ -46,46 +69,32 @@ export function ServiceProductVisual({ slug }: { slug: string }) {
 
 export function HeroPrintComposition() {
   return (
-    <div className="hero-visual-in hero-panel relative min-h-[500px] bg-[rgba(246,240,232,0.88)] p-6 shadow-glass">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(255,255,255,0.95),transparent_28rem),radial-gradient(circle_at_80%_14%,rgba(217,70,32,0.14),transparent_22rem)]" aria-hidden="true" />
-      <div className="absolute inset-x-10 top-8 h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent" aria-hidden="true" />
-      <div className="mockup-float absolute -right-3 top-10 h-80 w-56 rounded-[1.75rem] bg-ink p-7 text-white shadow-card [--float-delay:500ms] [--mockup-rotate:11deg]">
-        <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-white/45">Campaign Print</p>
-        <p className="mt-14 font-display text-[2.7rem] leading-[0.9] text-white">
-          Bold ideas,
-          <br />
-          beautifully
-          <br />
-          printed.
-        </p>
-        <p className="mt-4 max-w-[12rem] text-xs leading-5 text-white/62">Flyers, signage, packaging, documents, and fast local support.</p>
-        <div className="absolute bottom-0 left-0 h-14 w-full rounded-b-[1.75rem] bg-brand" />
+    <div className="hero-visual-in hero-panel relative min-h-[500px] overflow-hidden bg-[rgba(246,240,232,0.88)] p-4 shadow-glass sm:p-5">
+      <Image
+        src={brandVisuals.rangeHero.src}
+        alt={brandVisuals.rangeHero.alt}
+        fill
+        priority
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        className={cn("object-cover", brandVisuals.rangeHero.focalClassName)}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.22),rgba(16,14,12,0.28))]" aria-hidden="true" />
+      <div className="absolute inset-x-10 top-8 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent" aria-hidden="true" />
+      <div className="mockup-float absolute left-5 top-5 max-w-[16rem] rounded-[1.45rem] border border-white/60 bg-white/82 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_16px_28px_rgba(18,17,16,0.12)] backdrop-blur-md [--float-delay:0ms] [--mockup-rotate:-7deg]">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Premium brand range</p>
+        <p className="mt-2 text-lg font-black leading-[1.02] text-ink">Cards, brochures, stationery, signs, and packaging in one clean workflow.</p>
       </div>
-      <div className="mockup-float liquid-glass absolute left-10 top-14 h-32 w-52 rounded-[1.65rem] p-5 [--float-delay:0ms] [--mockup-rotate:-14deg]">
-        <p className="text-2xl font-black text-ink">
-          Print<span className="text-brand">Me</span>
-        </p>
-        <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.22em] text-slate">20+ Years Experience</p>
-        <div className="mt-5 h-2 w-28 rounded-full bg-line" />
-        <div className="mt-2 h-2 w-16 rounded-full bg-brand/20" />
-      </div>
-      <div className="mockup-float absolute bottom-10 left-8 h-64 w-48 rounded-[1.6rem] border border-white/80 bg-white p-5 shadow-card [--float-delay:900ms] [--mockup-rotate:-10deg]">
-        <div className="h-28 rounded-lg bg-[#d9e4ec]" />
-        <p className="mt-5 font-display text-[2rem] leading-none text-brand">Grow your business</p>
-        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate">Flyers, banners, promos</p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="h-2 rounded-full bg-brand/20" />
-          <div className="h-2 rounded-full bg-ink/12" />
+      <div className="mockup-float absolute bottom-5 left-5 rounded-[1.45rem] border border-white/65 bg-ink/88 px-5 py-4 text-white shadow-[0_20px_34px_rgba(18,17,16,0.18)] backdrop-blur-md [--float-delay:540ms] [--mockup-rotate:-4deg]">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/60">What customers trust</p>
+        <div className="mt-2 space-y-2 text-sm font-bold leading-5">
+          <p>Premium print detail</p>
+          <p>Structured service paths</p>
+          <p>Local pickup and support</p>
         </div>
       </div>
-      <div className="mockup-float liquid-glass absolute bottom-8 right-28 h-44 w-52 rounded-[1.65rem] p-5 [--float-delay:1300ms] [--mockup-rotate:8deg]">
-        <div className="grid grid-cols-3 gap-2.5">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="aspect-square rounded-md bg-[#dedede]" />
-          ))}
-        </div>
-        <p className="mt-4 text-sm font-black text-ink">Passport Photos</p>
-        <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate">Quick in-store service</p>
+      <div className="mockup-float absolute right-5 top-5 max-w-[13.5rem] rounded-[1.45rem] border border-white/60 bg-white/84 px-4 py-4 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_16px_28px_rgba(18,17,16,0.1)] backdrop-blur-md [--float-delay:920ms] [--mockup-rotate:6deg]">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Service coverage</p>
+        <p className="mt-2 text-sm font-bold leading-6">Business print, brochures, direct-mail pieces, premium cards, banners, and rigid signs.</p>
       </div>
     </div>
   );

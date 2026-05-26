@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { analyticsEvents, homeHeroVariants } from "@/data/cro";
+import { brandVisuals } from "@/data/brand-visuals";
 import { buildMetadata } from "@/lib/metadata";
 import { processSteps, services, siteConfig, whyChooseUs } from "@/lib/site";
+import Image from "next/image";
 
 const heroCopy = homeHeroVariants.default;
 
@@ -206,6 +208,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="reveal-up bg-canvas section-space">
+        <div className="container-shell grid gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+          <div className="relative overflow-hidden rounded-[2rem] border border-line/70 bg-white shadow-[0_28px_60px_rgba(18,17,16,0.08)]">
+            <div className="relative aspect-[1.16/0.88]">
+              <Image
+                src={brandVisuals.premiumBusinessCards.src}
+                alt={brandVisuals.premiumBusinessCards.alt}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(20,18,16,0.42))]" />
+              <div className="absolute left-5 top-5 rounded-full border border-white/60 bg-white/84 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_24px_rgba(18,17,16,0.08)] backdrop-blur-sm">
+                Premium cards and stationery
+              </div>
+            </div>
+          </div>
+          <div className="story-panel">
+            <p className="editorial-kicker">Print quality you can feel</p>
+            <h2 className="mt-2 text-[2.45rem] font-black leading-[0.96] text-ink sm:text-[3.3rem]">Business cards and presentation pieces that look worth keeping.</h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-slate">
+              Use premium cards, branded stationery, and polished handout pieces when the first impression matters as much as the information on the page.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {["Textured stock options", "Clean edge detail", "Better hand-feel for brand-first work"].map((item) => (
+                <div key={item} className="premium-surface p-4 text-sm font-bold leading-6 text-ink">
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button href="/products/business-cards">Explore Business Cards</Button>
+              <Button href="/quote-request" variant="secondary">Quote Premium Print</Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="services" className="reveal-up bg-canvas section-space">
         <div className="container-shell">
           <SectionHeading
@@ -264,16 +304,34 @@ export default function HomePage() {
               The right print job is not just ink on paper. It is the right file, quantity, stock, finish, timing, and pickup plan. We help you get those decisions right before production starts.
             </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {whyChooseUs.map((item) => (
-              <article key={item.title} className="reveal-up premium-surface p-5">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand/25 bg-brand-soft text-brand">
-                  <Icon name={item.icon} />
+          <div className="grid gap-5">
+            <div className="relative overflow-hidden rounded-[2rem] border border-line/70 bg-[#f5f0ea] shadow-[0_26px_56px_rgba(18,17,16,0.08)]">
+              <div className="relative aspect-[1.4/0.92]">
+                <Image
+                  src={brandVisuals.consultation.src}
+                  alt={brandVisuals.consultation.alt}
+                  fill
+                  sizes="(min-width: 1024px) 55vw, 100vw"
+                  className="object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(20,18,16,0.34))]" />
+                <div className="absolute bottom-5 left-5 max-w-[18rem] rounded-[1.35rem] border border-white/60 bg-white/86 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_14px_28px_rgba(18,17,16,0.1)] backdrop-blur-sm">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Guidance before production</p>
+                  <p className="mt-2 text-sm font-bold leading-6 text-ink">Review samples, colours, timing, and materials with a real person before the job moves ahead.</p>
                 </div>
-                <h3 className="mt-5 text-base font-black text-ink">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate">{item.description}</p>
-              </article>
-            ))}
+              </div>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {whyChooseUs.map((item) => (
+                <article key={item.title} className="reveal-up premium-surface p-5">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand/25 bg-brand-soft text-brand">
+                    <Icon name={item.icon} />
+                  </div>
+                  <h3 className="mt-5 text-base font-black text-ink">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate">{item.description}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -288,6 +346,18 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
+            <div className="relative overflow-hidden rounded-[1.85rem] border border-line/70 bg-white shadow-[0_20px_40px_rgba(18,17,16,0.08)] md:col-span-2">
+              <div className="relative aspect-[1.75/0.88]">
+                <Image
+                  src={brandVisuals.paperStock.src}
+                  alt={brandVisuals.paperStock.alt}
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(20,18,16,0.24))]" />
+              </div>
+            </div>
             {[
               "Business cards, flyers, brochures, postcards, and posters for everyday marketing",
               "Banners, signs, promotional print, and campaign bundles for events and local outreach",
@@ -299,6 +369,56 @@ export default function HomePage() {
                 <p className="text-sm leading-6 text-slate">{item}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="reveal-up bg-white section-space">
+        <div className="container-shell grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p className="editorial-kicker">Craftsmanship and finishes</p>
+            <h2 className="mt-2 text-[2.35rem] font-black leading-[0.98] text-ink sm:text-[3.1rem]">Materials, texture, and finishing choices presented more clearly.</h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-slate">
+              Premium work depends on more than the layout. Stock weight, surface texture, embossing, and finish all change how the final piece feels in a customer’s hand.
+            </p>
+            <div className="mt-5 grid gap-3">
+              {[
+                "Use textured and tactile stocks when the piece should feel more premium immediately.",
+                "Choose quote-first support for embossed, specialty, or presentation-focused jobs.",
+                "Ask before ordering if the finish needs to match a specific brand or use case.",
+              ].map((item) => (
+                <div key={item} className="signal-card">
+                  <div className="flex items-start gap-3">
+                    <Icon name="check" className="mt-1 h-4 w-4 shrink-0 text-brand" />
+                    <p className="text-sm leading-6 text-slate">{item}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="relative overflow-hidden rounded-[1.8rem] border border-line/70 bg-canvas shadow-[0_22px_44px_rgba(18,17,16,0.08)]">
+              <div className="relative aspect-[0.95/1]">
+                <Image
+                  src={brandVisuals.paperStock.src}
+                  alt={brandVisuals.paperStock.alt}
+                  fill
+                  sizes="(min-width: 640px) 50vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-[1.8rem] border border-line/70 bg-canvas shadow-[0_22px_44px_rgba(18,17,16,0.08)] sm:mt-10">
+              <div className="relative aspect-[0.95/1]">
+                <Image
+                  src={brandVisuals.embossedFinishes.src}
+                  alt={brandVisuals.embossedFinishes.alt}
+                  fill
+                  sizes="(min-width: 640px) 50vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
