@@ -53,10 +53,10 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
         )}
       >
         <span className={cn(
-          "relative inline-flex items-center justify-center rounded-full border border-brand/12 bg-brand-soft text-brand transition group-hover:bg-brand group-hover:text-white",
+          "relative inline-flex items-center justify-center text-brand transition group-hover:text-brand",
           compact ? "h-8 w-8" : "h-7 w-7",
         )}>
-          <Icon name="bag" className="h-4.5 w-4.5" />
+          <Icon name="bag" className="h-5 w-5" />
           {itemCount > 0 ? (
             <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-black leading-none text-white">
               {itemCount}
