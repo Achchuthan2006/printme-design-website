@@ -1,4 +1,5 @@
 import { ProductCard } from "@/components/commerce/product-card";
+import { CatalogExplorer } from "@/components/catalog/catalog-explorer";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { BrandArchitecturePanel } from "@/components/catalog/brand-architecture-panel";
 import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
@@ -128,15 +129,7 @@ export default function ProductsPage() {
 
       <section className="section-space bg-canvas">
         <div className="container-shell">
-          <div className="mb-8">
-            <p className="editorial-kicker">All services</p>
-            <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Complete catalog</h2>
-          </div>
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.slug} product={product} />
-            ))}
-          </div>
+          <CatalogExplorer products={products} categories={productCategories} featuredProducts={featuredProducts} />
         </div>
       </section>
       <FinalCta />

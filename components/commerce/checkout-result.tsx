@@ -88,6 +88,20 @@ export function CheckoutResult({
           </>
         )}
       </div>
+      {status === "success" ? (
+        <div className="mx-auto mt-6 grid max-w-3xl gap-3 md:grid-cols-3">
+          {[
+            { title: "Reorder later", detail: "Your account keeps the order history ready for a faster repeat run." },
+            { title: "Leave a review", detail: "Once the order is complete, PrintMe can invite you to share quick feedback." },
+            { title: "Need another product?", detail: "Use the catalog to save or compare the next item while this order is moving." },
+          ].map((item) => (
+            <div key={item.title} className="rounded-[1.2rem] border border-line/80 bg-white/88 px-4 py-4 text-left shadow-soft">
+              <p className="text-sm font-black text-ink">{item.title}</p>
+              <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
       <p className="mt-5 text-xs leading-5 text-slate">
         Need help now? Call {siteConfig.phone} or email {siteConfig.email}.
       </p>

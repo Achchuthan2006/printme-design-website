@@ -10,8 +10,10 @@ import { SummaryStrip } from "@/components/platform/summary-strip";
 import { StatusTimeline } from "@/components/platform/status-timeline";
 import { AccountActivityFeed } from "@/components/account/account-activity-feed";
 import { AddressBookPanel } from "@/components/account/address-book-panel";
+import { AccountMemoryPanel } from "@/components/account/account-memory-panel";
 import { ReorderStudio } from "@/components/account/reorder-studio";
 import { AccountSupportHub } from "@/components/account/account-support-hub";
+import { products } from "@/data/products";
 import { AccountDashboardData } from "@/types";
 
 export function AccountShell() {
@@ -210,6 +212,8 @@ export function AccountShell() {
         <AccountActivityFeed items={liveActivity} />
         <AddressBookPanel addresses={liveAddresses} />
       </div>
+
+      <AccountMemoryPanel products={products} />
 
       <ReorderStudio items={liveReorders} />
 

@@ -7,6 +7,9 @@ import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { FaqAccordion } from "@/components/catalog/faq-accordion";
 import { FinalCta } from "@/components/catalog/final-cta";
+import { ProductDecisionTools } from "@/components/catalog/product-decision-tools";
+import { ProductEngagementActions } from "@/components/catalog/product-engagement-actions";
+import { ProductPageBridge } from "@/components/catalog/product-page-bridge";
 import { ProductActions } from "@/components/catalog/product-actions";
 import { RelatedServices } from "@/components/catalog/related-services";
 import { SpecList } from "@/components/catalog/spec-list";
@@ -77,6 +80,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <>
+      <ProductPageBridge slug={product.slug} />
       <section className="relative overflow-hidden bg-white section-space">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.10),transparent_28rem),radial-gradient(circle_at_86%_14%,rgba(31,27,24,0.05),transparent_24rem)]" aria-hidden="true" />
         <div className="container-shell relative">
@@ -101,6 +105,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </div>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <ProductActions product={product} />
+                </div>
+                <div className="mt-4">
+                  <ProductEngagementActions slug={product.slug} />
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
                   {serviceFitGuides.map((item) => (
@@ -176,6 +183,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="container-shell mt-8">
           <ProductSizePreview slug={product.slug} title={product.title} />
+        </div>
+        <div className="container-shell mt-8">
+          <ProductDecisionTools product={product} />
         </div>
         {highlightedOptions.length > 0 ? (
           <div className="container-shell mt-8">

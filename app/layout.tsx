@@ -3,6 +3,7 @@ import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { CartProvider } from "@/features/cart/cart-context";
+import { EngagementProvider } from "@/features/engagement/engagement-context";
 import { AuthProvider } from "@/components/account/auth-provider";
 import { SiteChrome } from "@/components/layout/site-chrome";
 import { env } from "@/lib/env";
@@ -86,9 +87,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
         <AuthProvider>
-          <CartProvider>
-            <SiteChrome>{children}</SiteChrome>
-          </CartProvider>
+          <EngagementProvider>
+            <CartProvider>
+              <SiteChrome>{children}</SiteChrome>
+            </CartProvider>
+          </EngagementProvider>
         </AuthProvider>
       </body>
     </html>

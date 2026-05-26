@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ProductEngagementActions } from "@/components/catalog/product-engagement-actions";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 import { Icon } from "@/components/ui/icon";
 import { getTemplatesForProduct } from "@/data/templates";
@@ -24,6 +25,9 @@ export function ProductCard({ product }: { product: PrintProduct }) {
         <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate">{product.category}</p>
         <h2 className="mt-2 text-[1.32rem] font-black leading-[1.04] text-ink">{product.title}</h2>
         <p className="mt-3 flex-1 text-sm leading-6 text-slate">{product.description}</p>
+        <div className="mt-4">
+          <ProductEngagementActions slug={product.slug} compact />
+        </div>
         <div className="focus-band mt-4 flex items-start gap-2 p-3">
           <Icon name={product.ctaMode === "upload-first" ? "document" : product.ctaMode === "contact" ? "store" : "clock"} className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
           <p className="text-xs leading-5 text-slate">
