@@ -3,6 +3,7 @@ import { ProtectedAccount } from "@/components/account/protected-account";
 import { StatusBadge } from "@/components/account/status-badge";
 import { Button } from "@/components/ui/button";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { demoFiles } from "@/data/account";
 import { buildMetadata } from "@/lib/metadata";
 import { SummaryStrip } from "@/components/platform/summary-strip";
@@ -104,6 +105,17 @@ export default function AccountFilesPage() {
                 ))}
               </div>
             )}
+            <div className="mt-6">
+              <AccountSupportHub
+                title="Artwork and upload help"
+                description="Use account support when a file needs replacing, a proof is unclear, or you want to reuse artwork for a repeat quote or order."
+                shortcuts={[
+                  { title: "Replace a problem file", detail: "Best when a file needs bleed, colour, or size fixes before production.", href: "/support", cta: "Get File Help", icon: "upload" },
+                  { title: "Reuse saved artwork", detail: "Quote or reorder faster by referencing artwork already attached to your account.", href: "/account/reorders", cta: "Open Reorders", icon: "bag" },
+                  { title: "Start a quote with files", detail: "Use the quote path when the file is ready but the specs still need review.", href: "/quote-request", cta: "Request Quote", icon: "document" },
+                ]}
+              />
+            </div>
           </div>
         </ProtectedAccount>
       </div>

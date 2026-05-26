@@ -1,8 +1,9 @@
 import { EmptyState } from "@/components/account/empty-state";
 import { ProtectedAccount } from "@/components/account/protected-account";
-import { StatusBadge } from "@/components/account/status-badge";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
+import { QuotesHistoryPanel } from "@/components/account/quotes-history-panel";
 import { Button } from "@/components/ui/button";
-import { accountQuoteProgress, demoQuotes } from "@/data/account";
+import { demoQuotes } from "@/data/account";
 import { buildMetadata } from "@/lib/metadata";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 
@@ -32,34 +33,19 @@ export default function AccountQuotesPage() {
             {demoQuotes.length === 0 ? (
               <div className="mt-6"><EmptyState title="No quotes yet" description="Send a quote request when you want PrintMe to review specs, artwork, timing, and pricing before you commit." ctaLabel="Request a Quote" ctaHref="/quote-request" /></div>
             ) : (
-              <div className="mt-6 grid gap-4">
-                {demoQuotes.map((quote) => (
-                  <article key={quote.id} className="rounded-lg border border-line p-5">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h2 className="text-xl font-black text-ink">{quote.service}</h2>
-                        <p className="mt-2 text-sm text-slate">{quote.summary}</p>
-                        <p className="mt-2 text-xs font-bold text-slate">{quote.requestedDate}</p>
-                        {quote.estimatedValue ? <p className="mt-2 text-xs font-black uppercase tracking-[0.12em] text-brand">Estimated value {quote.estimatedValue}</p> : null}
-                      </div>
-                      <StatusBadge status={quote.status} />
-                    </div>
-                    <div className="mt-4 rounded-[1.2rem] border border-line bg-canvas p-4">
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-slate">Current quote flow</p>
-                      <p className="mt-2 text-sm leading-6 text-slate">
-                        {(accountQuoteProgress[quote.id] ?? []).find((item) => item.status === "current")?.detail ?? "Quote activity will appear here as the platform connects to live workflow events."}
-                      </p>
-                      {quote.nextStep ? <p className="mt-2 text-xs leading-5 text-slate">{quote.nextStep}</p> : null}
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <Button href="/support" variant="secondary" className="px-4 py-2 text-xs">Message PrintMe</Button>
-                      <Button href={`/quote-request?service=${encodeURIComponent(quote.service)}`} variant="secondary" className="px-4 py-2 text-xs">Update Quote Details</Button>
-                      <Button href="/account/files" variant="secondary" className="px-4 py-2 text-xs">Review Linked Files</Button>
-                    </div>
-                  </article>
-                ))}
-              </div>
+              <QuotesHistoryPanel quotes={demoQuotes} />
             )}
+            <div className="mt-6">
+              <AccountSupportHub
+                title="Quote help inside your account"
+                description="Use this area when a quote needs file updates, quantity changes, approval help, or a smoother handoff into production."
+                shortcuts={[
+                  { title: "Ask about quote timing", detail: "Best when you need pricing or turnaround clarified before you approve.", href: "/support", cta: "Message PrintMe", icon: "chat" },
+                  { title: "Review attached files", detail: "Open the file area if the quote needs a replacement upload or artwork fix.", href: "/account/files", cta: "Open Files", icon: "upload" },
+                  { title: "Restart as a repeat quote", detail: "Use the reorder area when this quote should become a new variation instead.", href: "/account/reorders", cta: "Open Reorders", icon: "document" },
+                ]}
+              />
+            </div>
           </div>
         </ProtectedAccount>
       </div>

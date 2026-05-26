@@ -1,4 +1,5 @@
 import { ProtectedAccount } from "@/components/account/protected-account";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { Button } from "@/components/ui/button";
 import { CheckboxTile, Field, Input } from "@/components/ui/form-controls";
 import { demoAddresses, demoProfile } from "@/data/account";
@@ -79,6 +80,15 @@ export default function AccountSettingsPage() {
                 Saved details help reduce repeat-order friction once profile persistence is connected.
               </p>
             </section>
+            <AccountSupportHub
+              title="Account settings help"
+              description="Use support if saved profile details, delivery instructions, billing contacts, or password access need help from the PrintMe team."
+              shortcuts={[
+                { title: "Update billing or business contact info", detail: "Best when future quotes, invoices, or delivery handoffs should use a new contact.", href: "/support", cta: "Contact Support", icon: "chat" },
+                { title: "Review saved files and repeat jobs", detail: "Settings work best when paired with the file and reorder areas for repeat business.", href: "/account/reorders", cta: "Open Reorders", icon: "bag" },
+                { title: "Password and sign-in help", detail: "Use the recovery flow if account access needs resetting.", href: "/account/forgot-password", cta: "Reset Password", icon: "check" },
+              ]}
+            />
           </div>
         </ProtectedAccount>
       </div>

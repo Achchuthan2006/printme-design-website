@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { EmptyState } from "@/components/account/empty-state";
 import { ProtectedAccount } from "@/components/account/protected-account";
-import { StatusBadge } from "@/components/account/status-badge";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
+import { OrdersHistoryPanel } from "@/components/account/orders-history-panel";
 import { Button } from "@/components/ui/button";
 import { demoOrders } from "@/data/account";
 import { buildMetadata } from "@/lib/metadata";
@@ -39,28 +39,19 @@ export default function AccountOrdersPage() {
                 <EmptyState title="No orders yet" description="Start an online print order or request a quote when your job needs review first." ctaLabel="Start My Order" ctaHref="/products" />
               </div>
             ) : (
-              <div className="mt-6 overflow-hidden rounded-lg border border-line">
-                <div className="hidden grid-cols-[1.2fr_1fr_1fr_1fr_auto] bg-canvas px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-slate md:grid">
-                  <span>Order</span><span>Date</span><span>Status</span><span>Total</span><span>Actions</span>
-                </div>
-                {demoOrders.map((order) => (
-                  <article key={order.id} className="grid gap-3 border-t border-line px-4 py-4 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto] md:items-center">
-                    <div>
-                      <p className="font-black text-ink">{order.orderNumber}</p>
-                      <p className="mt-1 text-sm text-slate">{order.items.join(", ")}</p>
-                      {order.nextStep ? <p className="mt-2 text-xs leading-5 text-slate">{order.nextStep}</p> : null}
-                    </div>
-                    <p className="text-sm text-slate">{order.date}</p>
-                    <StatusBadge status={order.status} />
-                    <p className="font-bold text-ink">{order.total}</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Link href={`/account/orders/${order.id}`} className="text-sm font-bold text-brand">Review Details</Link>
-                      <Link href={order.reorderHref ?? `/quote-request?service=${encodeURIComponent(order.items[0])}`} className="text-sm font-bold text-slate">Start Similar Job</Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
+              <OrdersHistoryPanel orders={demoOrders} />
             )}
+            <div className="mt-6">
+              <AccountSupportHub
+                title="Order help inside your account"
+                description="Use the right support path if production timing changed, a file needs replacing, pickup is urgent, or a repeat order needs updated quantities."
+                shortcuts={[
+                  { title: "Ask about production timing", detail: "Best when a deadline changed or you need the next realistic update.", href: "/support", cta: "Open Support", icon: "clock" },
+                  { title: "Replace artwork on an active job", detail: "Use the file area when the job needs revised artwork before production.", href: "/account/files", cta: "Review Files", icon: "upload" },
+                  { title: "Start a repeat order", detail: "Use a previous order as the base when only quantity, finish, or timing changed.", href: "/account/reorders", cta: "Open Reorders", icon: "bag" },
+                ]}
+              />
+            </div>
           </div>
         </ProtectedAccount>
       </div>

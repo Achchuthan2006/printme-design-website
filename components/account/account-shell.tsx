@@ -10,6 +10,7 @@ import { StatusTimeline } from "@/components/platform/status-timeline";
 import { AccountActivityFeed } from "@/components/account/account-activity-feed";
 import { AddressBookPanel } from "@/components/account/address-book-panel";
 import { ReorderStudio } from "@/components/account/reorder-studio";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
 
 export function AccountShell() {
   const { user, configured } = useAuth();
@@ -131,29 +132,26 @@ export function AccountShell() {
           title="Most urgent account progress"
           items={featuredTimeline}
         />
-        <section className="surface-card p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-brand">Customer support hub</p>
-              <h2 className="mt-2 text-2xl font-black text-ink">Everything needed to keep the job moving</h2>
+        <div className="space-y-4">
+          <div className="rounded-[1.3rem] border border-line/80 bg-white px-4 py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-brand">Current focus</p>
+                <h2 className="mt-2 text-xl font-black text-ink">Most time-sensitive job in your account</h2>
+                <p className="mt-2 text-sm leading-6 text-slate">{featuredOrder.nextStep}</p>
+              </div>
+              <StatusBadge status={featuredOrder.status} />
             </div>
-            <StatusBadge status={featuredOrder.status} />
           </div>
-          <p className="mt-3 text-sm leading-6 text-slate">
-            This account view is structured around the real jobs customers come back to: reorders, file reuse, proofs, invoices, and quick support.
-          </p>
-          <div className="mt-5 grid gap-3">
-            {accountSupportShortcuts.map((item) => (
-              <article key={item.title} className="rounded-[1.25rem] border border-line/90 bg-canvas p-4">
-                <p className="text-sm font-black text-ink">{item.title}</p>
-                <p className="mt-1 text-sm leading-6 text-slate">{item.detail}</p>
-                <Button href={item.href} variant="secondary" className="mt-4 w-full px-4 py-2.5 text-xs">
-                  {item.cta}
-                </Button>
-              </article>
-            ))}
-          </div>
-        </section>
+          <AccountSupportHub
+            title="Everything needed to keep the job moving"
+            description="This account view is structured around the real jobs customers come back to: reorders, file reuse, proofs, invoices, and quick support."
+            shortcuts={accountSupportShortcuts.map((item, index) => ({
+              ...item,
+              icon: index === 0 ? "clock" : index === 1 ? "upload" : "bag",
+            }))}
+          />
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">

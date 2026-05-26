@@ -1,4 +1,5 @@
 import { ProtectedAccount } from "@/components/account/protected-account";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { ReorderStudio } from "@/components/account/reorder-studio";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,15 @@ export default function AccountReordersPage() {
             </section>
             <SummaryStrip items={reorderSummary} />
             <ReorderStudio items={demoReorders} title="Saved repeat-job shortcuts" />
+            <AccountSupportHub
+              title="Repeat business help"
+              description="Use support when a repeat job needs updated specs, a new file, delivery changes, or a cleaner quote-to-order handoff."
+              shortcuts={[
+                { title: "Restart with updated specs", detail: "Best when quantity, finish, or delivery changed from the original job.", href: "/quote-request", cta: "Start New Quote", icon: "document" },
+                { title: "Reuse saved artwork", detail: "Check the file library when the print setup is familiar but the artwork needs confirming.", href: "/account/files", cta: "Review Files", icon: "upload" },
+                { title: "Talk to PrintMe first", detail: "Use support if you want the team to recommend the fastest repeat-order path.", href: "/support", cta: "Open Support", icon: "chat" },
+              ]}
+            />
           </div>
         </ProtectedAccount>
       </div>

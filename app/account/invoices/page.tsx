@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/account/empty-state";
+import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { ProtectedAccount } from "@/components/account/protected-account";
 import { StatusBadge } from "@/components/account/status-badge";
 import { demoInvoices } from "@/data/account";
@@ -34,16 +35,36 @@ export default function AccountInvoicesPage() {
             ) : (
               <div className="mt-6 overflow-hidden rounded-lg border border-line">
                 {demoInvoices.map((invoice) => (
-                  <article key={invoice.id} className="grid gap-3 border-t border-line px-4 py-4 first:border-t-0 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto] md:items-center">
-                    <p className="font-black text-ink">{invoice.invoiceNumber}</p>
+                  <article key={invoice.id} className="grid gap-3 border-t border-line px-4 py-4 first:border-t-0 md:grid-cols-[1.15fr_1fr_1fr_1fr_auto] md:items-center">
+                    <div>
+                      <p className="font-black text-ink">{invoice.invoiceNumber}</p>
+                      <p className="mt-1 text-xs leading-5 text-slate">{invoice.dueLabel}</p>
+                    </div>
                     <p className="text-sm text-slate">{invoice.orderNumber}</p>
                     <p className="text-sm text-slate">{invoice.date}</p>
-                    <StatusBadge status={invoice.status} />
-                    <button className="text-sm font-bold text-brand">Download</button>
+                    <div className="flex flex-col gap-2">
+                      <StatusBadge status={invoice.status} />
+                      <p className="text-sm font-bold text-ink">{invoice.amount}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button className="text-sm font-bold text-brand">Download</button>
+                      {invoice.status === "unpaid" ? <button className="text-sm font-bold text-slate">Pay now</button> : null}
+                    </div>
                   </article>
                 ))}
               </div>
             )}
+            <div className="mt-6">
+              <AccountSupportHub
+                title="Billing and invoice help"
+                description="Use this area when an invoice needs clarification, payment follow-up, or an updated billing contact before a repeat order moves ahead."
+                shortcuts={[
+                  { title: "Ask about invoice balance", detail: "Best when an order is waiting on payment or you need billing confirmation.", href: "/support", cta: "Billing Help", icon: "card" },
+                  { title: "Review order tied to invoice", detail: "Open the order area if you need to confirm what the invoice covers.", href: "/account/orders", cta: "Review Orders", icon: "bag" },
+                  { title: "Update saved account details", detail: "Keep billing and contact information current for faster repeat work.", href: "/account/settings", cta: "Account Settings", icon: "check" },
+                ]}
+              />
+            </div>
           </div>
         </ProtectedAccount>
       </div>
