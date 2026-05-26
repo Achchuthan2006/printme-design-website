@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
 import { ProductSizePreview } from "@/components/catalog/product-size-preview";
+import { WebToPrintStudio } from "@/components/catalog/web-to-print-studio";
 import { ProductConfigurator } from "@/components/commerce/product-configurator";
 import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
@@ -192,6 +193,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         ) : null}
+        <div className="container-shell mt-8">
+          <WebToPrintStudio product={product} />
+        </div>
       </section>
 
       <section className="border-y border-line bg-canvas section-space">

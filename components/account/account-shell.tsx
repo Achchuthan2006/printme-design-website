@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/components/account/auth-provider";
 import { StatusBadge } from "@/components/account/status-badge";
-import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoActivity, demoAddresses, demoFiles, demoInvoices, demoOrders, demoProfile, demoQuotes, demoReorders } from "@/data/account";
+import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoActivity, demoAddresses, demoFiles, demoInvoices, demoOrders, demoProfile, demoQuotes, demoReorders, demoSavedDesigns } from "@/data/account";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 import { StatusTimeline } from "@/components/platform/status-timeline";
 import { AccountActivityFeed } from "@/components/account/account-activity-feed";
@@ -61,6 +61,7 @@ export function AccountShell() {
   const liveAddresses = dashboard?.addresses?.length ? dashboard.addresses : demoAddresses;
   const liveActivity = dashboard?.activity?.length ? dashboard.activity : demoActivity;
   const liveReorders = dashboard?.reorders?.length ? dashboard.reorders : demoReorders;
+  const liveSavedDesigns = dashboard?.savedDesigns?.length ? dashboard.savedDesigns : demoSavedDesigns;
   const liveSummary = dashboard?.summary?.length ? dashboard.summary : accountHealthSummary;
   const displayName = liveProfile.fullName ?? user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer";
   const widgets = [
@@ -72,6 +73,7 @@ export function AccountShell() {
   const quickActions = [
     { title: "Start a reorder-friendly quote", detail: "Use the quote flow when you want a familiar job priced again with updated timing or quantity.", href: "/quote-request", icon: "document" },
     { title: "Upload or organize artwork", detail: "Keep files attached to the right order, quote, or future repeat job.", href: "/account/files", icon: "upload" },
+    { title: "Reuse a saved design starter", detail: "Jump back into a template-led or uploaded design path without starting from zero.", href: "/products", icon: "spark" },
     { title: "Talk to support", detail: "Ask about pickup timing, status, invoices, or the next production step.", href: "/support", icon: "chat" },
   ];
   const featuredOrder = liveOrders[0] ?? demoOrders[0];
@@ -120,7 +122,7 @@ export function AccountShell() {
         ))}
       </div>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-4">
         {quickActions.map((action) => (
           <article key={action.title} className="surface-card p-5">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
@@ -210,6 +212,34 @@ export function AccountShell() {
       </div>
 
       <ReorderStudio items={liveReorders} />
+
+      <section className="surface-card p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="editorial-kicker">Saved design readiness</p>
+            <h2 className="mt-2 text-2xl font-black text-ink">Template and artwork starters tied to your account</h2>
+          </div>
+          <Button href="/products" variant="secondary" className="px-4 py-2 text-xs">Browse Products</Button>
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {liveSavedDesigns.map((design) => (
+            <article key={design.id} className="rounded-[1.35rem] border border-line/90 p-4 transition hover:border-brand/25 hover:bg-brand-soft/20">
+              <p className="text-sm font-black text-ink">{design.title}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-slate">{design.productTitle}</p>
+              <p className="mt-3 text-sm leading-6 text-slate">{design.detail}</p>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <span className="value-chip">{design.source.replace("-", " ")}</span>
+                <span className="text-xs font-bold text-slate">{design.updatedAt}</span>
+              </div>
+              <div className="mt-4">
+                <Button href={design.href} variant="secondary" className="w-full px-4 py-2 text-[11px]">
+                  Continue
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-ink p-6 text-white shadow-card">
         <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-brand/20 blur-3xl" aria-hidden="true" />

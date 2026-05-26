@@ -123,6 +123,25 @@ export interface PrintProduct {
   related: string[];
 }
 
+export interface ProductTemplateView {
+  id: string;
+  label: string;
+  headline: string;
+  detail: string;
+  accent?: "brand" | "ink" | "soft";
+}
+
+export interface ProductTemplate {
+  id: string;
+  productSlug: string;
+  title: string;
+  industry: string;
+  summary: string;
+  recommendedSize: string;
+  tags: string[];
+  views: ProductTemplateView[];
+}
+
 export interface CartItem {
   id: string;
   productSlug: string;
@@ -171,6 +190,7 @@ export interface AccountDashboardData {
   invoices: AccountInvoice[];
   activity: AccountActivityItem[];
   reorders: AccountReorderTemplate[];
+  savedDesigns?: AccountSavedDesign[];
   summary: Array<{ label: string; value: string; detail: string }>;
 }
 
@@ -264,6 +284,18 @@ export interface AccountReorderTemplate {
   recommendedPath: "cart" | "quote";
   href: string;
   tags: string[];
+}
+
+export interface AccountSavedDesign {
+  id: string;
+  title: string;
+  productSlug: string;
+  productTitle: string;
+  source: "template" | "uploaded-artwork" | "design-support";
+  updatedAt: string;
+  status: "draft" | "ready" | "proofing";
+  href: string;
+  detail: string;
 }
 
 export interface CheckoutCustomer {

@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 import { Icon } from "@/components/ui/icon";
+import { getTemplatesForProduct } from "@/data/templates";
 import { PrintProduct } from "@/types";
 
 export function ProductCard({ product }: { product: PrintProduct }) {
+  const hasTemplates = getTemplatesForProduct(product.slug).length > 0;
+
   return (
     <article className="premium-card premium-surface group flex h-full flex-col overflow-hidden p-3 hover:border-brand/25 hover:shadow-card">
       <ServiceProductVisual slug={product.slug} />
@@ -12,6 +15,7 @@ export function ProductCard({ product }: { product: PrintProduct }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {product.badges?.slice(0, 2).map((badge) => <Badge key={badge}>{badge}</Badge>)}
+            {hasTemplates ? <Badge>Template ready</Badge> : null}
           </div>
           <span className="rounded-full border border-white/85 bg-white/86 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
             {product.mode === "direct-order" ? "Order online" : product.mode === "hybrid" ? "Order or quote" : "Quote first"}

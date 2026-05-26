@@ -64,7 +64,7 @@ export function ArtworkUploadZone({
   const hasError = items.some((item) => item.state === "error");
   const continuationCopy =
     context.scope === "quote"
-      ? "After upload, continue the quote request so PrintMe can review the files with your quantity, deadline, and project notes together."
+      ? "After upload, continue the quote request so PrintMe can review the files with your quantity, turnaround window, and project notes together."
       : context.scope === "order"
         ? "After upload, continue checkout so PrintMe can review the files with your order details and fulfillment instructions."
         : "After upload, PrintMe can review the files and confirm the best next step.";

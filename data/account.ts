@@ -5,6 +5,7 @@ import {
   AccountOrder,
   AccountQuote,
   AccountReorderTemplate,
+  AccountSavedDesign,
   CustomerAddress,
   CustomerProfile,
 } from "@/types";
@@ -321,6 +322,42 @@ export const demoReorders: AccountReorderTemplate[] = [
   },
 ];
 
+export const demoSavedDesigns: AccountSavedDesign[] = [
+  {
+    id: "design-demo-1",
+    title: "Clinic card starter",
+    productSlug: "business-cards",
+    productTitle: "Business Cards",
+    source: "template",
+    updatedAt: "May 24, 2026",
+    status: "draft",
+    href: "/products/business-cards#design-lab",
+    detail: "Template-led layout saved as the next starting point for a repeat staff order.",
+  },
+  {
+    id: "design-demo-2",
+    title: "Summer flyer artwork",
+    productSlug: "flyers",
+    productTitle: "Flyers",
+    source: "uploaded-artwork",
+    updatedAt: "May 22, 2026",
+    status: "proofing",
+    href: "/account/files",
+    detail: "Uploaded design is linked to a current proof review before print approval.",
+  },
+  {
+    id: "design-demo-3",
+    title: "Storefront banner concept",
+    productSlug: "banners",
+    productTitle: "Banners",
+    source: "design-support",
+    updatedAt: "May 20, 2026",
+    status: "ready",
+    href: "/products/banners#design-lab",
+    detail: "Design-support concept is ready to reuse for a revised size or repeat promotion.",
+  },
+];
+
 export const accountOrderProgress: Record<string, Array<{ label: string; detail: string; status: "done" | "current" | "upcoming" | "attention" }>> = {
   "ord-demo-1": [
     { label: "Order received", detail: "PrintMe has your configured order and uploaded files.", status: "done" },
@@ -382,6 +419,7 @@ export const accountSupportShortcuts = [
 export const accountHealthSummary = [
   { label: "Active jobs", value: "4", detail: "Orders and quotes that still need an update, approval, or pickup." },
   { label: "Files waiting", value: "2", detail: "Artwork currently awaiting review or proof direction." },
+  { label: "Saved designs", value: "3", detail: "Template or uploaded design starters ready for reuse." },
   { label: "Ready to reorder", value: "3", detail: "Completed or priced jobs that can be restarted quickly." },
   { label: "Billing items", value: "1", detail: "Invoices or payment actions that may need attention." },
 ];
