@@ -1,16 +1,25 @@
+import { AdminNotificationCenter } from "@/components/admin/admin-notification-center";
 import { AdminFilterBar, AdminTable } from "@/components/admin/admin-table";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { adminMessages } from "@/data/admin";
+import { getAdminCommandCenterSnapshot } from "@/lib/backend/command-center";
 
-export default function AdminMessagesPage() {
+export default async function AdminMessagesPage() {
+  const snapshot = await getAdminCommandCenterSnapshot("30d");
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title="Messages and follow-ups"
-        description="Keep contact submissions, quote questions, checkout issues, and support requests visible so staff can respond quickly."
-        actionLabel="Review Quotes"
-        actionHref="/admin/quotes"
+        title="Messages and notification inbox"
+        description="Keep support requests, quote questions, checkout issues, and automation outcomes visible in one operational inbox."
+        actionLabel="Open Insights"
+        actionHref="/admin/insights"
+      />
+      <AdminNotificationCenter
+        title="Automation and customer-touchpoint feed"
+        description="This feed combines workflow messaging, payment confirmations, queued customer updates, and notifications that still need staff attention."
+        items={snapshot.notifications}
       />
       <AdminFilterBar>
         {["All", "Open", "Waiting", "Resolved", "High priority"].map((label) => (

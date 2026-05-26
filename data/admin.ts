@@ -16,6 +16,7 @@ import {
 
 export const adminNavItems = [
   { label: "Overview", href: "/admin" },
+  { label: "Insights", href: "/admin/insights" },
   { label: "Orders", href: "/admin/orders" },
   { label: "Quotes", href: "/admin/quotes" },
   { label: "Uploads", href: "/admin/uploads" },

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { dispatchQuoteReceivedNotifications } from "@/lib/backend/notifications";
 import { createPayloadFingerprint, resolveIdempotencyKey } from "@/lib/backend/idempotency";
-import { findIdempotencyRecord, persistIdempotencyRecord, persistQuoteRequest } from "@/lib/backend/repository";
+import {
+  findIdempotencyRecord,
+  persistIdempotencyRecord,
+  persistQuoteRequest,
+  recordAnalyticsEvent,
+  recordNotificationInboxItem,
+} from "@/lib/backend/repository";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
 import { quoteRequestSchema } from "@/lib/validation";
@@ -53,6 +59,27 @@ export async function POST(request: Request) {
     const emailResult = await dispatchQuoteReceivedNotifications({
       quoteNumber: storedQuote.quoteNumber,
       input: parsed.data,
+    });
+    await recordAnalyticsEvent({
+      eventName: "quote_submitted",
+      entityType: "quote",
+      entityId: storedQuote.quoteNumber,
+      source: "web",
+      path: "/quote-request",
+      funnelStage: "quote_request",
+      properties: {
+        serviceNeeded: parsed.data.serviceNeeded,
+        fulfillmentMethod: parsed.data.fulfillmentMethod,
+        persisted: storedQuote.persisted,
+      },
+    });
+    await recordNotificationInboxItem({
+      title: `New quote submitted: ${parsed.data.serviceNeeded}`,
+      detail: `${storedQuote.quoteNumber} is ready for staff review and customer follow-up.`,
+      audience: "staff",
+      channel: "workflow",
+      priority: "high",
+      actionHref: "/admin/quotes",
     });
 
     const responseBody = {

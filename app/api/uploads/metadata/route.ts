@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/backend/auth";
 import { dispatchUploadReceivedNotification } from "@/lib/backend/notifications";
 import { uploadMetadataSchema } from "@/lib/backend/schemas";
-import { getUploadNotificationContext, persistArtworkMetadataRecord } from "@/lib/backend/repository";
+import {
+  getUploadNotificationContext,
+  persistArtworkMetadataRecord,
+  recordAnalyticsEvent,
+  recordNotificationInboxItem,
+} from "@/lib/backend/repository";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
 
@@ -53,6 +58,29 @@ export async function POST(request: Request) {
         relatedLabel: parsed.data.context.orderId ?? parsed.data.context.quoteId ?? parsed.data.context.productSlug,
       });
     }
+    await recordAnalyticsEvent({
+      eventName: "upload_received",
+      entityType: "upload",
+      entityId: parsed.data.id,
+      profileId: profileId ?? null,
+      source: "web",
+      path: "/upload-artwork",
+      funnelStage: "artwork_upload",
+      properties: {
+        scope: parsed.data.context.scope,
+        quoteId: parsed.data.context.quoteId,
+        orderId: parsed.data.context.orderId,
+        fileName: parsed.data.fileName,
+      },
+    });
+    await recordNotificationInboxItem({
+      title: `Artwork uploaded: ${parsed.data.fileName}`,
+      detail: `A new file was linked to ${parsed.data.context.orderId ?? parsed.data.context.quoteId ?? "the account library"} and should be reviewed.`,
+      audience: "staff",
+      channel: "workflow",
+      priority: "high",
+      actionHref: "/admin/uploads",
+    });
 
     logInfo("Upload metadata received", {
       fileName: parsed.data.fileName,

@@ -9,6 +9,9 @@ import {
   getOrderPaymentSnapshot,
   persistIdempotencyRecord,
   persistWebhookEventRecord,
+  recordAnalyticsEvent,
+  recordNotificationInboxItem,
+  recordOperationalAlert,
 } from "@/lib/backend/repository";
 import { applyPaymentWorkflowTransition } from "@/lib/backend/workflow-engine";
 import { logError, logInfo } from "@/lib/logger";
@@ -101,6 +104,25 @@ export async function POST(request: Request) {
               customerFullName: orderContext.customerFullName,
             });
           }
+          await recordAnalyticsEvent({
+            eventName: "payment_confirmed",
+            entityType: "payment",
+            entityId: orderNumber,
+            source: "stripe-webhook",
+            funnelStage: "payment",
+            properties: {
+              eventType: event.type,
+              amountCents: session.amount_total ?? undefined,
+            },
+          });
+          await recordNotificationInboxItem({
+            title: `Payment confirmed: ${orderNumber}`,
+            detail: "Stripe verified the payment event and the order can continue through the production workflow.",
+            audience: "staff",
+            channel: "payment",
+            priority: "normal",
+            actionHref: "/admin/orders",
+          });
         }
 
         break;
@@ -157,6 +179,37 @@ export async function POST(request: Request) {
             currency: paymentIntent.currency ?? "cad",
             rawEventType: event.type,
             eventType: "order.payment_failed",
+          });
+          await recordAnalyticsEvent({
+            eventName: "payment_failed",
+            entityType: "payment",
+            entityId: orderNumber,
+            source: "stripe-webhook",
+            funnelStage: "payment",
+            properties: {
+              eventType: event.type,
+              amountCents: paymentIntent.amount ?? undefined,
+            },
+          });
+          await recordNotificationInboxItem({
+            title: `Payment failed: ${orderNumber}`,
+            detail: "A verified Stripe failure event was received and staff follow-up may be required before production continues.",
+            audience: "staff",
+            channel: "payment",
+            priority: "high",
+            actionHref: "/admin/invoices",
+          });
+          await recordOperationalAlert({
+            entityType: "payment",
+            entityId: orderNumber,
+            severity: "warning",
+            category: "payment",
+            title: `Payment failed for ${orderNumber}`,
+            detail: "A verified payment failure was received from Stripe. Review the order before promising turnaround.",
+            actionHref: "/admin/invoices",
+            metadata: {
+              eventType: event.type,
+            },
           });
         }
 

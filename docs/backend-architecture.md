@@ -43,6 +43,8 @@
   Workflow transition guardrails for payment and order state mutation
 - `lib/backend/billing.ts`
   Private Stripe customer/payment orchestration and checkout-to-billing linkage
+- `lib/backend/command-center.ts`
+  Admin reporting aggregation with Supabase-backed metrics, alerts, notification intelligence, and fallback command-center data
 
 ## Current Frontend Platform Direction
 
@@ -87,6 +89,14 @@
   Contact/support submissions with routing status
 - `notifications`
   Delivery attempts, trigger names, status, and provider payload metadata
+- `analytics_events`
+  Event-level funnel and behavior signals for quote, upload, checkout, payment, and operational reporting
+- `dashboard_kpi_snapshots`
+  Durable daily KPI rollups for period-over-period reporting without replaying every raw event
+- `operational_alerts`
+  Staff-facing alert records for stuck quotes, failed payments, delayed jobs, or workflow exceptions
+- `notification_inbox`
+  Readiness layer for admin or customer in-app notification feeds tied to backend events
 - `idempotency_keys`
   Replay protection and cached API responses for critical write paths
 
@@ -246,12 +256,22 @@ Prepared trigger points:
 - invoice notice
 - support follow-up
 
+Command-center trigger points:
+
+- quote submitted analytics event
+- checkout session created analytics event
+- upload received analytics event
+- payment confirmed / payment failed analytics events
+- staff notification inbox records for quotes, uploads, orders, and payment issues
+- operational alerts for verified payment failures and future SLA/stuck-workflow checks
+
 ## Defensive Patterns
 
 - Rate limits stay at the API edge for quote intake, uploads, and checkout
 - Shared Zod schemas validate cart, quote, request metadata, upload metadata, and Stripe session metadata
 - Idempotency records protect quote submission, checkout session creation, and webhook replays from duplicate writes
 - Notification delivery attempts are persisted so operational issues can be diagnosed without reading provider logs first
+- Analytics events and notification inbox entries give the admin command center durable source-of-truth inputs instead of relying only on static dashboard cards
 - Storage access is path-scoped through signed upload URLs and bucket policies rather than broad client write access
 - Payment confirmation should always be webhook-driven and never inferred from success-page visits
 

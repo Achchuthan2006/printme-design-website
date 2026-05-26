@@ -7,6 +7,8 @@ import {
   findIdempotencyRecord,
   persistIdempotencyRecord,
   persistOrderDraft,
+  recordAnalyticsEvent,
+  recordNotificationInboxItem,
   recordOperationalWarning,
   updateOrderCheckoutSession,
 } from "@/lib/backend/repository";
@@ -108,6 +110,28 @@ export async function POST(request: Request) {
       order,
       payload: parsed.data as CheckoutPayload,
       demo: session.status === "demo",
+    });
+    await recordAnalyticsEvent({
+      eventName: "checkout_session_created",
+      entityType: "order",
+      entityId: order.orderNumber,
+      source: "web",
+      path: "/checkout",
+      funnelStage: "checkout",
+      properties: {
+        paymentMode: parsed.data.paymentMode,
+        fulfillmentMethod: parsed.data.fulfillmentMethod,
+        itemCount: order.items.length,
+        stripeStatus: session.status,
+      },
+    });
+    await recordNotificationInboxItem({
+      title: `New order created: ${order.orderNumber}`,
+      detail: `Checkout started for ${order.items.length} item(s) with ${parsed.data.paymentMode} payment mode.`,
+      audience: "staff",
+      channel: session.status === "demo" ? "system" : "payment",
+      priority: order.quoteReviewRequired ? "high" : "normal",
+      actionHref: "/admin/orders",
     });
 
     logInfo("Checkout session created", {

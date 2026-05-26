@@ -103,6 +103,40 @@ export interface WebhookEventInput {
   processingError?: string | null;
 }
 
+export interface AnalyticsEventInput {
+  eventName: string;
+  entityType?: "quote" | "order" | "upload" | "support" | "customer" | "payment";
+  entityId?: string | null;
+  profileId?: string | null;
+  sessionId?: string | null;
+  source?: string;
+  path?: string | null;
+  funnelStage?: string | null;
+  properties?: Record<string, unknown>;
+}
+
+export interface NotificationInboxItemInput {
+  title: string;
+  detail: string;
+  audience: "customer" | "staff" | "both";
+  channel: "email" | "workflow" | "payment" | "support" | "system";
+  priority: "low" | "normal" | "high" | "urgent";
+  actionHref?: string | null;
+  notificationId?: string | null;
+  recipientProfileId?: string | null;
+}
+
+export interface OperationalAlertInput {
+  entityType?: "quote" | "order" | "upload" | "payment" | "customer" | "operations";
+  entityId?: string | null;
+  severity: "info" | "warning" | "critical" | "positive";
+  category: string;
+  title: string;
+  detail: string;
+  actionHref?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
 async function insertWorkflowEvent(event: Omit<WorkflowEventRecord, "id">) {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
@@ -184,6 +218,76 @@ export async function recordNotificationEvent(input: NotificationRecordInput) {
       triggerName: input.triggerName,
       reason: error.message,
     });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function recordAnalyticsEvent(input: AnalyticsEventInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("analytics_events").insert([{
+    event_name: input.eventName,
+    entity_type: input.entityType ?? null,
+    entity_id: input.entityId ?? null,
+    profile_id: input.profileId ?? null,
+    session_id: input.sessionId ?? null,
+    source: input.source ?? "web",
+    path: input.path ?? null,
+    funnel_stage: input.funnelStage ?? null,
+    properties: input.properties ?? {},
+  }] as never[]);
+
+  if (error) {
+    logWarn("Analytics event persistence skipped", { eventName: input.eventName, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function recordNotificationInboxItem(input: NotificationInboxItemInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("notification_inbox").insert([{
+    notification_id: input.notificationId ?? null,
+    recipient_profile_id: input.recipientProfileId ?? null,
+    audience: input.audience,
+    channel: input.channel,
+    priority: input.priority,
+    title: input.title,
+    detail: input.detail,
+    action_href: input.actionHref ?? null,
+  }] as never[]);
+
+  if (error) {
+    logWarn("Notification inbox persistence skipped", { title: input.title, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function recordOperationalAlert(input: OperationalAlertInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("operational_alerts").insert([{
+    entity_type: input.entityType ?? null,
+    entity_id: input.entityId ?? null,
+    severity: input.severity,
+    category: input.category,
+    title: input.title,
+    detail: input.detail,
+    action_href: input.actionHref ?? null,
+    metadata: input.metadata ?? {},
+  }] as never[]);
+
+  if (error) {
+    logWarn("Operational alert persistence skipped", { title: input.title, reason: error.message });
     return { persisted: false };
   }
 

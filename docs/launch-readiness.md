@@ -64,6 +64,7 @@ Recommended production rule:
 3. Test customer-facing emails for welcome, quote received, order placed, upload received, payment confirmation, artwork issue, and pickup-ready notifications.
 4. Confirm provider-level delivery metadata is stored in the private email delivery log.
 5. Add monitoring or alerting around failed notification sends before depending on them operationally.
+6. Apply the command-center migration so `analytics_events`, `operational_alerts`, `notification_inbox`, and `dashboard_kpi_snapshots` exist before enabling live reporting.
 
 ## Release checklist
 
@@ -89,6 +90,7 @@ Recommended production rule:
 - The current admin portal gate is a UI and configuration boundary, not a full server-enforced authorization model.
 - Customer account surfaces now support persisted profile, order, quote, file, and invoice data when available, with preview fallbacks where no live records exist yet.
 - Upload metadata, payment history, and notification history are now structured for persistence, and secure signed upload URLs are prepared server-side.
+- Command-center reporting is now designed to read from persisted analytics and notification intelligence tables when Supabase is configured.
 
 ## Recommended next engineering milestones
 

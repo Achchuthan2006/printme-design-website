@@ -524,3 +524,60 @@ export interface AdminProductCatalogItem {
   variantGroups: string[];
   internalNote: string;
 }
+
+export type ReportingWindow = "today" | "7d" | "30d" | "90d";
+
+export interface AdminKpiMetric {
+  label: string;
+  value: string;
+  detail: string;
+  delta?: string;
+  direction?: "up" | "down" | "flat";
+  tone?: "default" | "positive" | "attention";
+  href?: string;
+}
+
+export interface AdminInsightRow {
+  label: string;
+  value: string;
+  detail: string;
+  change?: string;
+  href?: string;
+}
+
+export interface AdminOperationalAlert {
+  id: string;
+  title: string;
+  detail: string;
+  severity: "info" | "warning" | "critical" | "positive";
+  category: "quote" | "order" | "upload" | "payment" | "customer" | "operations";
+  ageLabel: string;
+  href: string;
+  actionLabel: string;
+}
+
+export interface AdminNotificationIntelligenceItem {
+  id: string;
+  title: string;
+  detail: string;
+  channel: "email" | "workflow" | "payment" | "support" | "system";
+  audience: "customer" | "staff" | "both";
+  priority: AdminPriority;
+  status: "queued" | "sent" | "failed" | "action_needed" | "read";
+  happenedAt: string;
+  href: string;
+}
+
+export interface AdminCommandCenterSnapshot {
+  window: ReportingWindow;
+  windowLabel: string;
+  comparisonLabel: string;
+  kpis: AdminKpiMetric[];
+  salesInsights: AdminInsightRow[];
+  operationsInsights: AdminInsightRow[];
+  customerInsights: AdminInsightRow[];
+  productInsights: AdminInsightRow[];
+  alerts: AdminOperationalAlert[];
+  notifications: AdminNotificationIntelligenceItem[];
+  activity: AdminWorkflowEvent[];
+}
