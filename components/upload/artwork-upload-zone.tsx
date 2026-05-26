@@ -149,11 +149,11 @@ export function ArtworkUploadZone({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          "rounded-2xl border border-dashed p-6 text-center transition duration-300",
-          isDragging ? "border-brand bg-brand-soft shadow-glow" : "border-line bg-canvas hover:border-brand/40 hover:bg-brand-soft/30",
+          "rounded-[1.8rem] border border-dashed p-6 text-center transition duration-300",
+          isDragging ? "border-brand bg-brand-soft shadow-glow" : "border-black/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(244,238,231,0.68))] hover:border-brand/40 hover:bg-brand-soft/30",
         )}
       >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-brand/15 bg-white text-brand shadow-soft">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,241,236,0.88))] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.96),0_14px_24px_rgba(18,17,16,0.07)]">
           <Icon name="upload" className="h-6 w-6" />
         </div>
         <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Artwork upload</p>
@@ -164,7 +164,7 @@ export function ArtworkUploadZone({
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           {acceptedFileLabels.map((label) => (
-            <span key={label} className="rounded-full border border-line/80 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-slate">
+            <span key={label} className="rounded-full border border-white/85 bg-white/88 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
               {label}
             </span>
           ))}
@@ -188,7 +188,7 @@ export function ArtworkUploadZone({
       {items.length > 0 ? (
         <div className="mt-5 space-y-3" aria-live="polite">
           {items.map((item) => (
-            <article key={item.id} className="rounded-2xl border border-line/90 bg-canvas p-4">
+            <article key={item.id} className="rounded-[1.4rem] border border-black/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(244,238,231,0.8))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_10px_20px_rgba(18,17,16,0.05)]">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-black text-ink">{item.file.name}</p>
@@ -227,7 +227,7 @@ export function ArtworkUploadZone({
 
       {items.length > 0 ? (
         <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto]">
-          <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+          <div className="focus-band px-4 py-4 text-sm leading-6 text-slate">
             <p className="font-black text-ink">{nextStepTitle}</p>
             <p className="mt-1">
               Uploaded files are matched to your quote or order so the team can check size, bleed, quality, and production fit before anything moves forward.

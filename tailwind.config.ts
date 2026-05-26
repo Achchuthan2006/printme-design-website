@@ -21,10 +21,12 @@ const config: Config = {
         line: "#e7e2dd",
         canvas: "#f7f5f2",
         panel: "#ffffff",
+        mist: "#f4efe8",
+        smoke: "#201d1b",
       },
       fontFamily: {
-        sans: ["Aptos", "Segoe UI Variable", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
-        display: ['"Arial Black"', '"Segoe UI Variable"', '"Segoe UI"', '"Helvetica Neue"', "Arial", "sans-serif"],
+        sans: ["var(--font-sans)", "Aptos", "Segoe UI Variable", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "Times New Roman", "serif"],
       },
       boxShadow: {
         card: "0 24px 64px rgba(22, 19, 17, 0.12)",
@@ -32,6 +34,8 @@ const config: Config = {
         glow: "0 18px 48px rgba(217, 70, 32, 0.18)",
         glass: "0 22px 70px rgba(22, 19, 17, 0.11)",
         luxe: "0 30px 90px rgba(22, 19, 17, 0.12)",
+        tactile: "0 1px 0 rgba(255,255,255,0.9) inset, 0 18px 34px rgba(22,19,17,0.08)",
+        insetSoft: "inset 0 1px 0 rgba(255,255,255,0.85), inset 0 -2px 6px rgba(22,19,17,0.04)",
       },
       borderRadius: {
         "4xl": "2rem",

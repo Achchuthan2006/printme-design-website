@@ -16,8 +16,8 @@ export function Field({
 }) {
   return (
     <label className={cn("block", className)}>
-      <span className="mb-2 block text-sm font-bold text-ink">{label}</span>
-      {hint ? <span className="mb-3 block text-xs leading-5 text-slate">{hint}</span> : null}
+      <span className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate">{label}</span>
+      {hint ? <span className="mb-3 block max-w-2xl text-xs leading-5 text-slate/82">{hint}</span> : null}
       {children}
       {error ? <p className="mt-2 text-sm text-brand">{error}</p> : null}
     </label>
@@ -54,7 +54,7 @@ export function CheckboxTile({
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & { children: React.ReactNode; className?: string }) {
   return (
-    <label className={cn("flex items-center gap-3 rounded-2xl border border-line/80 bg-canvas p-4 text-sm font-bold text-ink transition hover:border-brand/20 hover:bg-brand-soft/20", className)}>
+    <label className={cn("flex items-center gap-3 rounded-[1.3rem] border border-black/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(244,238,231,0.84))] p-4 text-sm font-bold text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_18px_rgba(18,17,16,0.05)] transition hover:-translate-y-0.5 hover:border-brand/20 hover:bg-brand-soft/20", className)}>
       <input type="checkbox" className="h-4 w-4 accent-brand" {...props} />
       {children}
     </label>
@@ -72,13 +72,13 @@ export function FeedbackMessage({
   className?: string;
 } & React.HTMLAttributes<HTMLDivElement>) {
   const tones = {
-    default: "border-brand/15 bg-brand-soft text-brand",
+    default: "border-brand/15 bg-brand-soft/85 text-brand",
     success: "border-emerald-100 bg-emerald-50 text-emerald-800",
     error: "border-red-100 bg-red-50 text-red-800",
   } as const;
 
   return (
-    <div className={cn("rounded-[1rem] border px-4 py-3 text-sm leading-6", tones[tone], className)} {...props}>
+    <div className={cn("rounded-[1.15rem] border px-4 py-3 text-sm leading-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]", tones[tone], className)} {...props}>
       {children}
     </div>
   );

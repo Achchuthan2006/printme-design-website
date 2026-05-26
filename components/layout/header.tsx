@@ -41,12 +41,12 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b border-line/70 bg-white/92 backdrop-blur-xl transition-all duration-300 supports-[backdrop-filter]:bg-white/84",
-        scrolled ? "shadow-[0_18px_48px_rgba(22,19,17,0.1)]" : "shadow-[0_6px_22px_rgba(22,19,17,0.045)]",
+        "sticky top-0 z-50 border-b border-white/55 bg-[rgba(255,252,248,0.7)] backdrop-blur-[18px] transition-all duration-300 supports-[backdrop-filter]:bg-[rgba(255,252,248,0.64)]",
+        scrolled ? "shadow-[0_22px_56px_rgba(22,19,17,0.12)]" : "shadow-[0_10px_30px_rgba(22,19,17,0.06)]",
       )}
     >
-      <div className="hidden border-b border-black/5 bg-ink text-white lg:block">
-        <div className="container-shell flex h-10 items-center justify-between gap-4 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70">
+      <div className="hidden border-b border-white/10 bg-[linear-gradient(180deg,#201c1a_0%,#171413_100%)] text-white lg:block">
+        <div className="container-shell flex h-11 items-center justify-between gap-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/66">
           <div className="flex items-center gap-5">
             <span>Scarborough print shop</span>
             <span>{siteConfig.experience}</span>
@@ -61,7 +61,7 @@ export function Header() {
         </div>
       </div>
       <div className="container-shell">
-        <div className={cn("flex items-center justify-between gap-6 transition-[height] duration-300", scrolled ? "h-[64px]" : "h-[76px]")}>
+        <div className={cn("flex items-center justify-between gap-6 transition-[height] duration-300", scrolled ? "h-[68px]" : "h-[82px]")}>
           <BrandLogo className="mr-2 lg:mr-4" size="header" />
 
           <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
@@ -69,7 +69,7 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative rounded-full px-1 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-ink transition-colors duration-200 after:absolute after:bottom-0 after:left-1 after:h-0.5 after:w-[calc(100%-0.5rem)] after:origin-left after:scale-x-0 after:rounded-full after:bg-brand after:transition-transform after:duration-300 hover:text-brand hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25"
+                className="relative rounded-full px-2 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink transition-colors duration-200 after:absolute after:bottom-0 after:left-2 after:h-0.5 after:w-[calc(100%-1rem)] after:origin-left after:scale-x-0 after:rounded-full after:bg-brand after:transition-transform after:duration-300 hover:text-brand hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25"
               >
                 {item.label}
               </Link>
@@ -79,7 +79,7 @@ export function Header() {
           <div className="flex items-center gap-2.5 lg:gap-3">
             <CartDrawer compact />
             <div className="hidden items-center gap-3 lg:flex">
-              <div className="rounded-full border border-line/80 bg-white px-4 py-2 text-right shadow-[0_10px_20px_rgba(22,19,17,0.05)]">
+              <div className="liquid-glass rounded-[1.35rem] px-4 py-2.5 text-right">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Need a fast answer?</p>
                 <a href={siteConfig.phoneHref} className="mt-1 block text-sm font-extrabold text-ink transition hover:text-brand">
                   {siteConfig.phone}
@@ -98,7 +98,7 @@ export function Header() {
             aria-controls="printme-mobile-menu"
             aria-label="Toggle menu"
             onClick={() => setOpen((value) => !value)}
-            className="liquid-glass inline-flex h-11 w-11 items-center justify-center rounded-2xl transition hover:border-brand/45 hover:bg-white lg:hidden"
+            className="liquid-glass inline-flex h-11 w-11 items-center justify-center rounded-[1.2rem] transition hover:border-brand/45 hover:bg-white lg:hidden"
           >
             <span className="sr-only">Menu</span>
             <div className="space-y-1.5">
@@ -123,7 +123,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-2xl px-4 py-3 text-sm font-bold text-ink transition hover:bg-white/80 hover:text-brand"
+                  className="rounded-[1.25rem] px-4 py-3 text-sm font-bold text-ink transition hover:bg-white/80 hover:text-brand"
                   onClick={() => setOpen(false)}
                 >
                   {item.label}

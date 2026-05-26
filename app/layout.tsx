@@ -1,10 +1,23 @@
 import type { Metadata } from "next";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { CartProvider } from "@/features/cart/cart-context";
 import { AuthProvider } from "@/components/account/auth-provider";
 import { SiteChrome } from "@/components/layout/site-chrome";
 import { env } from "@/lib/env";
+
+const displayFont = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["600", "700"],
+});
+
+const sansFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: {
@@ -61,7 +74,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${displayFont.variable} ${sansFont.variable}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[120] focus:rounded-2xl focus:bg-ink focus:px-4 focus:py-3 focus:text-sm focus:font-black focus:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"

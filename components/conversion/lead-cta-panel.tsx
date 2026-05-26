@@ -19,13 +19,14 @@ export function LeadCtaPanel({
   primaryHref = "/quote-request",
 }: LeadCtaPanelProps) {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-[#28211d] bg-ink p-7 text-white shadow-luxe sm:p-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.18),transparent_18rem)]" aria-hidden="true" />
+    <section className="relative overflow-hidden rounded-[2.2rem] border border-[#28211d] bg-ink p-7 text-white shadow-luxe sm:p-8">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.22),transparent_18rem)]" aria-hidden="true" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" aria-hidden="true" />
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_32%)]" aria-hidden="true" />
       <div className="relative grid gap-6 lg:grid-cols-[1fr_17rem] lg:items-center">
         <div className="relative">
           <p className="editorial-kicker text-brand-light">Next step</p>
-          <h2 className="mt-3 max-w-[15ch] text-balance font-display text-[2.15rem] font-black leading-[0.92] tracking-[-0.05em] text-white sm:text-[2.8rem]">
+          <h2 className="mt-3 max-w-[15ch] text-balance font-display text-[2.25rem] font-semibold leading-[0.9] tracking-[-0.05em] text-white sm:text-[2.95rem]">
             {title}
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-white/74">{description}</p>
@@ -41,9 +42,9 @@ export function LeadCtaPanel({
             Best for custom jobs, rush questions, unclear files, reorder planning, and quote-first work.
           </p>
         </div>
-        <div className="liquid-glass-dark relative rounded-[1.5rem] p-4">
+        <div className="liquid-glass-dark relative rounded-[1.65rem] p-4">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">Ready to move?</p>
-          <div className="mt-3 rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3 text-xs leading-5 text-white/72">
+          <div className="mt-3 rounded-[1.2rem] border border-white/10 bg-white/5 px-3 py-3 text-xs leading-5 text-white/72">
             <p className="font-bold text-white">{siteConfig.shortAddress}</p>
             <p className="mt-1">{siteConfig.phone}</p>
           </div>

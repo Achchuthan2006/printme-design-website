@@ -61,14 +61,14 @@ export const metadata = buildMetadata({
 export default function HomePage() {
   return (
     <>
-      <section className="relative overflow-hidden bg-white pb-8 pt-8 sm:pb-10 sm:pt-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.05),transparent_28rem)]" aria-hidden="true" />
+      <section className="relative overflow-hidden bg-white/55 pb-8 pt-8 sm:pb-10 sm:pt-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.08),transparent_28rem)]" aria-hidden="true" />
         <div className="container-shell relative">
-          <div className="hero-panel px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+          <div className="hero-panel px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-11">
             <div className="relative grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
               <div>
                 <p className="hero-in editorial-kicker [--delay:40ms]">{heroCopy.eyebrow}</p>
-                <h1 className="display-title hero-in mt-4 max-w-2xl text-balance text-[3.2rem] font-black leading-[0.92] [--delay:120ms] sm:text-[4.9rem]">
+                <h1 className="display-title hero-in mt-4 max-w-2xl text-balance text-[3.25rem] font-semibold leading-[0.9] [--delay:120ms] sm:text-[5.1rem]">
                   <span className="headline-accent">{heroCopy.headline}</span>
                 </h1>
                 <p className="hero-in mt-5 max-w-xl text-[15px] leading-8 text-slate [--delay:210ms] sm:text-lg">
@@ -101,17 +101,17 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
-                <div className="hero-in mt-5 rounded-[1.5rem] border border-line/80 bg-canvas/70 px-4 py-4 text-sm leading-6 text-slate [--delay:430ms]">
+                <div className="hero-in mt-5 liquid-glass rounded-[1.55rem] px-4 py-4 text-sm leading-6 text-slate [--delay:430ms]">
                   <p className="font-black text-ink">Visit, call, or send files online.</p>
                   <p className="mt-1">Pickup at {siteConfig.address}. Call {siteConfig.phone} for rush questions, passport photo availability, or custom print help.</p>
                 </div>
                 <div className="hero-in mt-7 grid gap-4 sm:grid-cols-2 [--delay:470ms]">
-                  <div className="premium-stat">
+                  <div className="premium-stat p-4">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate">Trusted locally</p>
                     <p className="mt-2 text-2xl font-black text-ink">20+ years</p>
                     <p className="mt-1 text-sm leading-6 text-slate">Supporting local businesses, events, schools, and everyday print jobs.</p>
                   </div>
-                  <div className="premium-stat">
+                  <div className="premium-stat p-4">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate">Handled carefully</p>
                     <p className="mt-2 text-2xl font-black text-ink">File review first</p>
                     <p className="mt-1 text-sm leading-6 text-slate">Artwork, timing, and finishing are checked before your job moves forward.</p>

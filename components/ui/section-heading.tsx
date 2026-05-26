@@ -18,13 +18,13 @@ export function SectionHeading({
       {eyebrow ? (
         <p className="editorial-kicker">{eyebrow}</p>
       ) : null}
-      <h2 className="display-title mt-3 text-balance text-[2.05rem] font-black leading-[0.95] sm:text-[3.1rem]">{title}</h2>
+      <h2 className="display-title mt-4 text-balance text-[2.2rem] font-semibold leading-[0.92] sm:text-[3.35rem]">{title}</h2>
       {description ? (
-        <p className={cn("mt-4 max-w-[40rem] text-pretty text-[15px] leading-7 text-slate sm:text-base", align === "center" && "mx-auto")}>
+        <p className={cn("mt-5 max-w-[42rem] text-pretty text-[15px] leading-8 text-slate sm:text-[1.02rem]", align === "center" && "mx-auto")}>
           {description}
         </p>
       ) : null}
-      <div className={cn("premium-divider mt-6 max-w-[9rem]", align === "center" && "mx-auto")} />
+      <div className={cn("premium-divider mt-7 max-w-[10rem]", align === "center" && "mx-auto")} />
     </div>
   );
 }

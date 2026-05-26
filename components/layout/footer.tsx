@@ -5,16 +5,16 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/10 bg-[#12100f] pb-20 text-white md:pb-0">
+    <footer className="relative overflow-hidden border-t border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.16),transparent_28rem),linear-gradient(180deg,#171311_0%,#0f0d0c_100%)] pb-20 text-white md:pb-0">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/55 to-transparent" aria-hidden="true" />
       <div className="container-shell py-16">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_28px_80px_rgba(0,0,0,0.16)] sm:p-8">
+        <div className="liquid-glass-dark rounded-[2.15rem] p-6 sm:p-8">
           <div className="mb-8 grid gap-4 xl:grid-cols-2">
             {[
               "Business printing, document printing, banners, passport photos, and custom jobs",
               "Pickup confidence from a real Scarborough print shop",
             ].map((item) => (
-              <div key={item} className="rounded-[1.35rem] border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-bold text-white/82 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div key={item} className="rounded-[1.4rem] border border-white/10 bg-white/[0.07] px-4 py-3 text-sm font-bold text-white/82 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 {item}
               </div>
             ))}
@@ -28,7 +28,7 @@ export function Footer() {
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                 <p>{siteConfig.address}</p>
                 <a href={siteConfig.phoneHref} className="mt-2 block font-bold text-white transition hover:text-brand">
                   Tel: {siteConfig.phone}
@@ -38,7 +38,7 @@ export function Footer() {
                   {siteConfig.email}
                 </a>
               </div>
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">Store hours</p>
                 <div className="mt-2 space-y-1.5">
                   {siteConfig.hours.map((hour) => (
@@ -83,7 +83,7 @@ export function Footer() {
               <p>{siteConfig.experience} helping customers avoid print guesswork with clearer files, timing, and production guidance.</p>
               <p>Pickup available at {siteConfig.shortAddress}. Ask about delivery for qualifying Scarborough, Toronto, and GTA orders.</p>
             </div>
-            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-4 text-sm text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_32px_rgba(0,0,0,0.1)]">
+            <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-white/[0.07] p-4 text-sm text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.12)]">
               <p className="font-semibold text-white">Professional print help without the production guesswork.</p>
               <p className="mt-2">One local stop for document printing, marketing materials, stationery, technical prints, passport photos, and custom orders.</p>
             </div>
