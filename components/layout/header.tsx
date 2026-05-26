@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { navigation, siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { useAuth } from "@/components/account/auth-provider";
 import { useCart } from "@/features/cart/cart-context";
 import { CartDrawer } from "@/components/commerce/cart-drawer";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,10 @@ export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const { itemCount } = useCart();
+  const { user, profile, loading, isAdmin, signOut } = useAuth();
+  const accountLabel = profile?.fullName ?? user?.email?.split("@")[0] ?? "Account";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -25,6 +29,7 @@ export function Header() {
 
   useEffect(() => {
     setOpen(false);
+    setAccountOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -37,6 +42,13 @@ export function Header() {
       document.body.style.overflow = previousOverflow;
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const handleClick = () => setAccountOpen(false);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, [accountOpen]);
 
   return (
     <header
@@ -79,6 +91,52 @@ export function Header() {
           <div className="flex items-center gap-2.5 lg:gap-3">
             <CartDrawer compact />
             <div className="hidden items-center gap-3 lg:flex">
+              {!loading ? (
+                user ? (
+                  <div className="relative" onClick={(event) => event.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => setAccountOpen((value) => !value)}
+                      className="liquid-glass flex items-center gap-3 rounded-[1.35rem] px-4 py-2.5 text-left transition hover:border-brand/35"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(180deg,#ef6a46_0%,#d94620_75%,#b73314_100%)] text-xs font-black uppercase text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+                        {accountLabel.slice(0, 1)}
+                      </span>
+                      <span>
+                        <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-slate">My account</span>
+                        <span className="mt-0.5 block max-w-[9rem] truncate text-sm font-extrabold text-ink">{accountLabel}</span>
+                      </span>
+                    </button>
+                    <div className={cn("absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-[1.5rem] border border-white/75 bg-white/92 p-3 shadow-[0_24px_64px_rgba(18,17,16,0.14)] backdrop-blur-[16px] transition", accountOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0")}>
+                      <div className="rounded-[1.15rem] border border-white/80 bg-white/84 px-3 py-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                        <p className="font-black text-ink">{profile?.fullName ?? user.email}</p>
+                        <p className="mt-1">Quotes, orders, uploads, and reorders all stay connected here.</p>
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        <Link href="/account" className="rounded-[1rem] px-3 py-2.5 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand">Open dashboard</Link>
+                        <Link href="/account/orders" className="rounded-[1rem] px-3 py-2.5 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand">Orders and quotes</Link>
+                        <Link href="/account/files" className="rounded-[1rem] px-3 py-2.5 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand">Files and uploads</Link>
+                        {isAdmin ? <Link href="/admin" className="rounded-[1rem] px-3 py-2.5 text-sm font-bold text-ink transition hover:bg-brand-soft hover:text-brand">Admin portal</Link> : null}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await signOut();
+                          setAccountOpen(false);
+                        }}
+                        className="mt-3 w-full rounded-[1rem] border border-white/80 bg-white/84 px-3 py-2.5 text-sm font-bold text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] transition hover:text-brand"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button href="/account/login" variant="secondary" className="px-4 py-2.5 text-xs">Sign In</Button>
+                    <Button href="/account/create" className="px-4 py-2.5 text-xs">Create Account</Button>
+                  </div>
+                )
+              ) : null}
               <div className="liquid-glass rounded-[1.35rem] px-4 py-2.5 text-right">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Need a fast answer?</p>
                 <a href={siteConfig.phoneHref} className="mt-1 block text-sm font-extrabold text-ink transition hover:text-brand">
@@ -132,6 +190,23 @@ export function Header() {
               <Button href="/quote-request" className="mt-2 w-full justify-center">
                 Request a Quote
               </Button>
+              {user ? (
+                <>
+                  <Button href="/account" variant="secondary" className="w-full justify-center">
+                    My Account
+                  </Button>
+                  {isAdmin ? <Button href="/admin" variant="secondary" className="w-full justify-center">Admin Portal</Button> : null}
+                </>
+              ) : (
+                <>
+                  <Button href="/account/login" variant="secondary" className="w-full justify-center">
+                    Sign In
+                  </Button>
+                  <Button href="/account/create" variant="secondary" className="w-full justify-center">
+                    Create Account
+                  </Button>
+                </>
+              )}
               <Button href="/cart" variant="secondary" className="w-full justify-center">
                 Cart {itemCount > 0 ? `(${itemCount})` : ""}
               </Button>

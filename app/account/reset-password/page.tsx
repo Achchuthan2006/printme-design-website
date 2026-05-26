@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/account/auth-shell";
 import { ResetPasswordForm } from "@/components/account/password-forms";
 import { buildMetadata } from "@/lib/metadata";
 
@@ -9,10 +10,14 @@ export const metadata = buildMetadata({
 
 export default function ResetPasswordPage() {
   return (
-    <section className="section-space bg-canvas">
-      <div className="container-shell max-w-xl">
-        <ResetPasswordForm />
-      </div>
-    </section>
+    <AuthShell
+      eyebrow="Reset password"
+      title="Choose a fresh secure password."
+      description="Reset access cleanly, then return to your dashboard, active print work, and saved customer details."
+      supportTitle="Need help with account recovery?"
+      supportDetail="If the reset link is not arriving or the wrong email was used on a quote or order, contact PrintMe so we can help reconnect the account before the project timeline slips."
+    >
+      <ResetPasswordForm />
+    </AuthShell>
   );
 }

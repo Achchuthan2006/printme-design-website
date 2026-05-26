@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FeedbackMessage, Field, Input, Select, Textarea } from "@/components/ui/form-controls";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
+import { useAuth } from "@/components/account/auth-provider";
 import { siteConfig } from "@/lib/site";
 import { ArtworkUploadMetadata } from "@/types";
 
@@ -27,6 +28,7 @@ const initialState = {
 type FormState = typeof initialState;
 
 export function QuoteRequestForm({ initialService = "" }: { initialService?: string }) {
+  const { user, configured } = useAuth();
   const normalizedInitialService = initialService.trim();
   const matchedProduct = products.find((product) => product.slug === normalizedInitialService);
   const matchedService = serviceOptions.find((service) => service.toLowerCase() === normalizedInitialService.toLowerCase());
@@ -150,6 +152,19 @@ export function QuoteRequestForm({ initialService = "" }: { initialService?: str
         <div className="rounded-[1.5rem] border border-brand/15 bg-brand-soft px-4 py-4 text-sm leading-6 text-brand">
           <span className="font-black text-ink">Fastest path to an accurate quote:</span> include the quantity, deadline, pickup or delivery preference, and artwork if you have it. More clarity here means fewer follow-up messages later.
         </div>
+
+        {configured && !user ? (
+          <div className="liquid-glass rounded-[1.45rem] px-4 py-4 text-sm leading-6 text-slate">
+            <p className="font-black text-ink">Want this quote connected to a real customer account?</p>
+            <p className="mt-1">
+              Create an account or sign in first so future quotes, uploads, orders, and repeat jobs stay tied to one dashboard.
+            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <Button href="/account/create?redirect=%2Fquote-request" className="px-4 py-2.5 text-xs">Create Account</Button>
+              <Button href="/account/login?redirect=%2Fquote-request" variant="secondary" className="px-4 py-2.5 text-xs">Sign In</Button>
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
