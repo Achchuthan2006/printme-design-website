@@ -137,11 +137,13 @@ export function Header() {
                   </div>
                 )
               ) : null}
-              <div className="liquid-glass rounded-[1.35rem] px-4 py-2.5 text-right">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Need a fast answer?</p>
-                <a href={siteConfig.phoneHref} className="mt-1 block text-sm font-extrabold text-ink transition hover:text-brand">
-                  {siteConfig.phone}
-                </a>
+              <div className="liquid-glass flex h-[52px] min-w-[172px] items-center justify-center gap-3 rounded-[1.35rem] px-4 text-left">
+                <div className="min-w-0">
+                  <p className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.16em] text-slate">Need a fast answer?</p>
+                  <a href={siteConfig.phoneHref} className="block whitespace-nowrap text-sm font-extrabold text-ink transition hover:text-brand">
+                    {siteConfig.phone}
+                  </a>
+                </div>
               </div>
               <Button href="/quote-request" className="px-5 py-2.5 text-xs">
                 Request a Quote
