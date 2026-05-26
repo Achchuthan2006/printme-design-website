@@ -89,40 +89,42 @@ export function ArtworkUploadZone({
     setItems((current) => [...current, ...nextItems]);
 
     startTransition(async () => {
-      const uploaded: ArtworkUploadMetadata[] = [];
-
-      for (const item of nextItems) {
-        setItems((current) =>
-          current.map((currentItem) =>
-            currentItem.id === item.id ? { ...currentItem, state: "uploading", progress: 42 } : currentItem,
-          ),
-        );
-
-        try {
-          const metadata = await uploadArtworkFile(item.file, context);
-          uploaded.push(metadata);
+      const uploaded = await Promise.all(
+        nextItems.map(async (item) => {
           setItems((current) =>
             current.map((currentItem) =>
-              currentItem.id === item.id ? { ...currentItem, state: "uploaded", progress: 100, metadata } : currentItem,
+              currentItem.id === item.id ? { ...currentItem, state: "uploading", progress: 42 } : currentItem,
             ),
           );
-        } catch (error) {
-          setItems((current) =>
-            current.map((currentItem) =>
-              currentItem.id === item.id
-                ? {
-                    ...currentItem,
-                    state: "error",
-                    progress: 0,
-                    error: error instanceof Error ? error.message : "Upload failed. Please try again.",
-                  }
-                : currentItem,
-            ),
-          );
-        }
-      }
 
-      if (uploaded.length > 0) onUploaded?.(uploaded);
+          try {
+            const metadata = await uploadArtworkFile(item.file, context);
+            setItems((current) =>
+              current.map((currentItem) =>
+                currentItem.id === item.id ? { ...currentItem, state: "uploaded", progress: 100, metadata } : currentItem,
+              ),
+            );
+            return metadata;
+          } catch (error) {
+            setItems((current) =>
+              current.map((currentItem) =>
+                currentItem.id === item.id
+                  ? {
+                      ...currentItem,
+                      state: "error",
+                      progress: 0,
+                      error: error instanceof Error ? error.message : "Upload failed. Please try again.",
+                    }
+                  : currentItem,
+              ),
+            );
+            return null;
+          }
+        }),
+      );
+
+      const completedUploads = uploaded.filter((item): item is ArtworkUploadMetadata => Boolean(item));
+      if (completedUploads.length > 0) onUploaded?.(completedUploads);
     });
   }
 

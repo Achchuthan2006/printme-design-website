@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
+import dynamic from "next/dynamic";
 import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
 import { ProductSizePreview } from "@/components/catalog/product-size-preview";
-import { WebToPrintStudio } from "@/components/catalog/web-to-print-studio";
 import { ProductConfigurator } from "@/components/commerce/product-configurator";
 import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
@@ -19,6 +19,13 @@ import { ServiceProductVisual } from "@/components/sections/print-product-visual
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { buildMetadata } from "@/lib/metadata";
 import { getCategoryBySlug, getProductBySlug, getRelatedProducts, products } from "@/data/products";
+
+const WebToPrintStudio = dynamic(
+  () => import("@/components/catalog/web-to-print-studio").then((module) => module.WebToPrintStudio),
+  {
+    loading: () => <div className="surface-card h-80 animate-pulse p-6" />,
+  },
+);
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));

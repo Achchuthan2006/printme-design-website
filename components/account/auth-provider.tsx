@@ -1,7 +1,7 @@
 "use client";
 
 import { Session, User } from "@supabase/supabase-js";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { AuthProfileSnapshot, CustomerProfile } from "@/types";
 
@@ -34,12 +34,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
 
     fetch("/api/account/profile", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      signal: controller.signal,
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -48,23 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return (await response.json()) as AuthProfileSnapshot;
       })
       .then((snapshot) => {
-        if (!cancelled) {
-          setProfileState(snapshot);
-        }
+        setProfileState(snapshot);
       })
       .catch(() => {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setProfileState(null);
         }
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [accessToken, supabase]);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -79,27 +79,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, [supabase]);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     if (supabase) {
       await supabase.auth.signOut();
     }
     setSession(null);
-  }
+  }, [supabase]);
+
+  const value = useMemo<AuthContextValue>(() => ({
+    user: session?.user ?? null,
+    session,
+    role,
+    isAdmin,
+    loading,
+    configured: Boolean(supabase),
+    accessToken,
+    profile: profileState?.profile ?? null,
+    signOut,
+  }), [accessToken, isAdmin, loading, profileState?.profile, role, session, signOut, supabase]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user: session?.user ?? null,
-        session,
-        role,
-        isAdmin,
-        loading,
-        configured: Boolean(supabase),
-        accessToken,
-        profile: profileState?.profile ?? null,
-        signOut,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
