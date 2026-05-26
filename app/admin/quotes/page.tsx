@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { AdminFilterBar, AdminTable } from "@/components/admin/admin-table";
+import { AdminCard } from "@/components/admin/admin-card";
+import { AdminQuotesOpsView } from "@/components/admin/admin-quotes-ops-view";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
-import { adminQuotes, quoteStatusLabels } from "@/data/admin";
+import { adminQuotes } from "@/data/admin";
 
 export default function AdminQuotesPage() {
   return (
@@ -13,32 +12,13 @@ export default function AdminQuotesPage() {
         actionLabel="Review Uploads"
         actionHref="/admin/uploads"
       />
-      <AdminFilterBar>
-        {["All", "New", "Reviewing", "Waiting for Files", "Quoted", "Approved"].map((label) => (
-          <button key={label} className="rounded-full border border-line px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate transition hover:border-brand/40 hover:text-brand">
-            {label}
-          </button>
-        ))}
-      </AdminFilterBar>
-      <AdminTable
-        columns={["Quote", "Customer", "Service", "Quantity", "Deadline", "Status", "Follow-up", "Action"]}
-        rows={adminQuotes.map((quote) => [
-          <div key="quote">
-            <Link href={`/admin/quotes/${quote.id}`} className="text-brand hover:text-brand-dark">{quote.quoteNumber}</Link>
-            <p className="mt-1 text-xs text-slate">{quote.createdAt}</p>
-          </div>,
-          <div key="customer">
-            <p>{quote.customerName}</p>
-            <p className="mt-1 text-xs font-normal text-slate">{quote.customerEmail}</p>
-          </div>,
-          <span key="service">{quote.service}</span>,
-          <span key="quantity">{quote.quantity}</span>,
-          <span key="deadline">{quote.deadline}</span>,
-          <AdminStatusBadge key="status" status={quote.status} label={quoteStatusLabels[quote.status]} />,
-          <span key="follow">{quote.followUp}</span>,
-          <Link key="action" href={`/admin/quotes/${quote.id}`} className="font-black text-brand hover:text-brand-dark">Open</Link>,
-        ])}
-      />
+      <div className="grid gap-4 md:grid-cols-4">
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Open queue</p><p className="mt-2 text-4xl font-black text-ink">{adminQuotes.length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Waiting for files</p><p className="mt-2 text-4xl font-black text-ink">{adminQuotes.filter((quote) => quote.status === "waiting_for_files").length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Ready to send</p><p className="mt-2 text-4xl font-black text-ink">{adminQuotes.filter((quote) => quote.status === "quoted").length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">High priority</p><p className="mt-2 text-4xl font-black text-ink">{adminQuotes.filter((quote) => quote.priority === "high" || quote.priority === "urgent").length}</p></AdminCard>
+      </div>
+      <AdminQuotesOpsView quotes={adminQuotes} />
     </div>
   );
 }

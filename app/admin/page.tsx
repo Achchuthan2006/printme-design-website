@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { AdminActivityTimeline } from "@/components/admin/admin-activity-timeline";
 import { AdminCard, AdminMetricCard } from "@/components/admin/admin-card";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminQueuePanel } from "@/components/admin/admin-queue-panel";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
-import { adminDashboardMetrics, adminMessages, adminOrders, adminQuotes, adminUploads, orderStatusLabels, quoteStatusLabels, uploadStatusLabels } from "@/data/admin";
+import { adminDashboardMetrics, adminMessages, adminOrders, adminQuotes, adminUrgentTasks, adminUploads, adminWorkflowEvents, orderStatusLabels, quoteStatusLabels, uploadStatusLabels } from "@/data/admin";
 
 export default function AdminDashboardPage() {
   const priorityJobs = [...adminOrders]
@@ -53,8 +55,17 @@ export default function AdminDashboardPage() {
           </div>
         </AdminCard>
 
+        <AdminQueuePanel
+          title="Today&apos;s attention"
+          description="The highest-value staff actions across quotes, uploads, orders, and catalog operations."
+          items={adminUrgentTasks}
+        />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <AdminActivityTimeline title="Recent operational events" items={adminWorkflowEvents} />
         <AdminCard>
-          <h2 className="text-2xl font-black tracking-[-0.04em] text-ink">Today&apos;s attention</h2>
+          <h2 className="text-2xl font-black tracking-[-0.04em] text-ink">Cross-platform readiness</h2>
           <div className="mt-5 space-y-4">
             <div className="rounded-2xl border border-line bg-slate-50 p-4">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">Quote follow-up</p>
@@ -73,28 +84,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </AdminCard>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-3">
-        {[
-          {
-            title: "Customer experience readiness",
-            detail: "Quote, order, upload, and support flows now share clearer status language and escalation paths across the platform.",
-          },
-          {
-            title: "Operational history readiness",
-            detail: "Admin notes, workflow events, payment events, and upload review states are already structured to support timeline-style records.",
-          },
-          {
-            title: "Repeat-order readiness",
-            detail: "Customer account, order detail, files, and quote flows are now better aligned for repeat jobs and future reorder shortcuts.",
-          },
-        ].map((item) => (
-          <AdminCard key={item.title}>
-            <h2 className="text-xl font-black tracking-[-0.04em] text-ink">{item.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate">{item.detail}</p>
-          </AdminCard>
-        ))}
       </div>
     </div>
   );

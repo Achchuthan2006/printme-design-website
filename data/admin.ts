@@ -4,9 +4,13 @@ import {
   AdminMessage,
   AdminOrder,
   AdminOrderStatus,
+  AdminProductCatalogItem,
+  AdminProductVariantGroup,
   AdminQuote,
   AdminQuoteStatus,
+  AdminUrgentTask,
   AdminUpload,
+  AdminWorkflowEvent,
   ArtworkUploadStatus,
 } from "@/types";
 
@@ -76,6 +80,7 @@ export const adminCustomers: AdminCustomerSummary[] = [
     tags: ["Rush jobs", "Business cards"],
     lastActivity: "Yesterday",
     lifetimeValue: "$620",
+    notes: "Usually needs proof review for logo quality before approval.",
   },
   {
     id: "cus_eventline",
@@ -86,6 +91,7 @@ export const adminCustomers: AdminCustomerSummary[] = [
     tags: ["Large format", "Pickup"],
     lastActivity: "2 days ago",
     lifetimeValue: "$2,350",
+    notes: "Often bundles signage and delivery instructions into one job.",
   },
 ];
 
@@ -107,8 +113,8 @@ export const adminOrders: AdminOrder[] = [
     priority: "high",
     dueDate: "May 24, 2026",
     createdAt: "May 22, 2026",
-    internalNotes: ["Artwork approved. Customer needs pickup before 3 PM."],
-    activity: ["Payment received", "Artwork approved for print", "Moved to production queue"],
+    internalNotes: ["Artwork approved. Customer needs pickup before 3 PM.", "Keep one extra proof on file for repeat order."],
+    activity: ["Payment received", "Artwork approved for print", "Moved to production queue", "Pickup note added for front desk"],
   },
   {
     id: "ord_1047",
@@ -128,7 +134,7 @@ export const adminOrders: AdminOrder[] = [
     dueDate: "May 25, 2026",
     createdAt: "May 21, 2026",
     internalNotes: ["Logo needs final proof confirmation."],
-    activity: ["Deposit captured", "Proof requested"],
+    activity: ["Deposit captured", "Proof requested", "Waiting on logo approval from customer"],
   },
   {
     id: "ord_1046",
@@ -148,7 +154,7 @@ export const adminOrders: AdminOrder[] = [
     dueDate: "May 22, 2026",
     createdAt: "May 20, 2026",
     internalNotes: ["Call before delivery. Confirm address at dispatch."],
-    activity: ["Production complete", "Ready for dispatch"],
+    activity: ["Production complete", "Ready for dispatch", "Driver assignment still needed"],
   },
 ];
 
@@ -169,7 +175,7 @@ export const adminQuotes: AdminQuote[] = [
     estimatedValue: "$420-$520",
     createdAt: "Today",
     projectDetails: "Tri-fold brochure for a Scarborough service campaign. Needs stock recommendation.",
-    internalNotes: ["Ask if folding is letterfold or z-fold."],
+    internalNotes: ["Ask if folding is letterfold or z-fold.", "Potential repeat candidate for monthly campaign batches."],
     followUp: "Respond by end of day",
   },
   {
@@ -190,6 +196,25 @@ export const adminQuotes: AdminQuote[] = [
     projectDetails: "Event signage bundle with multiple sizes and sponsor logos.",
     internalNotes: ["Need packaged files before estimating production time."],
     followUp: "Waiting on artwork",
+  },
+  {
+    id: "quo_3019",
+    quoteNumber: "Q-3019",
+    customerId: "cus_highland",
+    customerName: "Jason M.",
+    customerEmail: "jason@highlandcleaning.ca",
+    customerPhone: "647-555-0192",
+    service: "Postcards",
+    quantity: "1500",
+    deadline: "May 31, 2026",
+    fulfillmentMethod: "Pickup",
+    status: "quoted",
+    priority: "high",
+    estimatedValue: "$255-$295",
+    createdAt: "May 21, 2026",
+    projectDetails: "EDDM-style promo postcards for seasonal outreach with updated branding.",
+    internalNotes: ["Customer likely converts if turnaround is confirmed by Friday."],
+    followUp: "Awaiting customer approval",
   },
 ];
 
@@ -230,6 +255,18 @@ export const adminUploads: AdminUpload[] = [
     priority: "urgent",
     notes: "Packaged artwork includes linked assets.",
   },
+  {
+    id: "upl_898",
+    fileName: "brochure-layout-v1.ai",
+    fileType: "AI",
+    fileSize: "11.6 MB",
+    uploadedAt: "Today, 10:02 AM",
+    customerName: "Priya S.",
+    relatedTo: "Q-3021",
+    status: "awaiting_review",
+    priority: "high",
+    notes: "Need stock and fold review before pricing can be finalized.",
+  },
 ];
 
 export const adminInvoices: AdminInvoice[] = [
@@ -261,10 +298,189 @@ export const adminMessages: AdminMessage[] = [
   },
 ];
 
+export const adminVariantGroups: AdminProductVariantGroup[] = [
+  {
+    id: "vg-size-standard-print",
+    title: "Standard print sizes",
+    scope: "shared",
+    required: true,
+    options: [
+      { id: "size-bc", label: "3.5 x 2 in", value: "3.5x2", pricingHint: "Base card size", skuHint: "BC-STD" },
+      { id: "size-a6", label: "4 x 6 in", value: "4x6", pricingHint: "Postcard base", skuHint: "PC-A6" },
+      { id: "size-letter", label: "8.5 x 11 in", value: "8.5x11", pricingHint: "Flyer / brochure base", skuHint: "LTR" },
+    ],
+  },
+  {
+    id: "vg-stock-paper",
+    title: "Paper / stock",
+    scope: "shared",
+    required: true,
+    options: [
+      { id: "stock-gloss", label: "Gloss text", value: "gloss-text", pricingHint: "Marketing print default" },
+      { id: "stock-matte", label: "Matte cover", value: "matte-cover", pricingHint: "Business card default" },
+      { id: "stock-uncoated", label: "Uncoated", value: "uncoated", pricingHint: "Writable stock option" },
+    ],
+  },
+  {
+    id: "vg-turnaround",
+    title: "Turnaround tier",
+    scope: "shared",
+    required: true,
+    options: [
+      { id: "turn-standard", label: "Standard", value: "standard", turnaroundHint: "Base workflow" },
+      { id: "turn-rush", label: "Rush", value: "rush", turnaroundHint: "Production priority" },
+      { id: "turn-sameday", label: "Same day if possible", value: "same-day", turnaroundHint: "Requires readiness check" },
+    ],
+  },
+  {
+    id: "vg-large-format-finish",
+    title: "Large-format finishing",
+    scope: "product_specific",
+    options: [
+      { id: "finish-grommets", label: "Grommets", value: "grommets", pricingHint: "Banner add-on" },
+      { id: "finish-hemming", label: "Hemming", value: "hemming", pricingHint: "Banner durability add-on" },
+      { id: "finish-mounting", label: "Mounting", value: "mounting", pricingHint: "Sign install prep" },
+    ],
+  },
+];
+
+export const adminProductCatalog: AdminProductCatalogItem[] = [
+  {
+    id: "prod-bc",
+    slug: "business-cards",
+    title: "Business Cards",
+    category: "Business Printing",
+    orderMode: "direct-order",
+    storefrontStatus: "active",
+    featured: true,
+    startingPrice: "$39",
+    turnaround: "2-4 business days",
+    linkedFaqCount: 3,
+    relatedServices: ["Envelopes", "Flyers", "Graphic Design Services"],
+    variantGroups: ["vg-size-standard-print", "vg-stock-paper", "vg-turnaround"],
+    internalNote: "Good candidate for SKU-backed pricing and repeat-order shortcuts.",
+  },
+  {
+    id: "prod-flyers",
+    slug: "flyers",
+    title: "Flyers",
+    category: "Marketing Materials",
+    orderMode: "hybrid",
+    storefrontStatus: "active",
+    featured: true,
+    startingPrice: "$49",
+    turnaround: "2-5 business days",
+    linkedFaqCount: 2,
+    relatedServices: ["Brochures", "Posters", "Graphic Design Services"],
+    variantGroups: ["vg-size-standard-print", "vg-stock-paper", "vg-turnaround"],
+    internalNote: "Hybrid flow should support both direct order and upload-first review.",
+  },
+  {
+    id: "prod-banners",
+    slug: "banners",
+    title: "Banners",
+    category: "Signs & Banners",
+    orderMode: "quote-only",
+    storefrontStatus: "active",
+    featured: false,
+    startingPrice: "$89",
+    turnaround: "3-5 business days",
+    linkedFaqCount: 1,
+    relatedServices: ["Signs", "Posters", "Custom Orders"],
+    variantGroups: ["vg-turnaround", "vg-large-format-finish"],
+    internalNote: "Best managed with quote-first workflow and production notes for materials/finishing.",
+  },
+  {
+    id: "prod-postcards",
+    slug: "postcards",
+    title: "Postcards",
+    category: "Promo, Mail & Campaign Services",
+    orderMode: "hybrid",
+    storefrontStatus: "active",
+    featured: true,
+    startingPrice: "$45",
+    turnaround: "2-5 business days",
+    linkedFaqCount: 2,
+    relatedServices: ["Print & Mail Services", "Flyers", "Graphic Design Services"],
+    variantGroups: ["vg-size-standard-print", "vg-stock-paper", "vg-turnaround"],
+    internalNote: "Strong candidate for print-and-mail workflow linkage and customer reuse.",
+  },
+];
+
+export const adminWorkflowEvents: AdminWorkflowEvent[] = [
+  {
+    id: "evt-1",
+    entityType: "quote",
+    entityId: "quo_3021",
+    title: "Brochure quote needs stock decision",
+    detail: "Staff still need to confirm fold style and stock recommendation before pricing can be sent.",
+    actor: "Sales desk",
+    occurredAt: "10 min ago",
+    tone: "attention",
+  },
+  {
+    id: "evt-2",
+    entityType: "upload",
+    entityId: "upl_900",
+    title: "Proof requested for business card logo",
+    detail: "Customer needs to approve the sharpened logo proof before the job can enter production.",
+    actor: "Prepress",
+    occurredAt: "45 min ago",
+    tone: "attention",
+  },
+  {
+    id: "evt-3",
+    entityType: "order",
+    entityId: "ord_1048",
+    title: "Flyer order moved to production",
+    detail: "Artwork is approved and the job is now in the active print queue.",
+    actor: "Production",
+    occurredAt: "1 hour ago",
+    tone: "success",
+  },
+  {
+    id: "evt-4",
+    entityType: "customer",
+    entityId: "cus_eventline",
+    title: "Repeat large-format customer updated delivery note",
+    detail: "Dispatch note was added to the account before the next banner delivery.",
+    actor: "Support",
+    occurredAt: "Yesterday",
+    tone: "default",
+  },
+];
+
+export const adminUrgentTasks: AdminUrgentTask[] = [
+  {
+    id: "task-1",
+    title: "Send brochure quote before close of day",
+    detail: "Q-3021 has enough detail to move forward once fold style is confirmed.",
+    href: "/admin/quotes/quo_3021",
+    priority: "high",
+    category: "quote",
+  },
+  {
+    id: "task-2",
+    title: "Assign delivery handoff for banner order",
+    detail: "PM-1046 is complete and still needs dispatch confirmation.",
+    href: "/admin/orders/ord_1046",
+    priority: "urgent",
+    category: "order",
+  },
+  {
+    id: "task-3",
+    title: "Review postcard pricing model",
+    detail: "Hybrid postcard flow should align direct-order logic with print-and-mail upsells.",
+    href: "/admin/products",
+    priority: "normal",
+    category: "product",
+  },
+];
+
 export const adminDashboardMetrics = [
-  { label: "New Quotes", value: String(adminQuotes.filter((quote) => quote.status === "reviewing" || quote.status === "new_quote").length), detail: "Need pricing or follow-up today" },
-  { label: "Active Orders", value: String(adminOrders.filter((order) => !["completed", "shipped_delivered"].includes(order.productionStatus)).length), detail: "Jobs currently moving through production" },
-  { label: "Files to Review", value: String(adminUploads.filter((upload) => ["uploaded", "proof_required", "awaiting_review"].includes(upload.status)).length), detail: "Artwork checks before print" },
+  { label: "Open Quotes", value: String(adminQuotes.filter((quote) => ["new_quote", "reviewing", "waiting_for_files"].includes(quote.status)).length), detail: "Requests still waiting on pricing or missing details" },
+  { label: "Active Orders", value: String(adminOrders.filter((order) => !["completed", "shipped_delivered"].includes(order.productionStatus)).length), detail: "Jobs currently moving through review or production" },
+  { label: "Uploads to Review", value: String(adminUploads.filter((upload) => ["uploaded", "proof_required", "awaiting_review"].includes(upload.status)).length), detail: "Artwork checks before print" },
   { label: "Ready for Pickup", value: String(adminOrders.filter((order) => order.productionStatus === "ready_for_pickup").length), detail: "Customer handoff or dispatch needed" },
 ];
 
@@ -274,4 +490,8 @@ export function getAdminOrderById(id: string) {
 
 export function getAdminQuoteById(id: string) {
   return adminQuotes.find((quote) => quote.id === id);
+}
+
+export function getAdminCustomerById(id: string) {
+  return adminCustomers.find((customer) => customer.id === id);
 }

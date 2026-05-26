@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { AdminFilterBar, AdminTable } from "@/components/admin/admin-table";
+import { AdminCard } from "@/components/admin/admin-card";
+import { AdminOrdersOpsView } from "@/components/admin/admin-orders-ops-view";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
-import { adminOrders, orderStatusLabels, uploadStatusLabels } from "@/data/admin";
+import { adminOrders } from "@/data/admin";
 
 export default function AdminOrdersPage() {
   return (
@@ -13,32 +12,13 @@ export default function AdminOrdersPage() {
         actionLabel="Open Quote Queue"
         actionHref="/admin/quotes"
       />
-      <AdminFilterBar>
-        {["All", "Awaiting Review", "In Production", "Ready for Pickup", "On Hold"].map((label) => (
-          <button key={label} className="rounded-full border border-line px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate transition hover:border-brand/40 hover:text-brand">
-            {label}
-          </button>
-        ))}
-      </AdminFilterBar>
-      <AdminTable
-        columns={["Order", "Customer", "Service", "Payment", "Files", "Production", "Due", "Action"]}
-        rows={adminOrders.map((order) => [
-          <div key="order">
-            <Link href={`/admin/orders/${order.id}`} className="text-brand hover:text-brand-dark">{order.orderNumber}</Link>
-            <p className="mt-1 text-xs text-slate">{order.createdAt}</p>
-          </div>,
-          <div key="customer">
-            <p>{order.customerName}</p>
-            <p className="mt-1 text-xs font-normal text-slate">{order.customerEmail}</p>
-          </div>,
-          <span key="service">{order.service}</span>,
-          <AdminStatusBadge key="payment" status={order.paymentStatus} />,
-          <AdminStatusBadge key="files" status={order.fileStatus} label={uploadStatusLabels[order.fileStatus]} />,
-          <AdminStatusBadge key="production" status={order.productionStatus} label={orderStatusLabels[order.productionStatus]} />,
-          <span key="due">{order.dueDate}</span>,
-          <Link key="action" href={`/admin/orders/${order.id}`} className="font-black text-brand hover:text-brand-dark">View</Link>,
-        ])}
-      />
+      <div className="grid gap-4 md:grid-cols-4">
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Active orders</p><p className="mt-2 text-4xl font-black text-ink">{adminOrders.length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Awaiting review</p><p className="mt-2 text-4xl font-black text-ink">{adminOrders.filter((order) => order.productionStatus === "awaiting_review").length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Production</p><p className="mt-2 text-4xl font-black text-ink">{adminOrders.filter((order) => order.productionStatus === "in_production").length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Pickup / dispatch</p><p className="mt-2 text-4xl font-black text-ink">{adminOrders.filter((order) => order.productionStatus === "ready_for_pickup").length}</p></AdminCard>
+      </div>
+      <AdminOrdersOpsView orders={adminOrders} />
     </div>
   );
 }

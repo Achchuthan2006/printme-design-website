@@ -451,3 +451,56 @@ export interface AdminMessage {
   receivedAt: string;
   summary: string;
 }
+
+export interface AdminWorkflowEvent {
+  id: string;
+  entityType: "order" | "quote" | "upload" | "customer" | "invoice" | "product";
+  entityId: string;
+  title: string;
+  detail: string;
+  actor: string;
+  occurredAt: string;
+  tone?: "default" | "attention" | "success";
+}
+
+export interface AdminUrgentTask {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  priority: AdminPriority;
+  category: "quote" | "order" | "upload" | "customer" | "product";
+}
+
+export interface AdminProductVariantOption {
+  id: string;
+  label: string;
+  value: string;
+  pricingHint?: string;
+  skuHint?: string;
+  turnaroundHint?: string;
+}
+
+export interface AdminProductVariantGroup {
+  id: string;
+  title: string;
+  scope: "shared" | "product_specific";
+  required?: boolean;
+  options: AdminProductVariantOption[];
+}
+
+export interface AdminProductCatalogItem {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  orderMode: "direct-order" | "hybrid" | "quote-only" | "contact";
+  storefrontStatus: "active" | "draft" | "inactive";
+  featured: boolean;
+  startingPrice?: string;
+  turnaround: string;
+  linkedFaqCount: number;
+  relatedServices: string[];
+  variantGroups: string[];
+  internalNote: string;
+}

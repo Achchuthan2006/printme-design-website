@@ -1,13 +1,17 @@
 import { notFound } from "next/navigation";
+import { AdminActivityTimeline } from "@/components/admin/admin-activity-timeline";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
-import { getAdminOrderById, orderStatusLabels, uploadStatusLabels } from "@/data/admin";
+import { adminCustomers, adminUploads, adminWorkflowEvents, getAdminOrderById, orderStatusLabels, uploadStatusLabels } from "@/data/admin";
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = getAdminOrderById(id);
   if (!order) notFound();
+  const customer = adminCustomers.find((item) => item.id === order.customerId);
+  const linkedUploads = adminUploads.filter((upload) => upload.relatedTo === order.orderNumber);
+  const relatedEvents = adminWorkflowEvents.filter((event) => event.entityId === order.id || event.entityId === order.customerId);
 
   return (
     <div className="space-y-6">
@@ -51,16 +55,43 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </ul>
           </AdminCard>
 
-          <AdminCard>
-            <h2 className="text-2xl font-black text-ink">Internal activity</h2>
-            <ol className="mt-5 space-y-3">
-              {order.activity.map((item) => (
-                <li key={item} className="rounded-xl border border-line bg-white px-4 py-3 text-sm font-bold text-slate">
-                  {item}
-                </li>
-              ))}
-            </ol>
-          </AdminCard>
+          {linkedUploads.length > 0 ? (
+            <AdminCard>
+              <h2 className="text-2xl font-black text-ink">Linked artwork</h2>
+              <div className="mt-5 grid gap-3">
+                {linkedUploads.map((upload) => (
+                  <article key={upload.id} className="rounded-xl border border-line bg-slate-50 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-black text-ink">{upload.fileName}</p>
+                        <p className="mt-1 text-sm text-slate">{upload.fileType} / {upload.fileSize} / {upload.uploadedAt}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate">{upload.notes}</p>
+                      </div>
+                      <AdminStatusBadge status={upload.status} label={uploadStatusLabels[upload.status]} />
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </AdminCard>
+          ) : null}
+
+          <AdminActivityTimeline
+            title="Internal activity and audit trail"
+            items={
+              relatedEvents.length > 0
+                ? relatedEvents
+                : order.activity.map((item, index) => ({
+                    id: `${order.id}-${index}`,
+                    entityType: "order" as const,
+                    entityId: order.id,
+                    title: item,
+                    detail: "Legacy order activity record ready to migrate into canonical workflow events.",
+                    actor: "Operations",
+                    occurredAt: order.createdAt,
+                    tone: "default" as const,
+                  }))
+            }
+          />
         </div>
 
         <aside className="space-y-6">
@@ -90,6 +121,19 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </div>
             <textarea className="mt-4 min-h-28 w-full rounded-xl border border-line p-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" placeholder="Add internal note..." />
           </AdminCard>
+
+          {customer ? (
+            <AdminCard>
+              <h2 className="text-xl font-black text-ink">Customer context</h2>
+              <p className="mt-4 text-sm font-bold text-ink">{customer.name}{customer.company ? ` / ${customer.company}` : ""}</p>
+              <p className="mt-1 text-sm text-slate">{customer.email}</p>
+              <p className="mt-1 text-sm text-slate">{customer.phone}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {customer.tags.map((tag) => <AdminStatusBadge key={tag} status="normal" label={tag} />)}
+              </div>
+              <p className="mt-4 text-xs leading-5 text-slate">{customer.notes}</p>
+            </AdminCard>
+          ) : null}
         </aside>
       </div>
     </div>

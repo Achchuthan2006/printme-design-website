@@ -1,6 +1,6 @@
-import { AdminFilterBar, AdminTable } from "@/components/admin/admin-table";
+import { AdminCard } from "@/components/admin/admin-card";
+import { AdminCustomersOpsView } from "@/components/admin/admin-customers-ops-view";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { adminCustomers } from "@/data/admin";
 
 export default function AdminCustomersPage() {
@@ -12,30 +12,13 @@ export default function AdminCustomersPage() {
         actionLabel="Open Messages"
         actionHref="/admin/messages"
       />
-      <AdminFilterBar>
-        {["All", "Repeat buyers", "Rush jobs", "Large format", "Marketing"].map((label) => (
-          <button key={label} className="rounded-full border border-line px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate transition hover:border-brand/40 hover:text-brand">
-            {label}
-          </button>
-        ))}
-      </AdminFilterBar>
-      <AdminTable
-        columns={["Customer", "Contact", "Company", "Tags", "Last activity", "Value", "Notes"]}
-        rows={adminCustomers.map((customer) => [
-          <span key="name">{customer.name}</span>,
-          <div key="contact">
-            <p>{customer.email}</p>
-            <p className="mt-1 text-xs font-normal text-slate">{customer.phone}</p>
-          </div>,
-          <span key="company">{customer.company ?? "Individual customer"}</span>,
-          <div key="tags" className="flex flex-wrap gap-2">
-            {customer.tags.map((tag) => <AdminStatusBadge key={tag} status="normal" label={tag} />)}
-          </div>,
-          <span key="activity">{customer.lastActivity}</span>,
-          <span key="value">{customer.lifetimeValue}</span>,
-          <span key="notes" className="max-w-xs text-slate">{customer.notes ?? "Ready for notes, tags, and account history."}</span>,
-        ])}
-      />
+      <div className="grid gap-4 md:grid-cols-4">
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Customers</p><p className="mt-2 text-4xl font-black text-ink">{adminCustomers.length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Repeat buyers</p><p className="mt-2 text-4xl font-black text-ink">{adminCustomers.filter((customer) => customer.tags.includes("Repeat buyer")).length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Rush-oriented</p><p className="mt-2 text-4xl font-black text-ink">{adminCustomers.filter((customer) => customer.tags.includes("Rush jobs")).length}</p></AdminCard>
+        <AdminCard><p className="text-xs font-black uppercase tracking-[0.16em] text-slate">Large-format clients</p><p className="mt-2 text-4xl font-black text-ink">{adminCustomers.filter((customer) => customer.tags.includes("Large format")).length}</p></AdminCard>
+      </div>
+      <AdminCustomersOpsView customers={adminCustomers} />
     </div>
   );
 }

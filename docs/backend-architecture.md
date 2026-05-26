@@ -63,6 +63,16 @@
   Contact/support submissions with routing status
 - `notifications`
   Delivery attempts, trigger names, status, and provider payload metadata
+- `catalog_products`
+  Internal source-of-truth for product/service records, storefront state, and operational metadata
+- `catalog_variant_groups`
+  Shared attribute groups such as size, stock, finish, turnaround, and color mode
+- `catalog_variant_options`
+  Concrete values inside each variant group, ready for pricing and SKU rules
+- `catalog_product_variant_group_links`
+  Join table that attaches shared or product-specific variant groups to individual products
+- `catalog_pricing_rules`
+  Future pricing engine rows keyed by product, quantity tier, turnaround, option set, or staff override
 
 ## Auth and Access Model
 
@@ -109,6 +119,55 @@
 - `refunded`
 - `demo`
 
+## Admin and Operations Model
+
+Internal workflows should be optimized around:
+
+- queue-first quote review
+- order production movement
+- artwork/prepress review
+- customer relationship context
+- repeat-job reuse
+- invoice and payment follow-up
+- searchable workflow history
+
+Recommended internal operational views:
+
+- `quote queue`
+  grouped by missing files, pricing-ready, awaiting customer response, and approved-for-conversion
+- `order board`
+  grouped by awaiting review, payment pending, in production, ready for pickup, on hold, and completed
+- `upload review queue`
+  grouped by awaiting review, proof required, needs changes, approved for print, and ready for production
+- `customer workspace`
+  showing recent orders, recent quotes, open issues, uploads, notes, and repeat-order patterns
+- `product operations`
+  showing storefront state, order mode, variant architecture, related FAQs, and operational notes
+
+## Product and Variant Architecture
+
+Separate product architecture into layers:
+
+- `base product`
+  shared title, category, description, order mode, storefront status, and support metadata
+- `variant groups`
+  reusable dimensions like size, stock, finish, print sides, turnaround, fulfillment, and artwork status
+- `variant options`
+  atomic option values with pricing hints, SKU readiness, and turnaround notes
+- `product-specific overrides`
+  custom groups or options needed only for signage, banners, engineering prints, mail services, or specialty work
+- `pricing rules`
+  future-compatible logic for quantity breaks, rush fees, material deltas, and quote-only branching
+- `workflow rules`
+  logic that decides when a configured item can go to cart, must go to quote, or requires staff review
+
+This structure keeps:
+
+- public product pages stable
+- checkout configuration maintainable
+- admin product management scalable
+- future SKU / pricing automation feasible
+
 ## Upload Model
 
 Every artwork file should eventually support:
@@ -151,6 +210,9 @@ Prepared trigger points:
 - Attach uploads to quotes and orders through canonical IDs instead of preview-only labels
 - Add support message persistence and routing status so chat, support page, and contact flows can feed one operational inbox
 - Add notification preferences and outbound delivery history so email/SMS reminders can be introduced cleanly
+- Normalize admin-side catalog records into `catalog_products`, `catalog_variant_groups`, and `catalog_variant_options`
+- Add staff assignments, queue ownership, and SLA timestamps to orders, quotes, uploads, and support messages
+- Introduce first-class workflow transition records so status changes can be audited and filtered without parsing note text
 
 ## Operational Notes
 
