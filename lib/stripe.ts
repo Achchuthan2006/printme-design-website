@@ -8,6 +8,7 @@ export interface CheckoutSessionInput {
   mode: "deposit" | "full";
   successUrl: string;
   cancelUrl: string;
+  idempotencyKey?: string;
 }
 
 function getStripeClient() {
@@ -60,24 +61,27 @@ export async function createCheckoutSession(input: CheckoutSessionInput) {
     };
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: input.order.customer.email,
-    line_items: lineItems,
-    success_url: input.successUrl,
-    cancel_url: input.cancelUrl,
-    payment_intent_data: {
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: "payment",
+      customer_email: input.order.customer.email,
+      line_items: lineItems,
+      success_url: input.successUrl,
+      cancel_url: input.cancelUrl,
+      payment_intent_data: {
+        metadata: {
+          orderNumber: input.order.orderNumber,
+          paymentMode: input.mode,
+        },
+      },
       metadata: {
         orderNumber: input.order.orderNumber,
         paymentMode: input.mode,
+        quoteReviewRequired: String(input.order.quoteReviewRequired),
       },
     },
-    metadata: {
-      orderNumber: input.order.orderNumber,
-      paymentMode: input.mode,
-      quoteReviewRequired: String(input.order.quoteReviewRequired),
-    },
-  });
+    input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined,
+  );
 
   return {
     url: session.url ?? input.cancelUrl,

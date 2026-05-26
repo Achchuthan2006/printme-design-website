@@ -1,25 +1,8 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { uploadMetadataSchema } from "@/lib/backend/schemas";
 import { persistArtworkMetadataRecord } from "@/lib/backend/repository";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
-
-const uploadMetadataSchema = z.object({
-  id: z.string(),
-  fileName: z.string().min(1),
-  fileSize: z.number().min(0),
-  mimeType: z.string().min(1),
-  bucket: z.string().min(1),
-  path: z.string().nullable(),
-  status: z.string().min(1),
-  context: z.object({
-    scope: z.enum(["quote", "order", "account", "product"]),
-    quoteId: z.string().optional(),
-    orderId: z.string().optional(),
-    customerId: z.string().optional(),
-    productSlug: z.string().optional(),
-  }),
-});
 
 export async function POST(request: Request) {
   try {

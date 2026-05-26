@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { uploadWorkflowStatuses } from "@/lib/backend/workflows";
 
 export const cartItemSchema = z.object({
   id: z.string(),
@@ -71,6 +72,25 @@ export const requestMetaSchema = z.object({
   referer: z.string().optional(),
 });
 
+export const uploadMetadataSchema = z.object({
+  id: z.string().min(1),
+  fileName: z.string().min(1),
+  fileSize: z.number().min(0),
+  mimeType: z.string().min(1),
+  bucket: z.string().min(1),
+  path: z.string().nullable(),
+  status: z.enum(uploadWorkflowStatuses),
+  context: z.object({
+    scope: z.enum(["quote", "order", "account", "product"]),
+    quoteId: z.string().optional(),
+    orderId: z.string().optional(),
+    customerId: z.string().optional(),
+    productSlug: z.string().optional(),
+  }),
+});
+
+export const idempotencyKeySchema = z.string().trim().min(8).max(160);
+
 export const stripeCheckoutMetadataSchema = z.object({
   orderNumber: z.string(),
   paymentMode: z.enum(["full", "deposit"]),
@@ -80,3 +100,4 @@ export const stripeCheckoutMetadataSchema = z.object({
 export type CheckoutRequestInput = z.infer<typeof checkoutRequestSchema>;
 export type QuoteRequestApiInput = z.infer<typeof quoteRequestApiSchema>;
 export type RequestMeta = z.infer<typeof requestMetaSchema>;
+export type UploadMetadataInput = z.infer<typeof uploadMetadataSchema>;

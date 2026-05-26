@@ -99,6 +99,22 @@ export function buildOrderConfirmationEmail(orderNumber: string, email: string) 
   };
 }
 
+export function buildPaymentConfirmedEmail(orderNumber: string, email: string, fullName?: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `Payment confirmed | ${escapeHtml(orderNumber)}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Payment confirmed</h2>
+        <p>${fullName ? `Hi ${escapeHtml(fullName)},` : "Hi,"}</p>
+        <p>We have confirmed payment for order <strong>${escapeHtml(orderNumber)}</strong>.</p>
+        <p>Your job will now move through artwork review, production, and pickup or delivery scheduling. If our team needs anything else, we will contact you directly.</p>
+      </div>
+    `,
+  };
+}
+
 export function buildStatusUpdateEmail(orderNumber: string, email: string, status: string) {
   return {
     to: email,
@@ -108,6 +124,21 @@ export function buildStatusUpdateEmail(orderNumber: string, email: string, statu
       <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
         <h2>Order status update</h2>
         <p>Your order <strong>${escapeHtml(orderNumber)}</strong> is now marked as <strong>${escapeHtml(status)}</strong>.</p>
+      </div>
+    `,
+  };
+}
+
+export function buildUploadReceivedEmail(email: string, fileName: string, relatedLabel?: string) {
+  return {
+    to: email,
+    from: env.sendGridFromEmail ?? "quotes@printmedesign.com",
+    subject: `Artwork received | ${siteConfig.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #161616; line-height: 1.6;">
+        <h2>Artwork upload received</h2>
+        <p>We received your file <strong>${escapeHtml(fileName)}</strong>${relatedLabel ? ` for <strong>${escapeHtml(relatedLabel)}</strong>` : ""}.</p>
+        <p>Our team will review the file for size, bleed, resolution, and print readiness. If anything needs attention, we will let you know with the next step.</p>
       </div>
     `,
   };

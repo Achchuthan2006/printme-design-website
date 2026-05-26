@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { checkoutRequestSchema } from "@/lib/backend/schemas";
 import { dispatchOrderReceivedNotifications } from "@/lib/backend/notifications";
-import { persistOrderDraft, recordOperationalWarning } from "@/lib/backend/repository";
-import { buildOrderSnapshot, persistOrderSnapshot } from "@/lib/orders";
+import { createPayloadFingerprint, resolveIdempotencyKey } from "@/lib/backend/idempotency";
+import {
+  findIdempotencyRecord,
+  persistIdempotencyRecord,
+  persistOrderDraft,
+  recordOperationalWarning,
+  updateOrderCheckoutSession,
+} from "@/lib/backend/repository";
+import { buildOrderSnapshot } from "@/lib/orders";
 import { env } from "@/lib/env";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { logError, logInfo } from "@/lib/logger";
@@ -18,11 +25,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Too many checkout attempts. Please wait a moment and try again." }, { status: 429 });
     }
 
-    const body = await request.json();
+    const rawBody = await request.text();
+    const body = JSON.parse(rawBody) as unknown;
     const parsed = checkoutRequestSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json({ message: "Please check your checkout details and try again." }, { status: 400 });
+    }
+
+    const requestHash = createPayloadFingerprint(rawBody);
+    const idempotencyKey = resolveIdempotencyKey(request, "checkout-session", requestHash);
+
+    if (!idempotencyKey) {
+      return NextResponse.json({ message: "Please retry checkout with a valid idempotency key." }, { status: 400 });
+    }
+
+    const existing = await findIdempotencyRecord("checkout-session", idempotencyKey);
+    if (existing) {
+      if (existing.requestHash !== requestHash) {
+        return NextResponse.json(
+          { message: "This idempotency key is already associated with a different checkout attempt." },
+          { status: 409 },
+        );
+      }
+
+      return NextResponse.json(existing.responseBody, { status: existing.statusCode });
     }
 
     if (parsed.data.paymentMode === "deposit") {
@@ -30,7 +57,17 @@ export async function POST(request: Request) {
     }
 
     const order = buildOrderSnapshot(parsed.data as CheckoutPayload);
-    await persistOrderSnapshot(order);
+
+    const persistence = await persistOrderDraft({
+      payload: parsed.data as CheckoutPayload,
+      order,
+      paymentMode: parsed.data.paymentMode,
+      requestMeta: {
+        ipAddress: ip,
+        userAgent: request.headers.get("user-agent") ?? undefined,
+        referer: request.headers.get("referer") ?? undefined,
+      },
+    });
 
     const successUrl = `${env.siteUrl}/checkout/success?order=${encodeURIComponent(order.orderNumber)}`;
     const cancelUrl = `${env.siteUrl}/checkout/cancel?order=${encodeURIComponent(order.orderNumber)}`;
@@ -40,19 +77,15 @@ export async function POST(request: Request) {
       mode: parsed.data.paymentMode,
       successUrl,
       cancelUrl,
+      idempotencyKey,
     });
 
-    const persistence = await persistOrderDraft({
-      payload: parsed.data as CheckoutPayload,
-      order,
-      paymentMode: parsed.data.paymentMode,
-      stripeSessionId: "sessionId" in session ? session.sessionId : undefined,
-      requestMeta: {
-        ipAddress: ip,
-        userAgent: request.headers.get("user-agent") ?? undefined,
-        referer: request.headers.get("referer") ?? undefined,
-      },
-    });
+    if ("sessionId" in session && session.sessionId) {
+      await updateOrderCheckoutSession({
+        orderNumber: order.orderNumber,
+        stripeSessionId: session.sessionId,
+      });
+    }
 
     if (!persistence.persisted) {
       await recordOperationalWarning("Order draft could not be persisted to the primary repository.", {
@@ -74,11 +107,21 @@ export async function POST(request: Request) {
       notificationSkipped: Boolean(notificationResult.skipped),
     });
 
-    return NextResponse.json({
+    const responseBody = {
       order,
       checkoutUrl: session.url,
       stripeStatus: session.status,
+    };
+
+    await persistIdempotencyRecord({
+      scope: "checkout-session",
+      key: idempotencyKey,
+      requestHash,
+      statusCode: 200,
+      responseBody,
     });
+
+    return NextResponse.json(responseBody);
   } catch (error) {
     logError("Checkout session failed", error);
 

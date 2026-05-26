@@ -47,6 +47,24 @@ export interface WorkflowEventRecord {
   metadata?: Record<string, unknown>;
 }
 
+export interface IdempotencyRecord {
+  scope: string;
+  key: string;
+  requestHash: string;
+  statusCode: number;
+  responseBody: Record<string, unknown>;
+}
+
+export interface NotificationRecordInput {
+  entityType: "quote" | "order" | "upload" | "support";
+  entityId: string;
+  triggerName: string;
+  provider: "sendgrid" | "system";
+  deliveryStatus: "pending" | "sent" | "failed" | "skipped";
+  payload?: Record<string, unknown>;
+  deliveredAt?: string;
+}
+
 async function insertWorkflowEvent(event: Omit<WorkflowEventRecord, "id">) {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
@@ -61,6 +79,91 @@ async function insertWorkflowEvent(event: Omit<WorkflowEventRecord, "id">) {
 
   if (error) {
     logWarn("Workflow event persistence skipped", { eventType: event.eventType, entityType: event.entityType, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function recordNotificationEvent(input: NotificationRecordInput) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("notifications").insert([{
+    entity_type: input.entityType,
+    entity_id: input.entityId,
+    trigger_name: input.triggerName,
+    provider: input.provider,
+    delivery_status: input.deliveryStatus,
+    payload: input.payload ?? {},
+    delivered_at: input.deliveredAt ?? null,
+  }] as never[]);
+
+  if (error) {
+    logWarn("Notification event persistence skipped", {
+      entityType: input.entityType,
+      entityId: input.entityId,
+      triggerName: input.triggerName,
+      reason: error.message,
+    });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
+export async function findIdempotencyRecord(scope: string, key: string) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return null;
+
+  const { data, error } = await supabase
+    .from("idempotency_keys")
+    .select("scope, idempotency_key, request_hash, status_code, response_body")
+    .eq("scope", scope)
+    .eq("idempotency_key", key)
+    .maybeSingle();
+
+  if (error) {
+    logWarn("Idempotency lookup skipped", { scope, key, reason: error.message });
+    return null;
+  }
+
+  if (!data) return null;
+
+  const record = data as {
+    scope: string;
+    idempotency_key: string;
+    request_hash: string;
+    status_code: number | null;
+    response_body: Record<string, unknown> | null;
+  };
+
+  return {
+    scope: record.scope,
+    key: record.idempotency_key,
+    requestHash: record.request_hash,
+    statusCode: Number(record.status_code ?? 200),
+    responseBody: record.response_body ?? {},
+  } satisfies IdempotencyRecord;
+}
+
+export async function persistIdempotencyRecord(record: IdempotencyRecord) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const { error } = await supabase.from("idempotency_keys").upsert([{
+    scope: record.scope,
+    idempotency_key: record.key,
+    request_hash: record.requestHash,
+    status_code: record.statusCode,
+    response_body: record.responseBody,
+    completed_at: new Date().toISOString(),
+  }] as never[], {
+    onConflict: "scope,idempotency_key",
+  });
+
+  if (error) {
+    logWarn("Idempotency persistence skipped", { scope: record.scope, key: record.key, reason: error.message });
     return { persisted: false };
   }
 
@@ -265,6 +368,31 @@ export async function persistOrderDraft(input: {
   }
 }
 
+export async function updateOrderCheckoutSession(params: {
+  orderNumber: string;
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+}) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
+
+  const payload: Record<string, unknown> = {};
+  if (params.stripeSessionId) payload.stripe_checkout_session_id = params.stripeSessionId;
+  if (params.stripePaymentIntentId) payload.stripe_payment_intent_id = params.stripePaymentIntentId;
+
+  if (Object.keys(payload).length === 0) {
+    return { persisted: false };
+  }
+
+  const { error } = await supabase.from("orders").update(payload as never).eq("order_number", params.orderNumber);
+  if (error) {
+    logWarn("Order checkout session update skipped", { orderNumber: params.orderNumber, reason: error.message });
+    return { persisted: false };
+  }
+
+  return { persisted: true };
+}
+
 export async function persistArtworkMetadataRecord(metadata: {
   fileId: string;
   fileName: string;
@@ -293,7 +421,7 @@ export async function persistArtworkMetadataRecord(metadata: {
     scope: metadata.scope,
     quote_number: metadata.quoteId ?? null,
     order_number: metadata.orderId ?? null,
-    customer_id: metadata.customerId ?? null,
+    profile_id: metadata.customerId ?? null,
     product_slug: metadata.productSlug ?? null,
   }] as never[]);
 
@@ -386,6 +514,40 @@ export async function createPaymentAuditRecord(params: {
   }
 
   return { persisted: true };
+}
+
+export async function getOrderNotificationContext(orderNumber: string) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return null;
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select("order_number, customer_email, customer_full_name, workflow_status, payment_status")
+    .eq("order_number", orderNumber)
+    .maybeSingle();
+
+  if (error) {
+    logWarn("Order notification context lookup skipped", { orderNumber, reason: error.message });
+    return null;
+  }
+
+  if (!data) return null;
+
+  const record = data as {
+    order_number: string;
+    customer_email: string;
+    customer_full_name: string;
+    workflow_status: string;
+    payment_status: string;
+  };
+
+  return {
+    orderNumber: record.order_number,
+    customerEmail: record.customer_email,
+    customerFullName: record.customer_full_name,
+    workflowStatus: record.workflow_status,
+    paymentStatus: record.payment_status,
+  };
 }
 
 export async function recordOperationalWarning(message: string, context?: Record<string, unknown>) {

@@ -22,9 +22,11 @@
 - `lib/backend/workflows.ts`
   Shared canonical workflow states and event names
 - `lib/backend/repository.ts`
-  Persistence orchestration for quotes, orders, uploads, payment audit records, and workflow events
+  Persistence orchestration for quotes, orders, uploads, payment audit records, workflow events, idempotency records, and notification delivery tracking
 - `lib/backend/notifications.ts`
-  Notification dispatch layer and automation-readiness trigger map
+  Notification dispatch layer with tracked delivery events and shared trigger map
+- `lib/backend/idempotency.ts`
+  Request fingerprinting and idempotency-key resolution for quote, checkout, and webhook safety
 
 ## Current Frontend Platform Direction
 
@@ -43,6 +45,8 @@
   Auth-linked customer or staff profile
 - `customer_addresses`
   Saved delivery and pickup-related addresses
+- `customer_preferences`
+  Notification preferences and repeat-business defaults
 - `quote_requests`
   Quote intake record with customer details, specs, and workflow state
 - `quote_line_items`
@@ -53,16 +57,22 @@
   One row per configured cart item
 - `artwork_uploads`
   File metadata and workflow state
+- `artwork_upload_versions`
+  Reuploads, replacements, review flags, and historical file lineage
 - `payment_events`
   Stripe and internal payment audit records
+- `invoices`
+  Payable balances, issue dates, and receipt readiness
 - `workflow_events`
   Timeline/audit feed for quotes, orders, uploads, and support events
 - `internal_notes`
   Admin-only notes attached to quotes, orders, or customers
-- `support_messages`
+- `support_requests`
   Contact/support submissions with routing status
 - `notifications`
   Delivery attempts, trigger names, status, and provider payload metadata
+- `idempotency_keys`
+  Replay protection and cached API responses for critical write paths
 - `catalog_products`
   Internal source-of-truth for product/service records, storefront state, and operational metadata
 - `catalog_variant_groups`
@@ -185,8 +195,10 @@ Every artwork file should eventually support:
 
 - Frontend creates checkout through `/api/checkout/session`
 - Backend stores order draft before redirect
+- Checkout requests now support backend idempotency keys and can pass that protection through to Stripe session creation
 - Stripe session metadata carries `orderNumber`, `paymentMode`, and review flags
 - Webhook route verifies signatures and updates backend payment truth
+- Webhook events should be processed exactly once using event-id replay protection before mutating payment state
 - Redirect pages are treated as UX, not source-of-truth payment state
 
 ## Automation Triggers
@@ -202,6 +214,14 @@ Prepared trigger points:
 - ready for pickup
 - invoice notice
 - support follow-up
+
+## Defensive Patterns
+
+- Rate limits stay at the API edge for quote intake, uploads, and checkout
+- Shared Zod schemas validate cart, quote, request metadata, upload metadata, and Stripe session metadata
+- Idempotency records protect quote submission, checkout session creation, and webhook replays from duplicate writes
+- Notification delivery attempts are persisted so operational issues can be diagnosed without reading provider logs first
+- Payment confirmation should always be webhook-driven and never inferred from success-page visits
 
 ## Recommended Next Build Steps
 

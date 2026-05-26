@@ -1,6 +1,14 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { createPaymentAuditRecord, updateOrderPaymentState } from "@/lib/backend/repository";
+import { dispatchPaymentConfirmedNotification } from "@/lib/backend/notifications";
+import { createPayloadFingerprint } from "@/lib/backend/idempotency";
+import {
+  createPaymentAuditRecord,
+  findIdempotencyRecord,
+  getOrderNotificationContext,
+  persistIdempotencyRecord,
+  updateOrderPaymentState,
+} from "@/lib/backend/repository";
 import { logError, logInfo } from "@/lib/logger";
 import { parseCheckoutSessionMetadata, verifyStripeWebhookSignature } from "@/lib/stripe";
 
@@ -18,6 +26,16 @@ export async function POST(request: Request) {
 
     const payload = await request.text();
     const event = verifyStripeWebhookSignature(payload, signature);
+    const requestHash = createPayloadFingerprint(payload);
+    const existing = await findIdempotencyRecord("stripe-webhook", event.id);
+
+    if (existing) {
+      if (existing.requestHash !== requestHash) {
+        return NextResponse.json({ message: "Webhook replay payload mismatch." }, { status: 409 });
+      }
+
+      return NextResponse.json({ received: true, replayed: true });
+    }
 
     switch (event.type) {
       case "checkout.session.completed": {
@@ -43,6 +61,15 @@ export async function POST(request: Request) {
             currency: session.currency ?? "cad",
             rawEventType: event.type,
           });
+
+          const orderContext = await getOrderNotificationContext(orderNumber);
+          if (orderContext?.customerEmail) {
+            await dispatchPaymentConfirmedNotification({
+              orderNumber,
+              customerEmail: orderContext.customerEmail,
+              customerFullName: orderContext.customerFullName,
+            });
+          }
         }
 
         break;
@@ -100,6 +127,14 @@ export async function POST(request: Request) {
       default:
         break;
     }
+
+    await persistIdempotencyRecord({
+      scope: "stripe-webhook",
+      key: event.id,
+      requestHash,
+      statusCode: 200,
+      responseBody: { received: true, eventType: event.type },
+    });
 
     logInfo("Stripe webhook processed", { eventType: event.type });
     return NextResponse.json({ received: true });
