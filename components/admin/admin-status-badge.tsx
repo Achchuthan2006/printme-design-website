@@ -28,7 +28,7 @@ export function AdminStatusBadge({ status, label }: { status: string; label?: st
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.14em]",
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]",
         toneByStatus[status] ?? "border-line bg-white text-slate",
       )}
     >

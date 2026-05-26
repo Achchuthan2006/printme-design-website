@@ -7,7 +7,7 @@ export function LocalTrustStrip({ items = localTrustItems }: { items?: typeof lo
       {items.map((item) => (
         <div key={item.title} className="premium-surface group p-5">
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand transition duration-300 group-hover:scale-105 group-hover:border-brand/30 group-hover:bg-white">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.15rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,241,236,0.9))] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_18px_rgba(18,17,16,0.06)] transition duration-300 group-hover:scale-105 group-hover:border-brand/30 group-hover:bg-white">
               <Icon name={item.icon} className="h-5 w-5" />
             </span>
             <div>

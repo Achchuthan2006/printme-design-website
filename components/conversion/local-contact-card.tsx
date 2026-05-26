@@ -4,9 +4,9 @@ import { siteConfig } from "@/lib/site";
 
 export function LocalContactCard() {
   return (
-    <aside className="surface-card p-6">
+    <aside className="liquid-glass rounded-[1.9rem] p-6">
       <p className="editorial-kicker">Local PrintMe shop</p>
-      <h2 className="display-title mt-3 text-[2rem] font-black leading-[0.96]">Talk through the job before you print.</h2>
+      <h2 className="display-title mt-3 text-[2.1rem] font-semibold leading-[0.92]">Talk through the job before you print.</h2>
       <div className="mt-4 space-y-3 text-sm leading-6 text-slate">
         <p>{siteConfig.address}</p>
         <p>
@@ -19,6 +19,9 @@ export function LocalContactCard() {
             {siteConfig.email}
           </a>
         </p>
+      </div>
+      <div className="mt-5 focus-band p-4 text-sm leading-6 text-slate">
+        Quote review, upload help, rush timing checks, and local pickup guidance all start here when the job needs a real answer before checkout.
       </div>
       <div className="mt-6 grid gap-3">
         <Button href="/quote-request" data-event={analyticsEvents.landingQuoteClick}>Get My Quote</Button>

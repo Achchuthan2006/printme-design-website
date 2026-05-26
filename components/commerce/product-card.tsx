@@ -6,14 +6,14 @@ import { PrintProduct } from "@/types";
 
 export function ProductCard({ product }: { product: PrintProduct }) {
   return (
-    <article className="premium-card premium-surface group flex h-full flex-col overflow-hidden p-3 hover:border-brand/25 hover:shadow-soft">
+    <article className="premium-card premium-surface group flex h-full flex-col overflow-hidden p-3 hover:border-brand/25 hover:shadow-card">
       <ServiceProductVisual slug={product.slug} />
       <div className="flex flex-1 flex-col px-2 pb-3 pt-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {product.badges?.slice(0, 2).map((badge) => <Badge key={badge}>{badge}</Badge>)}
           </div>
-          <span className="rounded-full border border-line/80 bg-canvas px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate">
+          <span className="rounded-full border border-white/85 bg-white/86 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
             {product.mode === "direct-order" ? "Order online" : product.mode === "hybrid" ? "Order or quote" : "Quote first"}
           </span>
         </div>
@@ -26,10 +26,10 @@ export function ProductCard({ product }: { product: PrintProduct }) {
             {product.turnaround} {product.mode !== "direct-order" ? "If the job is custom or unclear, switch to a quote-first path." : ""}
           </p>
         </div>
-        <div className="mt-3 rounded-[1.2rem] border border-line/75 bg-white/88 p-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+        <div className="mt-3 rounded-[1.25rem] border border-white/80 bg-white/82 p-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_16px_rgba(18,17,16,0.04)]">
           {product.pickupDeliveryNote}
         </div>
-        <div className="mt-5 flex items-center justify-between gap-4 border-t border-line/80 pt-4">
+        <div className="mt-5 flex items-center justify-between gap-4 border-t border-black/5 pt-4">
           <p className="text-sm font-black text-ink">
             {product.startingPrice ? `Starts at $${product.startingPrice}` : "Quote first"}
           </p>

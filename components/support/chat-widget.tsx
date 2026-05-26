@@ -150,9 +150,9 @@ export function ChatWidget() {
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="printme-chat-widget"
-          className="group inline-flex min-h-14 items-center gap-3 rounded-full border border-brand/10 bg-ink px-4 py-3 text-left text-white shadow-[0_26px_64px_rgba(22,19,17,0.28)] transition hover:-translate-y-0.5 hover:bg-ink/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+          className="group inline-flex min-h-14 items-center gap-3 rounded-full border border-white/10 bg-[linear-gradient(180deg,#1e1a18_0%,#121110_100%)] px-4 py-3 text-left text-white shadow-[0_28px_68px_rgba(22,19,17,0.3)] transition hover:-translate-y-0.5 hover:bg-ink/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white shadow-[0_14px_30px_rgba(217,70,32,0.28)]">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,#ef6a46_0%,#d94620_70%,#b73314_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_14px_30px_rgba(217,70,32,0.28)]">
             <Icon name="chat" className="h-5 w-5" />
           </span>
           <span className="hidden sm:block">
@@ -168,7 +168,7 @@ export function ChatWidget() {
         aria-modal="false"
         aria-label="PrintMe support chat"
         className={cn(
-          "fixed bottom-[5.75rem] right-4 z-[74] flex w-[min(100%-2rem,24rem)] flex-col overflow-hidden rounded-[1.75rem] border border-line/80 bg-white shadow-[0_42px_96px_rgba(22,19,17,0.2)] transition-all duration-300 md:bottom-24 md:right-6",
+          "fixed bottom-[5.75rem] right-4 z-[74] flex w-[min(100%-2rem,24rem)] flex-col overflow-hidden rounded-[1.9rem] border border-white/75 bg-white/86 shadow-[0_42px_96px_rgba(22,19,17,0.2)] backdrop-blur-[18px] transition-all duration-300 md:bottom-24 md:right-6",
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0",
         )}
       >
@@ -184,7 +184,7 @@ export function ChatWidget() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close support chat"
-              className="rounded-2xl border border-white/90 bg-white px-3 py-2 text-xs font-black text-slate transition hover:border-brand/20 hover:text-brand"
+              className="rounded-[1.1rem] border border-white/90 bg-white px-3 py-2 text-xs font-black text-slate transition hover:border-brand/20 hover:text-brand"
             >
               Close
             </button>
@@ -211,7 +211,7 @@ export function ChatWidget() {
         </div>
 
         <div className="border-t border-line/70 bg-white p-4">
-          <div className="rounded-[1.25rem] border border-line bg-canvas p-3 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
+          <div className="focus-band p-3 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Support modes</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {[
@@ -219,7 +219,7 @@ export function ChatWidget() {
                 { title: "Order help", detail: "Best for status, pickup, payment, and production updates." },
                 { title: "File help", detail: "Best for uploads, proofing, bleed, and print readiness." },
               ].map((item) => (
-                <div key={item.title} className="rounded-[1rem] border border-white/80 bg-white px-3 py-3">
+                <div key={item.title} className="rounded-[1.05rem] border border-white/80 bg-white px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                   <p className="text-xs font-black text-ink">{item.title}</p>
                   <p className="mt-1 text-xs leading-5 text-slate">{item.detail}</p>
                 </div>
@@ -234,7 +234,7 @@ export function ChatWidget() {
                 key={action.id}
                 type="button"
                 onClick={() => handleQuickAction(action)}
-                className="rounded-full border border-line bg-canvas px-3 py-2 text-xs font-black text-ink transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                className="rounded-full border border-white/85 bg-white/88 px-3 py-2 text-xs font-black text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
               >
                 {action.label}
               </button>
@@ -242,7 +242,7 @@ export function ChatWidget() {
           </div>
 
           {activeAction ? (
-            <div className="mt-4 rounded-[1.25rem] border border-line/80 bg-canvas p-3 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
+            <div className="mt-4 focus-band p-3 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate">Next best step</p>
               <div className="mt-3 flex flex-col gap-2">
                 {quickActions
@@ -251,7 +251,7 @@ export function ChatWidget() {
                     <Link
                       key={action.id}
                       href={action.href!}
-                      className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-brand transition hover:bg-brand-soft"
+                      className="rounded-[1.15rem] bg-white px-4 py-3 text-sm font-black text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] transition hover:bg-brand-soft"
                     >
                       {action.hrefLabel}
                     </Link>
@@ -264,14 +264,14 @@ export function ChatWidget() {
           ) : null}
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            <Link href="/quote-request" className="rounded-2xl border border-line bg-white px-4 py-3 text-sm font-black text-ink transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand">
+            <Link href="/quote-request" className="rounded-[1.15rem] border border-white/80 bg-white px-4 py-3 text-sm font-black text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand">
               Start a quote
             </Link>
-            <Link href="/support" className="rounded-2xl border border-line bg-white px-4 py-3 text-sm font-black text-ink transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand">
+            <Link href="/support" className="rounded-[1.15rem] border border-white/80 bg-white px-4 py-3 text-sm font-black text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] transition hover:border-brand/20 hover:bg-brand-soft hover:text-brand">
               Full support page
             </Link>
           </div>
-          <div className="mt-3 rounded-[1rem] border border-line/80 bg-canvas px-3 py-3 text-xs leading-5 text-slate">
+          <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/84 px-3 py-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.88)]">
             If your deadline is today, call the shop directly for the fastest answer.
           </div>
         </div>
