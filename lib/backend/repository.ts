@@ -85,6 +85,20 @@ async function insertWorkflowEvent(event: Omit<WorkflowEventRecord, "id">) {
   return { persisted: true };
 }
 
+async function resolveProfileIdByEmail(email?: string | null) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured() || !email) return null;
+
+  const { data, error } = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
+  if (error) {
+    logWarn("Profile lookup skipped", { email, reason: error.message });
+    return null;
+  }
+
+  const record = data as { id?: string } | null;
+  return record?.id ?? null;
+}
+
 export async function recordNotificationEvent(input: NotificationRecordInput) {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
@@ -174,6 +188,7 @@ export async function persistQuoteRequest(input: QuoteRequestApiInput, requestMe
   const quoteNumber = createQuoteNumber();
   const status = getInitialQuoteStatus();
   const supabase = getSupabaseServerClient();
+  const profileId = await resolveProfileIdByEmail(input.email);
 
   if (!supabase || !isSupabaseServerConfigured()) {
     return {
@@ -187,6 +202,7 @@ export async function persistQuoteRequest(input: QuoteRequestApiInput, requestMe
   try {
     const { error } = await supabase.from("quote_requests").insert([{
       quote_number: quoteNumber,
+      profile_id: profileId,
       status,
       full_name: input.fullName,
       email: input.email,
@@ -271,6 +287,7 @@ export async function persistOrderDraft(input: {
   const supabase = getSupabaseServerClient();
   const workflowStatus = getInitialOrderStatus(input.order.quoteReviewRequired);
   const paymentStatus = getInitialPaymentStatus(input.paymentMode, !env.stripeSecretKey);
+  const profileId = await resolveProfileIdByEmail(input.payload.customer.email);
 
   if (!supabase || !isSupabaseServerConfigured()) {
     return {
@@ -284,6 +301,7 @@ export async function persistOrderDraft(input: {
   try {
     const { error: orderError } = await supabase.from("orders").insert([{
       order_number: input.order.orderNumber,
+      profile_id: profileId,
       workflow_status: workflowStatus,
       payment_status: paymentStatus,
       payment_mode: input.paymentMode,
@@ -547,6 +565,36 @@ export async function getOrderNotificationContext(orderNumber: string) {
     customerFullName: record.customer_full_name,
     workflowStatus: record.workflow_status,
     paymentStatus: record.payment_status,
+  };
+}
+
+export async function getOrderPaymentSnapshot(orderNumber: string) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseServerConfigured()) return null;
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select("order_number, payment_status, workflow_status")
+    .eq("order_number", orderNumber)
+    .maybeSingle();
+
+  if (error) {
+    logWarn("Order payment snapshot lookup skipped", { orderNumber, reason: error.message });
+    return null;
+  }
+
+  if (!data) return null;
+
+  const record = data as {
+    order_number: string;
+    payment_status: PaymentWorkflowStatus;
+    workflow_status: OrderWorkflowStatus;
+  };
+
+  return {
+    orderNumber: record.order_number,
+    paymentStatus: record.payment_status,
+    workflowStatus: record.workflow_status,
   };
 }
 

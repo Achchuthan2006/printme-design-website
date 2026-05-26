@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/components/account/auth-provider";
@@ -11,22 +12,69 @@ import { AccountActivityFeed } from "@/components/account/account-activity-feed"
 import { AddressBookPanel } from "@/components/account/address-book-panel";
 import { ReorderStudio } from "@/components/account/reorder-studio";
 import { AccountSupportHub } from "@/components/account/account-support-hub";
+import { AccountDashboardData } from "@/types";
 
 export function AccountShell() {
-  const { user, configured } = useAuth();
-  const displayName = user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer";
+  const { user, configured, accessToken, profile } = useAuth();
+  const [dashboard, setDashboard] = useState<AccountDashboardData | null>(null);
+
+  useEffect(() => {
+    if (!configured || !user || !accessToken) {
+      setDashboard(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch("/api/account/dashboard", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load dashboard.");
+        }
+        return (await response.json()) as AccountDashboardData;
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setDashboard(data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDashboard(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, configured, user]);
+
+  const liveProfile = dashboard?.profile ?? profile ?? demoProfile;
+  const liveOrders = dashboard?.orders?.length ? dashboard.orders : demoOrders;
+  const liveQuotes = dashboard?.quotes?.length ? dashboard.quotes : demoQuotes;
+  const liveFiles = dashboard?.files?.length ? dashboard.files : demoFiles;
+  const liveInvoices = dashboard?.invoices?.length ? dashboard.invoices : demoInvoices;
+  const liveAddresses = dashboard?.addresses?.length ? dashboard.addresses : demoAddresses;
+  const liveActivity = dashboard?.activity?.length ? dashboard.activity : demoActivity;
+  const liveReorders = dashboard?.reorders?.length ? dashboard.reorders : demoReorders;
+  const liveSummary = dashboard?.summary?.length ? dashboard.summary : accountHealthSummary;
+  const displayName = liveProfile.fullName ?? user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer";
   const widgets = [
-    { title: "Open Orders", value: String(demoOrders.filter((order) => order.status !== "completed").length), description: "Track active jobs and know what needs review next." },
-    { title: "Saved Quotes", value: String(demoQuotes.length), description: "Keep quote requests organized for faster approvals." },
-    { title: "Uploaded Files", value: String(demoFiles.length), description: "Keep artwork ready for quotes, orders, and reorders." },
-    { title: "Invoices", value: String(demoInvoices.length), description: "Access billing records as the order system grows." },
+    { title: "Open Orders", value: String(liveOrders.filter((order) => order.status !== "completed").length), description: "Track active jobs and know what needs review next." },
+    { title: "Saved Quotes", value: String(liveQuotes.length), description: "Keep quote requests organized for faster approvals." },
+    { title: "Uploaded Files", value: String(liveFiles.length), description: "Keep artwork ready for quotes, orders, and reorders." },
+    { title: "Invoices", value: String(liveInvoices.length), description: "Access billing records as the order system grows." },
   ];
   const quickActions = [
     { title: "Start a reorder-friendly quote", detail: "Use the quote flow when you want a familiar job priced again with updated timing or quantity.", href: "/quote-request", icon: "document" },
     { title: "Upload or organize artwork", detail: "Keep files attached to the right order, quote, or future repeat job.", href: "/account/files", icon: "upload" },
     { title: "Talk to support", detail: "Ask about pickup timing, status, invoices, or the next production step.", href: "/support", icon: "chat" },
   ];
-  const featuredOrder = demoOrders[0];
+  const featuredOrder = liveOrders[0] ?? demoOrders[0];
   const featuredTimeline = accountOrderProgress[featuredOrder.id] ?? [];
 
   return (
@@ -40,14 +88,16 @@ export function AccountShell() {
               Keep your quotes, orders, artwork files, invoices, and future reorders organized in one place.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <span className="value-chip">{demoProfile.companyName}</span>
-              <span className="value-chip">{demoProfile.email}</span>
-              <span className="value-chip">{demoProfile.phone}</span>
+              {liveProfile.companyName ? <span className="value-chip">{liveProfile.companyName}</span> : null}
+              <span className="value-chip">{liveProfile.email}</span>
+              {liveProfile.phone ? <span className="value-chip">{liveProfile.phone}</span> : null}
             </div>
             <div className="mt-4 rounded-[1.3rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
               <span className="font-black text-ink">Current dashboard state:</span>{" "}
               {configured
-                ? "account access is live, but the overview cards below still use preview data until full order, quote, invoice, and upload history are connected."
+                ? dashboard
+                  ? "this account is now reading persisted customer profile, order, quote, file, and invoice data when available from the backend."
+                  : "account access is live, and this view falls back to preview data until more persisted records are available."
                 : "this is a preview dashboard until Supabase auth and persisted customer data are fully configured."}
             </div>
           </div>
@@ -58,7 +108,7 @@ export function AccountShell() {
         </div>
       </section>
 
-      <SummaryStrip items={accountHealthSummary} />
+      <SummaryStrip items={liveSummary} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {widgets.map((widget) => (
@@ -92,7 +142,7 @@ export function AccountShell() {
             <Button href="/account/orders" variant="secondary" className="px-4 py-2 text-xs">Review Orders</Button>
           </div>
           <div className="mt-5 space-y-4">
-            {demoOrders.slice(0, 2).map((order) => (
+            {liveOrders.slice(0, 2).map((order) => (
               <article key={order.id} className="rounded-[1.35rem] border border-line/90 p-4 transition hover:border-brand/25 hover:bg-brand-soft/20">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -112,7 +162,7 @@ export function AccountShell() {
             <Button href="/account/quotes" variant="secondary" className="px-4 py-2 text-xs">Review Quotes</Button>
           </div>
           <div className="mt-5 space-y-4">
-            {demoQuotes.map((quote) => (
+            {liveQuotes.map((quote) => (
               <article key={quote.id} className="rounded-[1.35rem] border border-line/90 p-4 transition hover:border-brand/25 hover:bg-brand-soft/20">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -155,11 +205,11 @@ export function AccountShell() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <AccountActivityFeed items={demoActivity} />
-        <AddressBookPanel addresses={demoAddresses} />
+        <AccountActivityFeed items={liveActivity} />
+        <AddressBookPanel addresses={liveAddresses} />
       </div>
 
-      <ReorderStudio items={demoReorders} />
+      <ReorderStudio items={liveReorders} />
 
       <section className="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-ink p-6 text-white shadow-card">
         <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-brand/20 blur-3xl" aria-hidden="true" />

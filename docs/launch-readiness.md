@@ -25,9 +25,11 @@ Recommended production rule:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET`
 - `SENDGRID_API_KEY`
 - `SENDGRID_FROM_EMAIL`
 - `SENDGRID_ADMIN_EMAIL`
+- `SENDGRID_REPLY_TO_EMAIL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
@@ -38,11 +40,12 @@ Recommended production rule:
 
 ## Supabase readiness
 
-1. Apply the schema in [supabase/schema.sql](/C:/Users/Achch/Desktop/PrintMe/supabase/schema.sql) and the extended reference in [docs/supabase-schema.sql](/C:/Users/Achch/Desktop/PrintMe/docs/supabase-schema.sql).
-2. Create the private `print-files` storage bucket.
-3. Enable Row Level Security for customer-facing tables before storing live customer data.
-4. Add policies for profiles, quotes, quote line items, orders, order line items, uploads, invoices, support records, activity logs, and internal notes.
-5. Plan the migration from email allowlists to `profiles.role` or equivalent claims before scaling staff workflows.
+1. Apply the canonical migrations in `supabase/migrations`.
+2. Use [supabase/schema.sql](/C:/Users/Achch/Desktop/PrintMe/supabase/schema.sql) as a bootstrap reference and [docs/supabase-schema.sql](/C:/Users/Achch/Desktop/PrintMe/docs/supabase-schema.sql) as the extended architecture reference.
+3. Create the private `print-files` storage bucket or set `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` to the production bucket name.
+4. Enable Row Level Security for customer-facing tables before storing live customer data.
+5. Apply the profile, address, order, quote, upload, invoice, and support policies from the migration set before launch.
+6. Plan the migration from email allowlists to `profiles.role` or equivalent claims before scaling staff workflows.
 
 ## Payments and webhook readiness
 
@@ -50,7 +53,7 @@ Recommended production rule:
 2. Subscribe it to checkout completion and payment events used by the order workflow.
 3. Confirm webhook signatures with `STRIPE_WEBHOOK_SECRET`.
 4. Verify that checkout session metadata includes the order identifiers needed by internal operations.
-5. Test failed payment, cancelled checkout, and repeated webhook delivery paths before launch.
+5. Test failed payment, deposit payment, cancelled checkout, and repeated webhook delivery paths before launch.
 
 ## Email and notifications
 
@@ -81,12 +84,12 @@ Recommended production rule:
 ## Known temporary boundaries
 
 - The current admin portal gate is a UI and configuration boundary, not a full server-enforced authorization model.
-- Customer account data is still scaffold-backed in parts of the UI and should be moved fully to persisted records before launch at scale.
-- Upload metadata, payment history, and notification history are now structured for persistence, but supporting dashboards still need more live operational data before multi-staff use.
+- Customer account surfaces now support persisted profile, order, quote, file, and invoice data when available, with preview fallbacks where no live records exist yet.
+- Upload metadata, payment history, and notification history are now structured for persistence, and secure signed upload URLs are prepared server-side.
 
 ## Recommended next engineering milestones
 
-1. Add Supabase SSR auth so admin and account route protection can be enforced server-side.
-2. Replace email allowlists with persisted staff roles and RLS-backed admin permissions.
-3. Add automated smoke tests for quote intake, cart, checkout, upload metadata submission, and admin access.
+1. Add Supabase SSR auth so admin and account route protection can be enforced server-side without relying on client state.
+2. Replace email allowlists with persisted staff roles and RLS-backed admin permissions everywhere.
+3. Add automated smoke tests for quote intake, cart, checkout, signed upload URL generation, upload metadata submission, and admin access.
 4. Add centralized observability for payment failures, upload failures, and notification failures.

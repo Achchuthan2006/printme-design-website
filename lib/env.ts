@@ -18,10 +18,13 @@ export const env = {
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseStorageBucket: process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ?? "print-files",
   sendGridApiKey: process.env.SENDGRID_API_KEY,
   sendGridFromEmail: process.env.SENDGRID_FROM_EMAIL,
   sendGridAdminEmail: process.env.SENDGRID_ADMIN_EMAIL,
+  sendGridReplyToEmail: process.env.SENDGRID_REPLY_TO_EMAIL,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+  stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   adminPortalEnabled: process.env.ADMIN_PORTAL_ENABLED === "true",
   adminUserEmails: parseList(process.env.ADMIN_USER_EMAILS),
@@ -50,4 +53,16 @@ export function isSendGridConfigured() {
 
 export function isStripeWebhookConfigured() {
   return Boolean(env.stripeSecretKey && env.stripeWebhookSecret);
+}
+
+export function getBackendReadinessSummary() {
+  return {
+    supabaseBrowserConfigured: isSupabaseConfigured(),
+    supabaseServerConfigured: isSupabaseServerConfigured(),
+    storageBucket: env.supabaseStorageBucket,
+    stripeConfigured: isStripeConfigured(),
+    stripeWebhookConfigured: isStripeWebhookConfigured(),
+    emailConfigured: isSendGridConfigured(),
+    adminPortalEnabled: env.adminPortalEnabled,
+  };
 }

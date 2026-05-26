@@ -52,10 +52,6 @@ export async function POST(request: Request) {
       return NextResponse.json(existing.responseBody, { status: existing.statusCode });
     }
 
-    if (parsed.data.paymentMode === "deposit") {
-      return NextResponse.json({ message: "Deposit checkout is not enabled yet. Please use secure online payment for now." }, { status: 400 });
-    }
-
     const order = buildOrderSnapshot(parsed.data as CheckoutPayload);
 
     const persistence = await persistOrderDraft({

@@ -25,10 +25,6 @@ function buildContextId(context: ArtworkUploadContext) {
   return context.quoteId ?? context.orderId ?? context.customerId ?? context.productSlug ?? "guest";
 }
 
-function buildUploadPath(file: File, context: ArtworkUploadContext) {
-  return `${context.scope}/${buildContextId(context)}/${Date.now()}-${safeFileName(file.name)}`;
-}
-
 function createMetadata(file: File, context: ArtworkUploadContext, path: string | null, skipped = false): ArtworkUploadMetadata {
   return {
     id: crypto.randomUUID(),
@@ -48,22 +44,38 @@ export async function uploadArtworkFile(file: File, context: ArtworkUploadContex
   validateArtworkFile(file);
 
   const supabase = getSupabaseBrowserClient();
-  const path = buildUploadPath(file, context);
+  const signedUpload = await getSignedUploadData(file, context);
+  const path = signedUpload.path;
 
   if (!supabase) {
-    const metadata = createMetadata(file, context, null, true);
+    const metadata = {
+      ...createMetadata(file, context, null, true),
+      id: signedUpload.metadataId,
+      bucket: signedUpload.bucket,
+    };
     await persistArtworkMetadata(metadata);
     return metadata;
   }
 
-  const { error } = await supabase.storage.from(UPLOAD_BUCKET).upload(path, file, {
-    upsert: false,
-    contentType: file.type || undefined,
-  });
+  if (!signedUpload.token) {
+    const metadata = {
+      ...createMetadata(file, context, null, true),
+      id: signedUpload.metadataId,
+      bucket: signedUpload.bucket,
+    };
+    await persistArtworkMetadata(metadata);
+    return metadata;
+  }
+
+  const { error } = await supabase.storage.from(signedUpload.bucket ?? UPLOAD_BUCKET).uploadToSignedUrl(path, signedUpload.token, file);
 
   if (error) throw new Error(error.message);
 
-  const metadata = createMetadata(file, context, path);
+  const metadata = {
+    ...createMetadata(file, context, path),
+    id: signedUpload.metadataId,
+    bucket: signedUpload.bucket,
+  };
   await persistArtworkMetadata(metadata);
   return metadata;
 }
@@ -75,12 +87,55 @@ export async function uploadQuoteFile(file: File, quoteId: string) {
 
 async function persistArtworkMetadata(metadata: ArtworkUploadMetadata) {
   try {
+    const supabase = getSupabaseBrowserClient();
+    const session = supabase ? await supabase.auth.getSession() : null;
     await fetch("/api/uploads/metadata", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(session?.data.session?.access_token
+          ? { Authorization: `Bearer ${session.data.session.access_token}` }
+          : {}),
+      },
       body: JSON.stringify(metadata),
     });
   } catch {
     // Ignore metadata persistence errors so file upload UX still completes.
   }
+}
+
+async function getSignedUploadData(file: File, context: ArtworkUploadContext) {
+  const supabase = getSupabaseBrowserClient();
+  const session = supabase ? await supabase.auth.getSession() : null;
+
+  const response = await fetch("/api/uploads/signed-url", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(session?.data.session?.access_token
+        ? { Authorization: `Bearer ${session.data.session.access_token}` }
+        : {}),
+    },
+    body: JSON.stringify({
+      fileName: safeFileName(file.name),
+      fileSize: file.size,
+      context: {
+        ...context,
+        customerId: context.customerId ?? buildContextId(context),
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(error?.message ?? "Unable to prepare secure upload.");
+  }
+
+  return (await response.json()) as {
+    bucket: string;
+    path: string;
+    token: string | null;
+    metadataId: string;
+    skipped: boolean;
+  };
 }

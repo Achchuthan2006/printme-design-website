@@ -148,16 +148,36 @@ export interface AccountWidget {
 
 export interface CustomerProfile {
   id?: string;
+  authUserId?: string;
   fullName: string;
   email: string;
   phone?: string;
   companyName?: string;
+  role?: "customer" | "admin";
   accountStatus?: "active" | "pending" | "paused";
   communicationPreferences?: {
     emailUpdates: boolean;
     smsUpdates: boolean;
     marketingEmails: boolean;
   };
+}
+
+export interface AccountDashboardData {
+  profile: CustomerProfile;
+  addresses: CustomerAddress[];
+  orders: AccountOrder[];
+  quotes: AccountQuote[];
+  files: AccountFile[];
+  invoices: AccountInvoice[];
+  activity: AccountActivityItem[];
+  reorders: AccountReorderTemplate[];
+  summary: Array<{ label: string; value: string; detail: string }>;
+}
+
+export interface AuthProfileSnapshot {
+  profile: CustomerProfile;
+  role: "customer" | "admin";
+  isAdmin: boolean;
 }
 
 export interface CustomerAddress {

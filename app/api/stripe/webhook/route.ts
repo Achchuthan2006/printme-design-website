@@ -3,12 +3,12 @@ import { NextResponse } from "next/server";
 import { dispatchPaymentConfirmedNotification } from "@/lib/backend/notifications";
 import { createPayloadFingerprint } from "@/lib/backend/idempotency";
 import {
-  createPaymentAuditRecord,
   findIdempotencyRecord,
   getOrderNotificationContext,
+  getOrderPaymentSnapshot,
   persistIdempotencyRecord,
-  updateOrderPaymentState,
 } from "@/lib/backend/repository";
+import { applyPaymentWorkflowTransition } from "@/lib/backend/workflow-engine";
 import { logError, logInfo } from "@/lib/logger";
 import { parseCheckoutSessionMetadata, verifyStripeWebhookSignature } from "@/lib/stripe";
 
@@ -43,23 +43,19 @@ export async function POST(request: Request) {
         const orderNumber = getSessionOrderNumber(session);
 
         if (orderNumber) {
-          await updateOrderPaymentState({
+          const snapshot = await getOrderPaymentSnapshot(orderNumber);
+
+          await applyPaymentWorkflowTransition({
             orderNumber,
-            paymentStatus: "paid",
+            fromStatus: snapshot?.paymentStatus ?? "pending",
+            toStatus: "paid",
             workflowStatus: "paid",
             stripeSessionId: session.id,
             stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : undefined,
-            eventType: "order.payment_confirmed",
-          });
-
-          await createPaymentAuditRecord({
-            orderNumber,
-            stripeSessionId: session.id,
-            stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : undefined,
-            status: "paid",
             amountCents: session.amount_total ?? undefined,
             currency: session.currency ?? "cad",
             rawEventType: event.type,
+            eventType: "order.payment_confirmed",
           });
 
           const orderContext = await getOrderNotificationContext(orderNumber);
@@ -79,21 +75,18 @@ export async function POST(request: Request) {
         const orderNumber = getSessionOrderNumber(session);
 
         if (orderNumber) {
-          await updateOrderPaymentState({
+          const snapshot = await getOrderPaymentSnapshot(orderNumber);
+
+          await applyPaymentWorkflowTransition({
             orderNumber,
-            paymentStatus: "cancelled",
+            fromStatus: snapshot?.paymentStatus ?? "pending",
+            toStatus: "cancelled",
             workflowStatus: "payment_pending",
             stripeSessionId: session.id,
-            eventType: "order.status_updated",
-          });
-
-          await createPaymentAuditRecord({
-            orderNumber,
-            stripeSessionId: session.id,
-            status: "cancelled",
             amountCents: session.amount_total ?? undefined,
             currency: session.currency ?? "cad",
             rawEventType: event.type,
+            eventType: "order.status_updated",
           });
         }
 
@@ -104,21 +97,18 @@ export async function POST(request: Request) {
         const orderNumber = paymentIntent.metadata.orderNumber;
 
         if (orderNumber) {
-          await updateOrderPaymentState({
+          const snapshot = await getOrderPaymentSnapshot(orderNumber);
+
+          await applyPaymentWorkflowTransition({
             orderNumber,
-            paymentStatus: "failed",
+            fromStatus: snapshot?.paymentStatus ?? "pending",
+            toStatus: "failed",
             workflowStatus: "payment_pending",
             stripePaymentIntentId: paymentIntent.id,
-            eventType: "order.payment_failed",
-          });
-
-          await createPaymentAuditRecord({
-            orderNumber,
-            stripePaymentIntentId: paymentIntent.id,
-            status: "failed",
             amountCents: paymentIntent.amount ?? undefined,
             currency: paymentIntent.currency ?? "cad",
             rawEventType: event.type,
+            eventType: "order.payment_failed",
           });
         }
 

@@ -46,6 +46,20 @@ export function AuthForm() {
         return;
       }
 
+      const accessToken = result.data.session?.access_token;
+      if (accessToken) {
+        await fetch("/api/account/profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            fullName,
+          }),
+        }).catch(() => undefined);
+      }
+
       if (mode === "signup") {
         setMessage("Account created. Please check your email if confirmation is enabled.");
       } else {

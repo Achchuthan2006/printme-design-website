@@ -89,6 +89,12 @@ export const uploadMetadataSchema = z.object({
   }),
 });
 
+export const signedUploadRequestSchema = z.object({
+  fileName: z.string().min(1),
+  fileSize: z.number().min(0),
+  context: uploadMetadataSchema.shape.context,
+});
+
 export const idempotencyKeySchema = z.string().trim().min(8).max(160);
 
 export const stripeCheckoutMetadataSchema = z.object({
@@ -101,3 +107,4 @@ export type CheckoutRequestInput = z.infer<typeof checkoutRequestSchema>;
 export type QuoteRequestApiInput = z.infer<typeof quoteRequestApiSchema>;
 export type RequestMeta = z.infer<typeof requestMetaSchema>;
 export type UploadMetadataInput = z.infer<typeof uploadMetadataSchema>;
+export type SignedUploadRequestInput = z.infer<typeof signedUploadRequestSchema>;

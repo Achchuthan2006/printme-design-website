@@ -1,3 +1,7 @@
+-- PrintMe legacy bootstrap schema.
+-- Canonical production-ready schema changes now live in supabase/migrations
+-- and the extended architecture reference lives in docs/supabase-schema.sql.
+
 create extension if not exists pgcrypto;
 
 create table if not exists public.profiles (

@@ -2,8 +2,8 @@
 
 import { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { resolvePublicAppRole } from "@/lib/public-authz";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { AuthProfileSnapshot, CustomerProfile } from "@/types";
 
 interface AuthContextValue {
   user: User | null;
@@ -12,6 +12,8 @@ interface AuthContextValue {
   isAdmin: boolean;
   loading: boolean;
   configured: boolean;
+  accessToken: string | null;
+  profile: CustomerProfile | null;
   signOut: () => Promise<void>;
 }
 
@@ -21,8 +23,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(Boolean(supabase));
-  const role = resolvePublicAppRole(session?.user?.email);
+  const [profileState, setProfileState] = useState<AuthProfileSnapshot | null>(null);
+  const accessToken = session?.access_token ?? null;
+  const role = profileState?.role ?? "customer";
   const isAdmin = role === "admin";
+
+  useEffect(() => {
+    if (!supabase || !accessToken) {
+      setProfileState(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch("/api/account/profile", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load account profile.");
+        }
+        return (await response.json()) as AuthProfileSnapshot;
+      })
+      .then((snapshot) => {
+        if (!cancelled) {
+          setProfileState(snapshot);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setProfileState(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, supabase]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -56,6 +95,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         loading,
         configured: Boolean(supabase),
+        accessToken,
+        profile: profileState?.profile ?? null,
         signOut,
       }}
     >

@@ -15,8 +15,14 @@
   Checkout session creation with validated cart payloads, order draft persistence, and payment/session metadata
 - `app/api/uploads/metadata/route.ts`
   Server-side recording point for artwork metadata after client-side storage upload
+- `app/api/uploads/signed-url/route.ts`
+  Server-issued signed upload URLs so artwork files can be stored without broad client bucket permissions
 - `app/api/stripe/webhook/route.ts`
   Verified Stripe webhook handler for payment-state truth and audit logging
+- `app/api/account/profile/route.ts`
+  Authenticated profile bootstrap and account-role resolution
+- `app/api/account/dashboard/route.ts`
+  Authenticated customer dashboard data endpoint wired to persisted profile, order, quote, file, and invoice records
 - `lib/backend/schemas.ts`
   Shared Zod validation for quote intake, checkout payloads, request metadata, and Stripe metadata parsing
 - `lib/backend/workflows.ts`
@@ -27,6 +33,14 @@
   Notification dispatch layer with tracked delivery events and shared trigger map
 - `lib/backend/idempotency.ts`
   Request fingerprinting and idempotency-key resolution for quote, checkout, and webhook safety
+- `lib/backend/auth.ts`
+  Server-side bearer-token verification and role-aware request authentication
+- `lib/backend/account.ts`
+  Customer profile synchronization and persisted dashboard data mapping
+- `lib/backend/storage.ts`
+  Artwork upload validation, secure storage path rules, and signed-upload generation
+- `lib/backend/workflow-engine.ts`
+  Workflow transition guardrails for payment and order state mutation
 
 ## Current Frontend Platform Direction
 

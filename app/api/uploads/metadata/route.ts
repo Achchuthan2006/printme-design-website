@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { authenticateRequest } from "@/lib/backend/auth";
 import { uploadMetadataSchema } from "@/lib/backend/schemas";
 import { persistArtworkMetadataRecord } from "@/lib/backend/repository";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
       scope: parsed.data.context.scope,
       quoteId: parsed.data.context.quoteId,
       orderId: parsed.data.context.orderId,
-      customerId: parsed.data.context.customerId,
+      customerId: (await authenticateRequest(request))?.user.id ?? parsed.data.context.customerId,
       productSlug: parsed.data.context.productSlug,
     });
 
