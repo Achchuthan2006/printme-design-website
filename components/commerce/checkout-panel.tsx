@@ -60,12 +60,6 @@ export function CheckoutPanel() {
   const reviewPlan = useMemo(() => evaluateCartPaymentPlan(items, "review"), [items]);
 
   useEffect(() => {
-    if (paymentPlan.checkoutMode !== paymentMode) {
-      setPaymentMode(paymentPlan.checkoutMode);
-    }
-  }, [paymentMode, paymentPlan.checkoutMode]);
-
-  useEffect(() => {
     if (items.length === 0) return;
 
     trackPrintMeEvent({

@@ -1,4 +1,4 @@
-import { CartItem, CheckoutPaymentMode, PaymentPlanSummary, PaymentWorkflowStatus } from "@/types";
+import { CartItem, CheckoutPaymentMode, PaymentPlanSummary } from "@/types";
 
 function cents(amount: number) {
   return Math.round(amount * 100);

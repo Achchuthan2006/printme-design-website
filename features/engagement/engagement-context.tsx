@@ -16,6 +16,37 @@ type EngagementContextValue = {
 const storageKey = "printme-engagement";
 const EngagementContext = createContext<EngagementContextValue | null>(null);
 
+function createEmptyEngagementState() {
+  return {
+    favorites: [] as string[],
+    compare: [] as string[],
+    recentlyViewed: [] as string[],
+  };
+}
+
+function readStoredEngagement() {
+  if (typeof window === "undefined") {
+    return createEmptyEngagementState();
+  }
+
+  try {
+    const saved = window.localStorage.getItem(storageKey);
+    if (!saved) {
+      return createEmptyEngagementState();
+    }
+
+    const parsed = JSON.parse(saved) as Partial<Pick<EngagementContextValue, "favorites" | "compare" | "recentlyViewed">>;
+    return {
+      favorites: parsed.favorites ?? [],
+      compare: parsed.compare ?? [],
+      recentlyViewed: parsed.recentlyViewed ?? [],
+    };
+  } catch {
+    window.localStorage.removeItem(storageKey);
+    return createEmptyEngagementState();
+  }
+}
+
 export function EngagementProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compare, setCompare] = useState<string[]>([]);
@@ -23,23 +54,17 @@ export function EngagementProvider({ children }: { children: React.ReactNode }) 
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved) as Partial<Pick<EngagementContextValue, "favorites" | "compare" | "recentlyViewed">>;
-        setFavorites(parsed.favorites ?? []);
-        setCompare(parsed.compare ?? []);
-        setRecentlyViewed(parsed.recentlyViewed ?? []);
-      }
-    } catch {
-      window.localStorage.removeItem(storageKey);
-    } finally {
+    queueMicrotask(() => {
+      const initialState = readStoredEngagement();
+      setFavorites(initialState.favorites);
+      setCompare(initialState.compare);
+      setRecentlyViewed(initialState.recentlyViewed);
       setHydrated(true);
-    }
+    });
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || typeof window === "undefined") return;
     try {
       window.localStorage.setItem(
         storageKey,

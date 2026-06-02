@@ -20,12 +20,10 @@ import { AccountDashboardData } from "@/types";
 export function AccountShell() {
   const { user, configured, accessToken, profile } = useAuth();
   const [dashboard, setDashboard] = useState<AccountDashboardData | null>(null);
+  const liveDashboard = configured && user && accessToken ? dashboard : null;
 
   useEffect(() => {
-    if (!configured || !user || !accessToken) {
-      setDashboard(null);
-      return;
-    }
+    if (!configured || !user || !accessToken) return;
 
     let cancelled = false;
 
@@ -57,21 +55,21 @@ export function AccountShell() {
   }, [accessToken, configured, user]);
 
   const previewMode = !configured;
-  const liveProfile = dashboard?.profile ?? profile ?? (previewMode ? demoProfile : {
+  const liveProfile = liveDashboard?.profile ?? profile ?? (previewMode ? demoProfile : {
     fullName: user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer",
     email: user?.email ?? "",
     phone: typeof user?.user_metadata?.phone === "string" ? user.user_metadata.phone : undefined,
     companyName: typeof user?.user_metadata?.company_name === "string" ? user.user_metadata.company_name : undefined,
   });
-  const liveOrders = dashboard?.orders ?? (previewMode ? demoOrders : []);
-  const liveQuotes = dashboard?.quotes ?? (previewMode ? demoQuotes : []);
-  const liveFiles = dashboard?.files ?? (previewMode ? demoFiles : []);
-  const liveInvoices = dashboard?.invoices ?? (previewMode ? demoInvoices : []);
-  const liveAddresses = dashboard?.addresses ?? (previewMode ? demoAddresses : []);
-  const liveActivity = dashboard?.activity ?? (previewMode ? demoActivity : []);
-  const liveReorders = dashboard?.reorders ?? (previewMode ? demoReorders : []);
-  const liveSavedDesigns = dashboard?.savedDesigns ?? (previewMode ? demoSavedDesigns : []);
-  const liveSummary = dashboard?.summary?.length ? dashboard.summary : previewMode ? accountHealthSummary : [
+  const liveOrders = liveDashboard?.orders ?? (previewMode ? demoOrders : []);
+  const liveQuotes = liveDashboard?.quotes ?? (previewMode ? demoQuotes : []);
+  const liveFiles = liveDashboard?.files ?? (previewMode ? demoFiles : []);
+  const liveInvoices = liveDashboard?.invoices ?? (previewMode ? demoInvoices : []);
+  const liveAddresses = liveDashboard?.addresses ?? (previewMode ? demoAddresses : []);
+  const liveActivity = liveDashboard?.activity ?? (previewMode ? demoActivity : []);
+  const liveReorders = liveDashboard?.reorders ?? (previewMode ? demoReorders : []);
+  const liveSavedDesigns = liveDashboard?.savedDesigns ?? (previewMode ? demoSavedDesigns : []);
+  const liveSummary = liveDashboard?.summary?.length ? liveDashboard.summary : previewMode ? accountHealthSummary : [
     { label: "Orders", value: String(liveOrders.length), detail: "Real orders tied to this account." },
     { label: "Quotes", value: String(liveQuotes.length), detail: "Live quote requests tied to this account." },
     { label: "Files", value: String(liveFiles.length), detail: "Uploaded artwork attached to this account." },
@@ -114,7 +112,7 @@ export function AccountShell() {
             <div className="mt-4 rounded-[1.3rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
               <span className="font-black text-ink">Current dashboard state:</span>{" "}
               {configured
-                ? dashboard
+                ? liveDashboard
                   ? "this account is now reading persisted customer profile, order, quote, file, and invoice data when available from the backend."
                   : "account access is live. Empty sections stay empty until real orders, quotes, files, invoices, and reorders exist for this customer."
                 : "this is a preview dashboard until Supabase auth and persisted customer data are fully configured."}

@@ -1,14 +1,12 @@
-import { catalogUtilityLinks, getCatalogSearchEntries, getRelatedServicesForCategory, industryPaths } from "@/data/catalog";
+import { catalogUtilityLinks, getCatalogSearchEntries, getRelatedServicesForCategory } from "@/data/catalog";
 import { productCategories, products } from "@/data/products";
 import { servicePages } from "@/data/services";
 import {
-  CatalogSearchEntry,
   DiscoveryFacetGroup,
   DiscoveryRecoveryAction,
   DiscoveryTemplateResult,
   PrintProduct,
   ProductCategory,
-  ServicePage,
 } from "@/types";
 
 export type DiscoveryFilterState = Partial<Record<

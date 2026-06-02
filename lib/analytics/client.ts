@@ -1,3 +1,4 @@
-export function trackPrintMeEvent(_event: Record<string, unknown>) {
+export function trackPrintMeEvent(event: Record<string, unknown>) {
+  void event;
   return;
 }

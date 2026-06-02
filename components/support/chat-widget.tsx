@@ -84,6 +84,14 @@ interface AssistantContext {
   resolveFlow: (answers: Record<string, string>) => FlowResult;
 }
 
+interface AssistantFlowState {
+  assistantId: string;
+  selectedActionId: string | null;
+  answers: Record<string, string>;
+  stepIndex: number;
+  flowResult: FlowResult | null;
+}
+
 const sharedQuestions: FlowQuestion[] = [
   {
     id: "intent",
@@ -135,6 +143,16 @@ function createResource(
   icon: AssistantIcon,
 ): AssistantResource {
   return { id, title, detail, href, icon };
+}
+
+function createAssistantFlowState(assistantId: string): AssistantFlowState {
+  return {
+    assistantId,
+    selectedActionId: null,
+    answers: {},
+    stepIndex: 0,
+    flowResult: null,
+  };
 }
 
 function titleFromSlug(pathname: string) {
@@ -423,11 +441,10 @@ export function ChatWidget() {
   const pathname = usePathname();
   const assistant = useMemo(() => getAssistantContext(pathname), [pathname]);
   const [open, setOpen] = useState(false);
-  const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [stepIndex, setStepIndex] = useState(0);
-  const [flowResult, setFlowResult] = useState<FlowResult | null>(null);
+  const [flowState, setFlowState] = useState<AssistantFlowState>(() => createAssistantFlowState(assistant.id));
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const activeFlowState = flowState.assistantId === assistant.id ? flowState : createAssistantFlowState(assistant.id);
+  const { selectedActionId, answers, stepIndex, flowResult } = activeFlowState;
 
   const selectedAction = assistant.quickActions.find((action) => action.id === selectedActionId) ?? null;
   const currentQuestion = assistant.flowQuestions[stepIndex] ?? null;
@@ -437,13 +454,6 @@ export function ChatWidget() {
     window.addEventListener(supportChatOpenEvent, handleOpen);
     return () => window.removeEventListener(supportChatOpenEvent, handleOpen);
   }, []);
-
-  useEffect(() => {
-    setSelectedActionId(null);
-    setAnswers({});
-    setStepIndex(0);
-    setFlowResult(null);
-  }, [assistant.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -473,7 +483,11 @@ export function ChatWidget() {
 
   function handleQuickAction(action: AssistantAction) {
     setOpen(true);
-    setSelectedActionId(action.id);
+    setFlowState((current) => ({
+      ...(current.assistantId === assistant.id ? current : createAssistantFlowState(assistant.id)),
+      assistantId: assistant.id,
+      selectedActionId: action.id,
+    }));
     trackPrintMeEvent({
       eventName: "support_quick_action_selected",
       pageType: "support",
@@ -489,11 +503,16 @@ export function ChatWidget() {
 
   function handleOptionSelect(questionId: string, optionId: string) {
     const nextAnswers = { ...answers, [questionId]: optionId };
-    setAnswers(nextAnswers);
 
     if (stepIndex >= assistant.flowQuestions.length - 1) {
       const result = assistant.resolveFlow(nextAnswers);
-      setFlowResult(result);
+      setFlowState({
+        assistantId: assistant.id,
+        selectedActionId,
+        answers: nextAnswers,
+        stepIndex,
+        flowResult: result,
+      });
       trackPrintMeEvent({
         eventName: "support_quick_action_selected",
         pageType: "support",
@@ -508,18 +527,22 @@ export function ChatWidget() {
       return;
     }
 
-    setStepIndex((current) => current + 1);
+    setFlowState({
+      assistantId: assistant.id,
+      selectedActionId,
+      answers: nextAnswers,
+      stepIndex: stepIndex + 1,
+      flowResult: null,
+    });
   }
 
   function resetFlow() {
-    setAnswers({});
-    setStepIndex(0);
-    setFlowResult(null);
+    setFlowState(createAssistantFlowState(assistant.id));
   }
 
   return (
     <>
-      <div className="fixed bottom-20 right-3 z-[75] sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-20 right-3 z-[75] sm:bottom-6 sm:right-6 xl:bottom-8 xl:right-8">
         <button
           type="button"
           onClick={() => {
@@ -529,18 +552,18 @@ export function ChatWidget() {
           }}
           aria-expanded={open}
           aria-controls="printme-chat-widget"
-          className="group premium-focus relative overflow-hidden rounded-[1.65rem] border border-white/14 bg-[linear-gradient(140deg,#171412_0%,#231c19_58%,#121110_100%)] px-3 py-3 text-left text-white shadow-[0_28px_72px_rgba(18,17,16,0.34)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_84px_rgba(18,17,16,0.38)] sm:px-4"
+          className="group premium-focus relative max-w-[20rem] overflow-hidden rounded-[1.65rem] border border-white/14 bg-[linear-gradient(140deg,#171412_0%,#231c19_58%,#121110_100%)] px-3 py-3 text-left text-white shadow-[0_28px_72px_rgba(18,17,16,0.34)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_84px_rgba(18,17,16,0.38)] sm:max-w-[21rem] sm:px-4"
         >
           <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,106,70,0.2),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.1),transparent_32%)] opacity-90" />
           <span className="relative flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.1rem] bg-[linear-gradient(180deg,#ef6a46_0%,#d94620_72%,#b73314_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_14px_30px_rgba(217,70,32,0.3)]">
               <Icon name="spark" className="h-5 w-5" />
             </span>
-            <span className="hidden min-w-0 sm:block">
-              <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-white/55">{assistant.entryEyebrow}</span>
-              <span className="mt-1 block text-sm font-black leading-5">{assistant.entryTitle}</span>
-              <span className="mt-1 block max-w-[15rem] text-xs leading-5 text-white/72">{assistant.entryDetail}</span>
-            </span>
+              <span className="hidden min-w-0 sm:block">
+                <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-white/55">{assistant.entryEyebrow}</span>
+                <span className="mt-1 block text-sm font-black leading-5">{assistant.entryTitle}</span>
+                <span className="mt-1 block max-w-[13.5rem] text-xs leading-5 text-white/72 xl:max-w-[15rem]">{assistant.entryDetail}</span>
+              </span>
             <span className="sm:hidden">
               <span className="block text-xs font-black">Ask PrintMe</span>
             </span>
@@ -554,7 +577,7 @@ export function ChatWidget() {
         aria-modal="false"
         aria-label="Ask PrintMe assistant"
         className={cn(
-          "fixed inset-x-2 bottom-3 z-[74] flex max-h-[calc(100vh-6rem)] flex-col overflow-hidden rounded-[2rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(250,246,241,0.95))] shadow-[0_36px_88px_rgba(18,17,16,0.22)] backdrop-blur-[22px] transition-all duration-300 sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[26rem]",
+          "fixed inset-x-2 bottom-3 z-[74] flex max-h-[calc(100vh-6rem)] flex-col overflow-hidden rounded-[2rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(250,246,241,0.95))] shadow-[0_36px_88px_rgba(18,17,16,0.22)] backdrop-blur-[22px] transition-all duration-300 sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[24rem] xl:bottom-28 xl:right-8 xl:w-[25rem]",
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0",
         )}
       >
@@ -644,7 +667,18 @@ export function ChatWidget() {
                       <Button href={selectedAction.href} className="w-full sm:flex-1">
                         {selectedAction.hrefLabel}
                       </Button>
-                      <Button type="button" variant="secondary" onClick={() => setSelectedActionId(null)} className="w-full sm:w-auto">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          setFlowState((current) => ({
+                            ...(current.assistantId === assistant.id ? current : createAssistantFlowState(assistant.id)),
+                            assistantId: assistant.id,
+                            selectedActionId: null,
+                          }))
+                        }
+                        className="w-full sm:w-auto"
+                      >
                         Clear
                       </Button>
                     </div>
@@ -695,7 +729,16 @@ export function ChatWidget() {
                 {stepIndex > 0 ? (
                   <button
                     type="button"
-                    onClick={() => setStepIndex((current) => Math.max(0, current - 1))}
+                    onClick={() =>
+                      setFlowState((current) => {
+                        const activeState = current.assistantId === assistant.id ? current : createAssistantFlowState(assistant.id);
+                        return {
+                          ...activeState,
+                          assistantId: assistant.id,
+                          stepIndex: Math.max(0, activeState.stepIndex - 1),
+                        };
+                      })
+                    }
                     className="mt-3 text-xs font-black uppercase tracking-[0.16em] text-slate transition hover:text-brand"
                   >
                     Back

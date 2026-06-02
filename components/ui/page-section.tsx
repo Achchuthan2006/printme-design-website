@@ -14,7 +14,7 @@ const toneClassNames: Record<PageSectionTone, string> = {
 const spacingClassNames: Record<PageSectionSpacing, string> = {
   tight: "section-tight",
   default: "section-space",
-  hero: "pb-24 pt-16 sm:pb-28 sm:pt-20 lg:pb-32 lg:pt-24",
+  hero: "pb-24 pt-14 sm:pb-28 sm:pt-16 lg:pb-32 lg:pt-20",
 };
 
 export type PageSectionProps = React.HTMLAttributes<HTMLElement> & {

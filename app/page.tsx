@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { FinalCta } from "@/components/catalog/final-cta";
 import { ProductCard } from "@/components/commerce/product-card";
+import { ServiceProductVisual, HeroPrintComposition } from "@/components/sections/print-product-visual";
 import { ContactStrip } from "@/components/sections/contact-strip";
 import { ServiceCard } from "@/components/sections/service-card";
 import { Badge, Button, Card, Icon, PageSection, SectionHeading } from "@/components/ui";
@@ -12,12 +13,13 @@ import {
   industryPaths,
 } from "@/data/catalog";
 import { getFeaturedProducts } from "@/data/products";
-import { siteConfig, services } from "@/lib/site";
+import { services } from "@/lib/site";
 
 const featuredFamilies = getCatalogNavigationFamilies().slice(0, 3);
 const featuredProducts = getFeaturedProducts().slice(0, 3);
 const featuredServices = services.slice(0, 3);
 const featuredShortcuts = catalogUtilityLinks.slice(0, 3);
+const categoryStripFamilies = getCatalogNavigationFamilies().slice(0, 6);
 const trustPillars = [
   "Structured quote review before complex jobs move into production",
   "Warm local support for rush timelines, file prep, and pickup planning",
@@ -29,23 +31,24 @@ export default function HomePage() {
     <main>
       <PageSection spacing="hero" className="overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.09),transparent_26rem),radial-gradient(circle_at_right,rgba(18,17,16,0.05),transparent_32rem)]" aria-hidden="true" />
-        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <div className="max-w-3xl">
-            <h1 className="display-title text-balance text-[3.25rem] font-semibold leading-[0.92] sm:text-[4.5rem] lg:text-[5.35rem]">
-              Premium print paths for businesses that want clarity before production.
+        <div className="grid gap-10 xl:grid-cols-[0.92fr_1.08fr] xl:items-center">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-brand">Print, elevated.</p>
+            <h1 className="display-title mt-5 text-balance text-[3.35rem] font-semibold leading-[0.9] sm:text-[4.65rem] lg:text-[5.6rem]">
+              Print that makes an impression.
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-slate sm:text-[1.06rem]">
-              Browse products, request a guided quote, upload ready files, or talk to PrintMe when the job needs a more careful plan. The experience is designed to feel calm, local, and production-aware from the first click.
+            <p className="mt-6 max-w-xl text-[1.02rem] leading-8 text-slate">
+              Premium print, thoughtful design, and reliable local service in one calm platform. From business cards to custom packaging, PrintMe helps good ideas arrive production-ready.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button href="/products" size="lg" trailingIcon={<Icon name="arrow" className="h-4 w-4" />}>
                 Explore the Catalog
               </Button>
-              <Button href="/quote-request" variant="secondary" size="lg">
-                Request a Custom Quote
+              <Button href="/support" variant="secondary" size="lg">
+                See How It Works
               </Button>
             </div>
-            <div className="mt-8 flex flex-wrap gap-2.5">
+            <div className="mt-9 flex flex-wrap gap-2.5">
               {trustPillars.map((item) => (
                 <span key={item} className="value-chip">
                   <Icon name="check" className="h-3.5 w-3.5 text-brand" />
@@ -55,66 +58,72 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Card variant="panel" className="grid gap-4 p-5 sm:p-6">
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-1">
+          <div className="space-y-4 xl:pl-4">
+            <HeroPrintComposition />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {[
                 {
-                  title: "Browse by product family",
-                  copy: "Move through stationery, marketing materials, signage, packaging, documents, or custom work without losing the bigger production picture.",
-                  href: "/products",
-                  icon: "bag",
-                },
-                {
-                  title: "Start with support",
-                  copy: "Use the guided quote path when the size, stock, file, or timeline still needs a real review before checkout.",
+                  title: "Custom quotes",
+                  copy: "Start with the guided path when the job needs sizing, material, or finishing review.",
                   href: "/quote-request",
                   icon: "document",
                 },
                 {
-                  title: "Need a fast answer?",
-                  copy: "Call the shop when the deadline is close, the file is uncertain, or you need help choosing the safest route.",
-                  href: siteConfig.phoneHref,
-                  icon: "phone",
+                  title: "Trade and volume printing",
+                  copy: "Bulk and repeat-order support for businesses, teams, and larger campaigns.",
+                  href: "/support",
+                  icon: "bag",
+                },
+                {
+                  title: "Help and resources",
+                  copy: "Artwork guidance, shipping details, templates, and practical support shortcuts.",
+                  href: "/support",
+                  icon: "chat",
                 },
               ].map((item) => (
-                <Card key={item.title} variant="surface" className="signal-card p-5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] border border-brand/15 bg-brand-soft text-brand">
-                    <Icon name={item.icon} className="h-4.5 w-4.5" />
+                <Card key={item.title} variant="surface" className="p-4 sm:p-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[0.95rem] border border-brand/15 bg-brand-soft text-brand">
+                    <Icon name={item.icon} className="h-4 w-4" />
                   </div>
-                  <h2 className="mt-4 text-lg font-black text-ink">{item.title}</h2>
+                  <h2 className="mt-4 text-base font-black text-ink">{item.title}</h2>
                   <p className="mt-2 text-sm leading-6 text-slate">{item.copy}</p>
-                  <Button href={item.href} variant="secondary" className="mt-5 self-start px-4 py-2 text-[11px]">
-                    {item.href.startsWith("tel:") ? "Call PrintMe" : "Open Path"}
+                  <Button href={item.href} variant="secondary" className="mt-4 px-4 py-2 text-[11px]">
+                    Open
                   </Button>
                 </Card>
               ))}
             </div>
-            <Card variant="glass" className="p-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Why this flow feels different</p>
-              <h2 className="mt-2 text-[1.65rem] font-black leading-[1.02] text-ink">A serious print-commerce front door, not a loose collection of product pages.</h2>
-              <p className="mt-3 text-sm leading-7 text-slate">
-                PrintMe combines browseable product families with real support entry points, local pickup confidence, and production-minded guidance for specialty work.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="focus-band p-4 text-sm leading-6 text-slate">
-                  <p className="font-black text-ink">Local Scarborough pickup</p>
-                  <p className="mt-1">{siteConfig.shortAddress}</p>
-                </div>
-                <div className="focus-band p-4 text-sm leading-6 text-slate">
-                  <p className="font-black text-ink">Rush-aware support</p>
-                  <p className="mt-1">Call ahead when timing is tight and the file is ready for review.</p>
-                </div>
-              </div>
-            </Card>
-          </Card>
+          </div>
         </div>
+      </PageSection>
+
+      <PageSection tone="white" spacing="tight" contentClassName="max-w-[1400px]">
+        <Card variant="surface" className="rounded-[2rem] p-4 sm:p-5">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+            {categoryStripFamilies.map((family) => (
+              <Link
+                key={family.slug}
+                href={`/products/category/${family.slug}`}
+                className="group rounded-[1.45rem] border border-white/80 bg-white/82 p-3 transition hover:-translate-y-0.5 hover:border-brand/18 hover:shadow-card"
+              >
+                <ServiceProductVisual slug={family.spotlightSlugs?.[0] ?? family.slug} />
+                <div className="px-1 pb-1 pt-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">{family.shortTitle}</p>
+                  <h2 className="mt-2 text-[1.08rem] font-black leading-[1.05] text-ink transition group-hover:text-brand">{family.title}</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate">{family.description}</p>
+                  <p className="mt-3 text-[11px] font-black uppercase tracking-[0.16em] text-brand">Browse family</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </Card>
       </PageSection>
 
       <PageSection tone="white">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <SectionHeading
             title="Browse the major print families first"
-            description="The homepage now starts from the stable catalog structure so future browsing, search, and support improvements can extend one shared system instead of branching into disconnected prototypes."
+            description="The homepage keeps the current direction but refines it into a calmer, more editorial catalog entry: stronger hierarchy above, more curated family browsing here, and a cleaner path into support and custom work."
           />
           <Button href="/products" variant="secondary" className="self-start lg:self-auto">
             View Full Catalog

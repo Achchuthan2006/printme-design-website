@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { buildMetadata } from "@/lib/metadata";
 import { buildBreadcrumbSchema, buildCollectionPageSchema } from "@/lib/seo";
-import { catalogProductPages, productCategories, products, getFeaturedProducts } from "@/data/products";
+import { catalogProductPages, productCategories, getFeaturedProducts } from "@/data/products";
 import { catalogUtilityLinks, featuredCatalogCollections, industryPaths } from "@/data/catalog";
 
 export const metadata = buildMetadata({
@@ -213,7 +213,6 @@ export default async function ProductsPage({
           <CatalogExplorer
             products={catalogProductPages}
             categories={productCategories}
-            featuredProducts={featuredProducts}
             initialQuery={params.query ?? ""}
             initialCategory={params.category ?? "all"}
           />

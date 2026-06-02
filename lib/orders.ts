@@ -37,7 +37,8 @@ export function buildOrderSnapshot(payload: CheckoutPayload): OrderSnapshot {
   };
 }
 
-export async function persistOrderSnapshot(_order: OrderSnapshot) {
+export async function persistOrderSnapshot(order: OrderSnapshot) {
+  void order;
   // TODO: insert into Supabase orders/order_items and link uploads, customer profile, invoice, and notifications.
   return { skipped: true };
 }

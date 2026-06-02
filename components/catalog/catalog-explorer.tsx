@@ -96,13 +96,11 @@ function FacetGroup({
 export function CatalogExplorer({
   products,
   categories,
-  featuredProducts,
   initialQuery = "",
   initialCategory = "all",
 }: {
   products: PrintProduct[];
   categories: ProductCategory[];
-  featuredProducts: PrintProduct[];
   initialQuery?: string;
   initialCategory?: string;
 }) {
@@ -148,10 +146,6 @@ export function CatalogExplorer({
       ),
     [filters],
   );
-
-  useEffect(() => {
-    setFilters({});
-  }, [categoryFilter]);
 
   useEffect(() => {
     const normalizedQuery = deferredQuery.trim();
@@ -216,7 +210,14 @@ export function CatalogExplorer({
             </p>
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-[1.3fr_0.9fr_0.85fr]">
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products, templates, services, or materials" aria-label="Search PrintMe catalog" />
-              <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="input-base">
+              <select
+                value={categoryFilter}
+                onChange={(event) => {
+                  setCategoryFilter(event.target.value);
+                  setFilters({});
+                }}
+                className="input-base"
+              >
                 <option value="all">All categories</option>
                 {categories.map((category) => (
                   <option key={category.slug} value={category.slug}>

@@ -1,4 +1,4 @@
-import { IndustryPath, CatalogSearchEntry, PrintProduct, ProductCategory, ServicePage, CatalogShortcut } from "@/types";
+import { IndustryPath, CatalogSearchEntry, ProductCategory, ServicePage, CatalogShortcut } from "@/types";
 import { getProductsByCategory, productCategories, products } from "@/data/products";
 import { servicePages } from "@/data/services";
 

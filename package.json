@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings=0",
     "verify": "npm run build && npm run typecheck"
   },
   "dependencies": {
@@ -25,7 +25,11 @@
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
+    "@typescript-eslint/parser": "^8.60.1",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.7",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.8.3"

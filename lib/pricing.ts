@@ -7,7 +7,7 @@ import {
 } from "@/data/pricing-rules";
 import { PricingAdjustmentLine, PricingEvaluation, PrintProduct, ProductOption, ProductOrderMethod } from "@/types";
 
-export interface PriceResult extends PricingEvaluation {}
+export type PriceResult = PricingEvaluation;
 
 function normalizeServiceSlug(product: PrintProduct) {
   return pricingRules[product.slug] ? product.slug : "custom-orders";

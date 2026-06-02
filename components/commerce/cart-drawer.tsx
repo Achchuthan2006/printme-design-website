@@ -21,6 +21,7 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
     if (!isDrawerOpen) return;
 
     const previousOverflow = document.body.style.overflow;
+    const opener = openButtonRef.current;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeCart();
     };
@@ -32,7 +33,7 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
-      openButtonRef.current?.focus();
+      opener?.focus();
     };
   }, [closeCart, isDrawerOpen]);
 

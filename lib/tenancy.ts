@@ -74,9 +74,10 @@ export function getDefaultSiteContext(): ResolvedTenantContext {
   };
 }
 
-export function resolveTenantContext(_params?: {
+export function resolveTenantContext(params?: {
   host?: string;
   pathname?: string;
 }): ResolvedTenantContext {
+  void params;
   return getDefaultSiteContext();
 }

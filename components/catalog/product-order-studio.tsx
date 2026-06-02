@@ -191,7 +191,10 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
   const directOrderPath = product.mode !== "quote-only" && product.ctaMode !== "contact";
   const visiblePrimaryMethods = primaryMethodOrder.filter((method) => (method === "design-online" || method === "ready-template" ? canUseTemplates : true));
   const visibleSecondaryMethods = secondaryMethodOrder.filter((method) => (method === "buy-now-upload-later" ? directOrderPath : true));
-  const selectedTemplateFields = selectedTemplate?.editableFields ?? ["companyName", "phone", "headline"];
+  const selectedTemplateFields = useMemo(
+    () => selectedTemplate?.editableFields ?? ["companyName", "phone", "headline"],
+    [selectedTemplate],
+  );
   const templateBrief = useMemo(() => {
     if (!selectedTemplate) return "";
     const filledFields = selectedTemplateFields

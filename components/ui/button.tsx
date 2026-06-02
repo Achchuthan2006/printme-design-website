@@ -87,7 +87,7 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
     );
 
     if (href) {
-      const { href: _href, ...linkProps } = props as ButtonAsLinkProps;
+      const linkProps = props as Omit<ButtonAsLinkProps, "href">;
       if (isExternalHref(href)) {
         return (
           <a

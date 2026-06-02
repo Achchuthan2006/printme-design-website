@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { products } from "@/data/products";
 import { serviceOptions } from "@/lib/site";
 import { quoteRequestSchema } from "@/lib/validation";
@@ -58,7 +57,11 @@ export function QuoteRequestForm({
   const normalizedMethod = initialMethod as ProductOrderMethod | "";
   const methodLabel = normalizedMethod ? orderMethodLabels[normalizedMethod] : "";
 
-  const [form, setForm] = useState<FormState>(initialState);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...initialState,
+    serviceNeeded: prefillingService,
+    projectDetails: initialBrief,
+  }));
   const [status, setStatus] = useState<{ type: "idle" | "success" | "error"; message?: string }>({
     type: "idle",
   });
@@ -68,16 +71,6 @@ export function QuoteRequestForm({
   const [honeypot, setHoneypot] = useState("");
   const [started, setStarted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    if (!prefillingService) return;
-    setForm((current) => (current.serviceNeeded === prefillingService ? current : { ...current, serviceNeeded: prefillingService }));
-  }, [prefillingService]);
-
-  useEffect(() => {
-    if (!initialBrief) return;
-    setForm((current) => (current.projectDetails === initialBrief ? current : { ...current, projectDetails: initialBrief }));
-  }, [initialBrief]);
 
   useEffect(() => {
     const hasContent = Object.values(form).some((value) => value.trim().length > 0) || uploadedFiles.length > 0;
@@ -340,7 +333,7 @@ export function QuoteRequestForm({
             >
               <option value="">Choose a turnaround window</option>
               {timelineRules.map((rule) => (
-                <option key={rule.title} value={`${rule.title} — ${rule.window}`}>
+                <option key={rule.title} value={`${rule.title} - ${rule.window}`}>
                   {rule.title} - {rule.window}
                 </option>
               ))}

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { resolveTenantContext } from "@/lib/tenancy";
@@ -28,7 +28,16 @@ export function SiteChrome({
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   const [enhancementsReady, setEnhancementsReady] = useState(false);
-  const [siteContext, setSiteContext] = useState(initialSiteContext);
+  const siteContext = useMemo(() => {
+    if (typeof window === "undefined") {
+      return initialSiteContext;
+    }
+
+    return resolveTenantContext({
+      host: window.location.host,
+      pathname,
+    });
+  }, [initialSiteContext, pathname]);
 
   useEffect(() => {
     const run = () => setEnhancementsReady(true);
@@ -46,22 +55,13 @@ export function SiteChrome({
     return () => window.clearTimeout(timeoutId);
   }, []);
 
-  useEffect(() => {
-    setSiteContext(
-      resolveTenantContext({
-        host: window.location.host,
-        pathname,
-      }),
-    );
-  }, [pathname]);
-
   if (isAdmin) {
     return <main id="main-content">{children}</main>;
   }
 
   return (
     <div className="relative min-h-screen">
-      <Header siteContext={siteContext} />
+      <Header key={pathname} siteContext={siteContext} />
       <main id="main-content">{children}</main>
       <Footer siteContext={siteContext} />
       {enhancementsReady ? <CartFeedbackCard /> : null}

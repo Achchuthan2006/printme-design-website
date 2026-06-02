@@ -22,6 +22,43 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 const storageKey = "printme-cart";
 
+function readStoredCart() {
+  if (typeof window === "undefined") {
+    return [] as CartItem[];
+  }
+
+  try {
+    const saved = window.localStorage.getItem(storageKey);
+    if (!saved) return [] as CartItem[];
+
+    const parsed = JSON.parse(saved) as Partial<CartItem>[];
+    return parsed
+      .filter((item) => item.id && item.productSlug && item.title)
+      .map((item) => ({
+        id: item.id ?? crypto.randomUUID(),
+        productSlug: item.productSlug ?? "",
+        title: item.title ?? "Print item",
+        quantity: item.quantity ?? 1,
+        unitPrice: item.unitPrice ?? 0,
+        estimatedTotal: item.estimatedTotal ?? item.unitPrice ?? 0,
+        pricingMode: item.pricingMode ?? "starting-from",
+        mode: item.mode ?? "hybrid",
+        options: item.options ?? {},
+        optionLabels: item.optionLabels ?? [],
+        notes: item.notes,
+        fulfillmentMethod: item.fulfillmentMethod,
+        turnaround: item.turnaround,
+        quoteOnly: item.quoteOnly ?? item.pricingMode === "quote-only",
+        pricingState: item.pricingState,
+        pricingLabel: item.pricingLabel,
+        pricingExplanation: item.pricingExplanation,
+      }));
+  } catch {
+    window.localStorage.removeItem(storageKey);
+    return [] as CartItem[];
+  }
+}
+
 function isSameCartConfiguration(current: CartItem, next: Omit<CartItem, "id">) {
   return (
     current.productSlug === next.productSlug &&
@@ -39,43 +76,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved) as Partial<CartItem>[];
-        setItems(
-          parsed
-            .filter((item) => item.id && item.productSlug && item.title)
-            .map((item) => ({
-              id: item.id ?? crypto.randomUUID(),
-              productSlug: item.productSlug ?? "",
-              title: item.title ?? "Print item",
-              quantity: item.quantity ?? 1,
-              unitPrice: item.unitPrice ?? 0,
-              estimatedTotal: item.estimatedTotal ?? item.unitPrice ?? 0,
-              pricingMode: item.pricingMode ?? "starting-from",
-              mode: item.mode ?? "hybrid",
-              options: item.options ?? {},
-              optionLabels: item.optionLabels ?? [],
-              notes: item.notes,
-              fulfillmentMethod: item.fulfillmentMethod,
-              turnaround: item.turnaround,
-              quoteOnly: item.quoteOnly ?? item.pricingMode === "quote-only",
-              pricingState: item.pricingState,
-              pricingLabel: item.pricingLabel,
-              pricingExplanation: item.pricingExplanation,
-            })),
-        );
-      }
-    } catch {
-      window.localStorage.removeItem(storageKey);
-    } finally {
+    queueMicrotask(() => {
+      setItems(readStoredCart());
       setHydrated(true);
-    }
+    });
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(items));
     } catch {

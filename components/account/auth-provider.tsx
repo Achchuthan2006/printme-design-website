@@ -23,16 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(Boolean(supabase));
-  const [profileState, setProfileState] = useState<AuthProfileSnapshot | null>(null);
+  const [fetchedProfileState, setFetchedProfileState] = useState<AuthProfileSnapshot | null>(null);
   const accessToken = session?.access_token ?? null;
+  const profileState = accessToken ? fetchedProfileState : null;
   const role = profileState?.role ?? "customer";
   const isAdmin = role === "admin";
 
   useEffect(() => {
-    if (!supabase || !accessToken) {
-      setProfileState(null);
-      return;
-    }
+    if (!supabase || !accessToken) return;
 
     const controller = new AbortController();
 
@@ -49,11 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return (await response.json()) as AuthProfileSnapshot;
       })
       .then((snapshot) => {
-        setProfileState(snapshot);
+        setFetchedProfileState(snapshot);
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setProfileState(null);
+          setFetchedProfileState(null);
         }
       });
 
@@ -61,10 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [accessToken, supabase]);
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+    if (!supabase) return;
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -83,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (supabase) {
       await supabase.auth.signOut();
     }
+    setFetchedProfileState(null);
     setSession(null);
   }, [supabase]);
 

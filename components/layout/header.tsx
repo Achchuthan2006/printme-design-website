@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { useAuth } from "@/components/account/auth-provider";
@@ -20,18 +20,99 @@ import {
 } from "@/data/catalog";
 import { servicePages } from "@/data/services";
 import { Icon } from "@/components/ui/icon";
-import { buildNoResultsRecovery, runCatalogSearch } from "@/lib/discovery";
+import { runCatalogSearch } from "@/lib/discovery";
 import { NavItemLink, NavList } from "@/components/ui/navigation";
+import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 
 type DesktopPanel = "products" | "industries" | "services" | "help" | null;
 type MobileSection = "root" | "products" | "industries" | "services" | "help" | "family";
 
 const publicNavItems = [
   { id: "products" as const, label: "Products" },
+  { id: "services" as const, label: "Solutions" },
   { id: "industries" as const, label: "Industries" },
-  { id: "services" as const, label: "Services" },
-  { id: "help" as const, label: "Help" },
+  { id: "help" as const, label: "Resources" },
 ];
+
+const utilityHighlights = ["Premium Quality", "Exceptional Service", "Fast, Reliable Delivery"];
+const utilityLinks = [
+  { label: "Trade & Volume Pricing", href: "/quote-request", icon: "bag" },
+  { label: "Help & Resources", href: "/support", icon: "chat" },
+  { label: "About PrintMe", href: "/about", icon: "check" },
+];
+
+function getVisualSlugFromHref(href: string) {
+  if (href.startsWith("/products/")) {
+    return href.replace("/products/", "");
+  }
+
+  if (href.includes("Packaging")) return "stickers";
+  if (href.includes("Stationery")) return "business-cards";
+  return "custom-orders";
+}
+
+function MegaFeatureCard({
+  title,
+  description,
+  href,
+  visualSlug,
+  badge,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  visualSlug: string;
+  badge?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group overflow-hidden rounded-[1.45rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(252,248,242,0.9))] p-3 transition hover:-translate-y-0.5 hover:border-brand/20 hover:shadow-soft"
+    >
+      <ServiceProductVisual slug={visualSlug} />
+      <div className="px-1 pb-1 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[1.02rem] font-black leading-[1.05] text-ink transition group-hover:text-brand">{title}</p>
+            <p className="mt-2 text-xs leading-5 text-slate">{description}</p>
+          </div>
+          {badge ? (
+            <span className="rounded-full border border-line bg-white/88 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate">
+              {badge}
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-4 text-[11px] font-black uppercase tracking-[0.16em] text-brand">Shop now</p>
+      </div>
+    </Link>
+  );
+}
+
+function MegaListLink({
+  title,
+  description,
+  href,
+  icon,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+}) {
+  return (
+    <Link href={href} className="group rounded-[1.2rem] border border-transparent px-3 py-3 transition hover:border-brand/15 hover:bg-white">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] border border-brand/12 bg-brand-soft/65 text-brand">
+          <Icon name={icon} className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-sm font-black text-ink transition group-hover:text-brand">{title}</p>
+          <p className="mt-1 text-xs leading-5 text-slate">{description}</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 function SearchResults({
   query,
@@ -145,6 +226,9 @@ function CategoryButton({
 
 export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) {
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -174,14 +258,6 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
   }, []);
 
   useEffect(() => {
-    setOpen(false);
-    setAccountOpen(false);
-    setDesktopPanel(null);
-    setSearchOpen(false);
-    setMobileSection("root");
-  }, [pathname]);
-
-  useEffect(() => {
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -193,22 +269,38 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
   }, [open]);
 
   useEffect(() => {
-    if (!accountOpen) return;
-    const handleClick = () => setAccountOpen(false);
-    window.addEventListener("click", handleClick);
-    return () => window.removeEventListener("click", handleClick);
-  }, [accountOpen]);
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
 
-  useEffect(() => {
-    if (!searchOpen) return;
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (accountOpen && accountRef.current && !accountRef.current.contains(target)) {
+        setAccountOpen(false);
+      }
+
+      if (searchOpen && searchRef.current && !searchRef.current.contains(target)) {
         setSearchOpen(false);
       }
+
+      if (desktopPanel && headerRef.current && !headerRef.current.contains(target)) {
+        setDesktopPanel(null);
+      }
     };
+
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setAccountOpen(false);
+      setSearchOpen(false);
+      setDesktopPanel(null);
+      setOpen(false);
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
     window.addEventListener("keydown", handleKeydown);
-    return () => window.removeEventListener("keydown", handleKeydown);
-  }, [searchOpen]);
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeydown);
+    };
+  }, [accountOpen, desktopPanel, open, searchOpen]);
 
   const handleDesktopPanel = (panel: DesktopPanel) => {
     setDesktopPanel(panel);
@@ -220,9 +312,9 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
 
     if (desktopPanel === "products" && activeFamily) {
       return (
-        <div className="grid gap-5 xl:grid-cols-[0.9fr_1.32fr_0.78fr]">
-          <div className="rounded-[1.6rem] border border-line/70 bg-canvas/75 p-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Catalog families</p>
+        <div className="grid gap-5 xl:grid-cols-[0.72fr_1.42fr_0.86fr]">
+          <div className="rounded-[1.6rem] border border-line/70 bg-[linear-gradient(180deg,rgba(249,246,241,0.78),rgba(255,255,255,0.7))] p-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Browse all products</p>
             <div className="mt-3 grid gap-2">
               {catalogFamilies.map((family) => (
                 <CategoryButton
@@ -233,11 +325,14 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                 />
               ))}
             </div>
+            <Link href="/products" className="mt-4 inline-flex text-[11px] font-black uppercase tracking-[0.16em] text-brand transition hover:text-ink">
+              View all products
+            </Link>
           </div>
           <div className="rounded-[1.6rem] border border-line/70 bg-white p-5 shadow-soft">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{activeFamily.shortTitle}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Featured product families</p>
                 <h3 className="mt-2 text-[1.8rem] font-black leading-[1.02] text-ink">{activeFamily.title}</h3>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-slate">{activeFamily.overview ?? activeFamily.description}</p>
               </div>
@@ -246,43 +341,42 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
               </Button>
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {activeFamily.subcategoryGroups?.map((group) => (
-                <div key={group.title} className="rounded-[1.35rem] border border-line/70 bg-canvas/65 p-4">
-                  <p className="text-sm font-black text-ink">{group.title}</p>
-                  <p className="mt-2 text-xs leading-5 text-slate">{group.description}</p>
-                  <div className="mt-4 grid gap-2">
-                    {group.items.map((item) => (
-                      <Link key={item.title} href={item.href} className="rounded-[1rem] border border-transparent bg-white/75 px-3 py-3 transition hover:border-brand/15 hover:bg-white">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-black text-ink">{item.title}</p>
-                            <p className="mt-1 text-xs leading-5 text-slate">{item.description}</p>
-                          </div>
-                          {item.badge ? <span className="rounded-full border border-line bg-canvas px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate">{item.badge}</span> : null}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+              {(activeFamily.featuredLinks?.length ? activeFamily.featuredLinks : activeFamily.subcategoryGroups?.flatMap((group) => group.items).slice(0, 4) ?? []).slice(0, 4).map((item) => (
+                <MegaFeatureCard
+                  key={item.title}
+                  title={item.title}
+                  description={item.description}
+                  href={item.href}
+                  badge={"badge" in item ? item.badge : undefined}
+                  visualSlug={getVisualSlugFromHref(item.href)}
+                />
               ))}
             </div>
           </div>
           <div className="space-y-4">
-            <div className="rounded-[1.6rem] border border-line/70 bg-canvas/75 p-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Featured in this family</p>
+            <div className="rounded-[1.6rem] border border-line/70 bg-[linear-gradient(180deg,rgba(249,246,241,0.78),rgba(255,255,255,0.74))] p-4">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Custom services</p>
               <div className="mt-3 grid gap-2">
-                {activeFamily.featuredLinks?.map((link) => (
-                  <Link key={link.title} href={link.href} className="rounded-[1.15rem] border border-line/70 bg-white px-4 py-3 transition hover:border-brand/20">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] border border-brand/15 bg-brand-soft text-brand">
-                        <Icon name={link.icon} className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-black text-ink">{link.title}</p>
-                        <p className="mt-1 text-xs leading-5 text-slate">{link.description}</p>
-                      </div>
-                    </div>
-                  </Link>
+                {[
+                  { title: "Custom Quotes", description: "Get a personalized quote for any project.", href: "/quote-request", icon: "document" },
+                  { title: "Bulk & Trade Printing", description: "Special pricing for businesses and organizations.", href: "/support", icon: "bag" },
+                  { title: "Samples & Proofs", description: "See before you commit with physical samples.", href: "/account/proofs", icon: "inspect" },
+                  { title: "Design Services", description: "Professional design built for your brand.", href: "/services/graphic-design-services", icon: "spark" },
+                ].map((link) => (
+                  <MegaListLink key={link.title} {...link} />
+                ))}
+              </div>
+            </div>
+            <div className="rounded-[1.6rem] border border-line/70 bg-white p-4 shadow-soft">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">Support shortcuts</p>
+              <div className="mt-3 grid gap-2">
+                {[
+                  { title: "Help Center", description: "Find answers and how-to guides.", href: "/support", icon: "chat" },
+                  { title: "Templates & Resources", description: "Download templates and specs.", href: "/support", icon: "document" },
+                  { title: "Shipping & Delivery", description: "Options, timelines, and local info.", href: "/pickup-delivery", icon: "van" },
+                  { title: "Contact Us", description: "We're here to help.", href: "/contact", icon: "phone" },
+                ].map((item) => (
+                  <MegaListLink key={item.title} {...item} />
                 ))}
               </div>
             </div>
@@ -379,20 +473,38 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
 
   return (
     <header
+      ref={headerRef}
       className={cn(
-        "sticky top-0 z-50 border-b border-white/55 bg-[rgba(255,252,248,0.78)] backdrop-blur-[18px] transition-all duration-300 supports-[backdrop-filter]:bg-[rgba(255,252,248,0.72)]",
+        "sticky top-0 z-50 border-b border-white/55 bg-[rgba(255,252,248,0.84)] backdrop-blur-[18px] transition-all duration-300 supports-[backdrop-filter]:bg-[rgba(255,252,248,0.78)]",
         scrolled ? "shadow-[0_22px_56px_rgba(22,19,17,0.12)]" : "shadow-[0_10px_30px_rgba(22,19,17,0.06)]",
       )}
       onMouseLeave={() => setDesktopPanel(null)}
     >
       <div className="hidden border-b border-white/10 bg-[linear-gradient(180deg,#201c1a_0%,#171413_100%)] text-white lg:block">
-        <div className="container-shell flex h-11 items-center justify-between gap-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/66">
-          <div className="flex items-center gap-5">
-            <span>{isPrivatePortal ? `${tenant.name} portal` : `${site.cityRegion} print platform`}</span>
-            {site.experience ? <span>{site.experience}</span> : null}
-            <span>{isPrivatePortal ? "Governed products, templates, and approvals" : "Large catalog, custom quotes, and local support"}</span>
+        <div className="container-shell flex h-10 items-center justify-between gap-5 text-[11px] font-semibold text-white/66">
+          <div className="flex min-w-0 items-center gap-3 overflow-hidden xl:gap-5">
+            {(isPrivatePortal
+              ? [`${tenant.name} portal`, "Governed products and approvals"]
+              : utilityHighlights
+            ).map((item, index) => (
+              <span key={item} className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap">
+                <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/20 text-white/72">
+                  <Icon name={index === 0 ? "spark" : index === 1 ? "shield" : "clock"} className="h-2.5 w-2.5" />
+                </span>
+                {item}
+              </span>
+            ))}
+            {site.experience && !isPrivatePortal ? <span className="hidden whitespace-nowrap 2xl:inline">{site.experience}</span> : null}
           </div>
-          <div className="flex items-center gap-5">
+          <div className="hidden items-center gap-4 xl:flex 2xl:gap-5">
+            {utilityLinks.map((item) => (
+              <Link key={item.label} href={item.href} className="inline-flex items-center gap-2 whitespace-nowrap transition hover:text-white">
+                <Icon name={item.icon} className="h-3.5 w-3.5" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="hidden items-center gap-5 text-white/58 2xl:flex">
             <a href={site.phoneHref} className="link-underline text-white">
               {site.phone}
             </a>
@@ -401,8 +513,13 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
         </div>
       </div>
       <div className="container-shell">
-        <div className={cn("flex items-center justify-between gap-4 transition-[height] duration-300", scrolled ? "h-[76px]" : "h-[92px]")}>
-          <div className="flex items-center gap-4">
+        <div
+          className={cn(
+            "grid grid-cols-[auto_auto] items-center gap-x-3 gap-y-4 py-4 transition-[padding] duration-300 lg:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-cols-[auto_minmax(18rem,22rem)_auto] 2xl:grid-cols-[auto_minmax(21rem,28rem)_auto]",
+            scrolled ? "lg:py-3" : "lg:py-4.5",
+          )}
+        >
+          <div className="flex min-w-0 items-center gap-4 xl:gap-5">
             <BrandLogo
               className="mr-1 lg:mr-2"
               size="header"
@@ -411,7 +528,7 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
               alt={site.logoAlt ?? site.brandName}
             />
             {!isPrivatePortal ? (
-              <nav aria-label="Primary" className="hidden items-center gap-2 lg:flex">
+              <nav aria-label="Primary" className="hidden items-center gap-0.5 xl:flex 2xl:gap-1">
                 {publicNavItems.map((item) => (
                   <button
                     key={item.id}
@@ -420,8 +537,10 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                     onFocus={() => handleDesktopPanel(item.id)}
                     onClick={() => setDesktopPanel((current) => (current === item.id ? null : item.id))}
                     className={cn(
-                      "rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] transition",
-                      desktopPanel === item.id ? "bg-brand-soft text-brand" : "text-ink hover:bg-white hover:text-brand",
+                      "rounded-full px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.16em] transition 2xl:px-4",
+                      desktopPanel === item.id
+                        ? "bg-brand-soft/80 text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]"
+                        : "text-ink/80 hover:bg-white hover:text-brand",
                     )}
                     aria-expanded={desktopPanel === item.id}
                   >
@@ -432,28 +551,28 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
             ) : renderPrivateDesktopNav}
           </div>
 
-          <div className="hidden lg:flex lg:min-w-0 lg:flex-1 lg:justify-center">
+          <div className="hidden min-w-0 lg:flex lg:flex-1 lg:justify-center">
             {!isPrivatePortal ? (
-              <div className="relative w-full max-w-[440px]">
+              <div ref={searchRef} className="relative w-full max-w-[18rem] xl:max-w-[20rem] 2xl:max-w-[28rem]">
                 <button
                   type="button"
                   onClick={() => {
                     setSearchOpen((current) => !current);
                     setDesktopPanel(null);
                   }}
-                  className="premium-input flex w-full items-center justify-between gap-3 text-left"
+                  className="premium-input flex min-h-[52px] w-full items-center justify-between gap-3 rounded-full border border-white/80 bg-white/88 px-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_14px_28px_rgba(22,19,17,0.05)] xl:px-5"
                   aria-expanded={searchOpen}
                 >
-                  <span className="flex items-center gap-3 text-sm font-semibold text-slate">
+                  <span className="flex min-w-0 items-center gap-3 text-sm font-semibold text-slate">
                     <Icon name="inspect" className="h-4.5 w-4.5 text-brand" />
-                    Search products, services, packaging, signage, apparel...
+                    <span className="truncate">Search products, services, packaging, signage, apparel...</span>
                   </span>
-                  <span className="rounded-full border border-line bg-canvas px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate">
+                  <span className="hidden shrink-0 rounded-full border border-line bg-canvas px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate 2xl:inline-flex">
                     Search
                   </span>
                 </button>
                 {searchOpen ? (
-                  <div className="absolute left-0 right-0 top-[calc(100%+0.9rem)] z-[70]">
+                  <div className="absolute left-1/2 top-[calc(100%+0.9rem)] z-[90] w-[min(34rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 xl:left-0 xl:w-[32rem] xl:max-w-[32rem] xl:translate-x-0 2xl:w-[36rem] 2xl:max-w-[36rem]">
                     <div className="rounded-[1.6rem] border border-white/75 bg-white/96 p-3 shadow-[0_28px_70px_rgba(18,17,16,0.14)] backdrop-blur-[16px]">
                       <div className="mb-3 flex items-center gap-3 rounded-[1.2rem] border border-line/70 bg-canvas/70 px-4 py-3">
                         <Icon name="inspect" className="h-4.5 w-4.5 text-brand" />
@@ -472,12 +591,12 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2.5 lg:gap-3">
+          <div className="col-start-2 row-start-1 flex items-center justify-end gap-2.5 lg:col-start-3 lg:gap-3">
             <CartDrawer compact />
-            <div className="hidden items-center gap-3 lg:flex">
+            <div className="hidden items-center gap-2 xl:flex 2xl:gap-2.5">
               {!loading ? (
                 user ? (
-                  <div className="relative" onClick={(event) => event.stopPropagation()}>
+                  <div ref={accountRef} className="relative">
                     <button
                       type="button"
                       onClick={() => setAccountOpen((value) => !value)}
@@ -517,12 +636,12 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                 ) : (
                   <div className="flex items-center gap-2">
                     <Button href="/account/login" variant="secondary" size="sm">Sign In</Button>
-                    <Button href="/account/create" size="sm">Create Account</Button>
+                    <Button href="/account/create" size="sm" className="hidden 2xl:inline-flex">Create Account</Button>
                   </div>
                 )
               ) : null}
               {!isPrivatePortal ? (
-                <div className="liquid-glass flex h-[52px] min-w-[188px] items-center justify-center gap-3 rounded-[1.35rem] px-4 text-left">
+                <div className="hidden 2xl:flex liquid-glass h-[52px] min-w-[176px] items-center justify-center gap-3 rounded-[1.35rem] px-4 text-left">
                   <div className="min-w-0">
                     <p className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.16em] text-slate">Custom or urgent?</p>
                     <a href={site.phoneHref} className="block whitespace-nowrap text-sm font-extrabold text-ink transition hover:text-brand">
@@ -531,9 +650,8 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                   </div>
                 </div>
               ) : null}
-              <Button href="/quote-request" size="sm">
+              <Button href="/quote-request" size="sm" className="shrink-0" trailingIcon={<Icon name="arrow" className="h-3.5 w-3.5" />}>
                 Request a Quote
-                <span aria-hidden="true" className="ml-2">-&gt;</span>
               </Button>
             </div>
           </div>
@@ -556,9 +674,11 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
         </div>
 
         {!isPrivatePortal && desktopPanel ? (
-          <div className="relative hidden pb-5 lg:block">
-            <div className="rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,245,239,0.95))] p-5 shadow-[0_30px_80px_rgba(18,17,16,0.16)] backdrop-blur-[16px]">
-              {renderPublicDesktopPanel()}
+          <div className="absolute inset-x-0 top-full hidden pb-5 lg:block">
+            <div className="container-shell">
+              <div className="rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,245,239,0.95))] p-5 shadow-[0_34px_84px_rgba(18,17,16,0.16)] backdrop-blur-[16px]">
+                {renderPublicDesktopPanel()}
+              </div>
             </div>
           </div>
         ) : null}
@@ -594,9 +714,9 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                     <div className="space-y-3">
                       {[
                         { id: "products" as const, label: "Browse Products", description: "Open the full large-catalog family system." },
+                        { id: "services" as const, label: "Solutions and Services", description: "Explore consultative service pages and guided paths." },
                         { id: "industries" as const, label: "Browse by Industry", description: "Jump in by use case, business type, or campaign need." },
-                        { id: "services" as const, label: "Services and Support", description: "Explore consultative service pages and guided paths." },
-                        { id: "help" as const, label: "Quotes, Rush, and Help", description: "Use shortcuts for custom jobs, urgent timelines, and artwork help." },
+                        { id: "help" as const, label: "Resources and Help", description: "Use shortcuts for custom jobs, urgent timelines, and artwork help." },
                       ].map((item) => (
                         <button
                           key={item.id}
