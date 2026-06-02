@@ -28,7 +28,13 @@ export const env = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   adminPortalEnabled: process.env.ADMIN_PORTAL_ENABLED === "true",
   adminUserEmails: parseList(process.env.ADMIN_USER_EMAILS),
+  adminPortalUsername: process.env.ADMIN_PORTAL_USERNAME?.trim() ?? "",
+  adminPortalPassword: process.env.ADMIN_PORTAL_PASSWORD?.trim() ?? "",
   analyticsId: process.env.NEXT_PUBLIC_ANALYTICS_ID,
+  gtmId: process.env.NEXT_PUBLIC_GTM_ID,
+  metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+  googleAdsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
+  sessionReplayVendor: process.env.NEXT_PUBLIC_SESSION_REPLAY_VENDOR,
 };
 
 export function isProduction() {
@@ -64,5 +70,6 @@ export function getBackendReadinessSummary() {
     stripeWebhookConfigured: isStripeWebhookConfigured(),
     emailConfigured: isSendGridConfigured(),
     adminPortalEnabled: env.adminPortalEnabled,
+    adminBasicAuthConfigured: Boolean(env.adminPortalUsername && env.adminPortalPassword),
   };
 }

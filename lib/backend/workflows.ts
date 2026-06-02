@@ -1,3 +1,5 @@
+import { CheckoutPaymentMode } from "@/types";
+
 export const quoteWorkflowStatuses = [
   "submitted",
   "under_review",
@@ -73,7 +75,7 @@ export function getInitialOrderStatus(hasQuoteReview: boolean): OrderWorkflowSta
   return hasQuoteReview ? "quote_review_required" : "payment_pending";
 }
 
-export function getInitialPaymentStatus(mode: "full" | "deposit", demo = false): PaymentWorkflowStatus {
+export function getInitialPaymentStatus(mode: CheckoutPaymentMode, demo = false): PaymentWorkflowStatus {
   if (demo) return "demo";
-  return mode === "deposit" ? "requires_action" : "pending";
+  return mode === "full" ? "pending" : "requires_action";
 }

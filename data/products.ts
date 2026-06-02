@@ -1,93 +1,409 @@
 import { PrintProduct, ProductCategory } from "@/types";
+import { productSubpages } from "@/data/product-subpages";
 
 export const productCategories: ProductCategory[] = [
   {
-    slug: "business-printing",
-    title: "Business Printing",
-    shortTitle: "Business",
-    description: "Professional essentials for daily business, stationery, documents, cheques, and customer-facing materials.",
-    metaDescription: "Business printing services in Scarborough for business cards, envelopes, manual cheques, documents, and stationery.",
+    slug: "business-cards-stationery",
+    title: "Business Cards & Stationery",
+    shortTitle: "Stationery",
+    description: "Premium business cards, envelopes, cheque forms, letterhead-style essentials, and polished office print built for brand-first business use.",
+    metaDescription: "Business card and stationery printing in Scarborough for cards, envelopes, cheque forms, branded office pieces, and professional print essentials.",
     icon: "card",
-    highlight: "Built for local teams, offices, clinics, contractors, and repeat business orders.",
-    turnaroundNote: "Standard timing depends on quantity and finishing. Rush review is available on ready artwork.",
-    trustNotes: ["20+ years of print experience", "Practical file checks", "Pickup at Markham Road"],
+    highlight: "The front-door category for teams that need polished everyday brand materials and repeat business essentials.",
+    turnaroundNote: "Standard timing depends on quantity, stock, numbering, and finishing. Rush review is available on ready artwork where practical.",
+    trustNotes: ["Premium card finishes", "Repeat-order friendly", "File review before production"],
+    productCountLabel: "Core products + premium customizations",
+    overview: "Start here for professional handout pieces, customer-facing stationery, and office materials that need to feel more premium than generic quick-print output.",
+    useCases: ["Networking and leave-behinds", "Branded office stationery", "Cheque and admin forms", "Client-facing appointment materials"],
+    searchTerms: ["business cards", "stationery", "envelopes", "manual cheques", "letterhead", "office print"],
+    spotlightSlugs: ["business-cards", "envelopes", "manual-cheques"],
+    featuredLinks: [
+      { title: "Premium business cards", description: "Matte, gloss, textured, and presentation-led card options.", href: "/products/business-cards", icon: "card", badge: "Best seller" },
+      { title: "Stationery quote help", description: "Bundle envelopes, cards, forms, and office pieces under one request.", href: "/quote-request?service=Business%20Stationery", icon: "document", badge: "Bundle" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Core print essentials",
+        description: "The most common entry points for business identity and day-to-day office printing.",
+        items: [
+          { title: "Business Cards", description: "Professional handoff pieces with premium stock options.", href: "/products/business-cards", badge: "Popular" },
+          { title: "Envelopes", description: "Branded business envelopes for invoices, letters, and direct mail.", href: "/products/envelopes" },
+          { title: "Manual Cheques", description: "Quote-first cheque printing with numbering and setup review.", href: "/products/manual-cheques" },
+          { title: "Letterhead & forms", description: "Quote-led stationery sets, NCR forms, and office sheets.", href: "/quote-request?service=Letterhead%20and%20Forms", badge: "Custom" },
+        ],
+      },
+      {
+        title: "Premium brand presentation",
+        description: "Higher-end finishes and custom runs when the tactile feel matters as much as the copy.",
+        items: [
+          { title: "Soft-touch and textured cards", description: "Premium-feel cards for studios, clinics, brokers, and luxury brands.", href: "/quote-request?service=Premium%20Business%20Cards", badge: "Premium" },
+          { title: "Stationery sets", description: "Cards, envelopes, inserts, and presentation pieces grouped together.", href: "/quote-request?service=Branded%20Stationery%20Set" },
+        ],
+      },
+    ],
+    merchandisingCollections: [
+      { title: "Office launch kit", description: "Cards, envelopes, forms, and front-desk essentials scoped together.", href: "/quote-request?service=Office%20Launch%20Kit", badge: "Bundle" },
+    ],
+    supportLinks: [
+      { title: "Need artwork cleanup?", description: "Use PrintMe design support before the stationery goes to print.", href: "/products/graphic-design-services", icon: "spark" },
+    ],
   },
   {
     slug: "marketing-materials",
     title: "Marketing Materials",
     shortTitle: "Marketing",
-    description: "Flyers, brochures, posters, stickers, and promo pieces that help campaigns feel polished and credible.",
-    metaDescription: "Marketing print services for flyers, brochures, posters, stickers, and promotional materials in Scarborough and Toronto.",
+    description: "Flyers, brochures, postcards, posters, print-and-mail pieces, and campaign-ready collateral for promotions, launches, and local outreach.",
+    metaDescription: "Marketing print services for flyers, brochures, postcards, posters, and campaign materials in Scarborough and Toronto.",
     icon: "flyer",
-    highlight: "Great for launches, menus, real estate, events, retail promotions, and community campaigns.",
+    highlight: "The largest browse family for campaign print, outreach pieces, handouts, menus, and local promotion.",
     turnaroundNote: "Rush options may be available for common sizes when artwork is print-ready.",
-    trustNotes: ["Clean colour output", "Design help available", "Custom quantities by quote"],
+    trustNotes: ["Fast common-format quoting", "Campaign bundle support", "Upload-first options"],
+    productCountLabel: "Most requested promo formats",
+    overview: "Use this family when the goal is visibility, promotion, or education. It includes everyday marketing pieces plus more consultative direct-mail and campaign support.",
+    useCases: ["Flyers and menus", "Brochures and leave-behinds", "Retail posters", "Postcard campaigns"],
+    searchTerms: ["flyers", "brochures", "postcards", "posters", "promotional printing", "print mail"],
+    spotlightSlugs: ["flyers", "brochures", "postcards", "posters", "promotional-printing"],
+    featuredLinks: [
+      { title: "Best sellers", description: "Flyers, brochures, postcards, and posters with the fastest discovery path.", href: "/products?category=marketing-materials", icon: "flyer", badge: "Best seller" },
+      { title: "Campaign quote help", description: "Bundle several promo formats under one coordinated print plan.", href: "/services/marketing-material-printing", icon: "document", badge: "Campaigns" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Everyday campaign pieces",
+        description: "High-demand formats for launches, handouts, menus, retail promos, and neighbourhood marketing.",
+        items: [
+          { title: "Flyers", description: "Promotions, menus, handouts, and rush-aware print runs.", href: "/products/flyers", badge: "Popular" },
+          { title: "Brochures", description: "Folded pieces for service detail, pricing, and storytelling.", href: "/products/brochures" },
+          { title: "Postcards", description: "Compact promotion for handouts, reminders, and outreach.", href: "/products/postcards" },
+          { title: "Posters", description: "Window, wall, counter, and announcement posters.", href: "/products/posters" },
+        ],
+      },
+      {
+        title: "Outreach and campaign support",
+        description: "Use these when several moving parts need to stay coordinated instead of forcing a single product order.",
+        items: [
+          { title: "Promotional printing", description: "Campaign bundles, event handouts, and coordinated promo packages.", href: "/products/promotional-printing", badge: "Campaign" },
+          { title: "Print & mail services", description: "Mailing-ready outreach with addressing and fulfillment discussion.", href: "/products/print-mail-services", badge: "Quote first" },
+          { title: "Sales sheets and inserts", description: "Quote-led collateral for launches, kits, and branded packets.", href: "/quote-request?service=Sales%20Sheets%20and%20Inserts" },
+        ],
+      },
+    ],
+    merchandisingCollections: [
+      { title: "Restaurant launch set", description: "Menus, postcards, posters, and handouts planned together.", href: "/quote-request?service=Restaurant%20Launch%20Print%20Set", badge: "Bundle" },
+      { title: "Real estate promotion set", description: "Postcards, feature sheets, flyers, and signage support.", href: "/quote-request?service=Real%20Estate%20Promotion%20Set", badge: "Popular" },
+    ],
+    supportLinks: [
+      { title: "Need design services?", description: "Use PrintMe design support when the message is ready but the artwork is not.", href: "/products/graphic-design-services", icon: "spark" },
+    ],
   },
   {
-    slug: "promo-mail-campaigns",
-    title: "Promo, Mail & Campaign Services",
-    shortTitle: "Promo & Mail",
-    description: "Postcards, print-and-mail support, campaign handouts, and promotional print built for outreach, events, and repeat local marketing.",
-    metaDescription: "Postcards, promotional printing, and print-and-mail services in Scarborough and Toronto.",
-    icon: "envelope",
-    highlight: "Great for neighbourhood campaigns, branded giveaways, launch kits, direct mail, event tables, and local promotions.",
-    turnaroundNote: "Turnaround depends on data readiness, finishing, and whether delivery or mailing coordination is involved.",
-    trustNotes: ["Campaign guidance", "Quote-first support when needed", "Local business outreach help"],
+    slug: "labels-packaging",
+    title: "Labels & Packaging",
+    shortTitle: "Packaging",
+    description: "Labels, stickers, inserts, sleeves, packaging-style print, and branded presentation pieces for products, events, and retail packaging moments.",
+    metaDescription: "Label printing, sticker production, and packaging-style print services in Scarborough for branded products and presentation pieces.",
+    icon: "sticker",
+    highlight: "A packaging-ready family that shows PrintMe can support more than flat print products.",
+    turnaroundNote: "Turnaround depends on size, quantity, material, cut style, and whether packaging structure still needs custom review.",
+    trustNotes: ["Custom cuts and materials", "Packaging quote support", "Retail-ready branded pieces"],
+    productCountLabel: "Standard labels + custom packaging help",
+    overview: "Use this family for product labels, seals, insert cards, branded sleeves, and quote-led packaging-style print that does not fit a standard online checkout.",
+    useCases: ["Bottle and jar labels", "Retail packaging inserts", "Mailer-box presentation pieces", "Branded giveaway packaging"],
+    searchTerms: ["labels", "stickers", "packaging", "box sleeves", "product labels", "packaging inserts"],
+    spotlightSlugs: ["stickers", "custom-orders"],
+    featuredLinks: [
+      { title: "Custom labels", description: "Product labels, seals, barcode labels, and short-run branding pieces.", href: "/products/stickers", icon: "sticker", badge: "Custom cut" },
+      { title: "Packaging consultation", description: "Use a quote-first flow for inserts, sleeves, wraps, and packaging-style concepts.", href: "/services/packaging-printing", icon: "custom", badge: "Quote first" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Labels and applied print",
+        description: "For products, packaging, jars, retail display, QR code tagging, and short-run brand application.",
+        items: [
+          { title: "Stickers & labels", description: "Paper and vinyl-style labels with shape and finish discussion.", href: "/products/stickers", badge: "Custom" },
+          { title: "Packaging seals", description: "Branded closures, thank-you seals, and finishing labels.", href: "/quote-request?service=Packaging%20Seals" },
+          { title: "Barcode and variable labels", description: "Operational labels that still need brand clarity and print accuracy.", href: "/quote-request?service=Barcode%20and%20Variable%20Labels" },
+        ],
+      },
+      {
+        title: "Packaging-style print",
+        description: "Custom packaging pieces where dimensions, folds, stock, or presentation still need a conversation first.",
+        items: [
+          { title: "Insert cards", description: "Thank-you cards, product instructions, and branded package inserts.", href: "/quote-request?service=Packaging%20Insert%20Cards" },
+          { title: "Box sleeves and wraps", description: "Presentation wraps and sleeves for gift, launch, and boutique packaging.", href: "/quote-request?service=Box%20Sleeves%20and%20Wraps" },
+          { title: "Custom packaging requests", description: "Use a custom quote for boxes, wraps, retail kits, and specialty pieces.", href: "/services/packaging-printing", badge: "Consultation" },
+        ],
+      },
+    ],
+    merchandisingCollections: [
+      { title: "Product launch packaging", description: "Labels, insert cards, sleeves, and promo pieces built together.", href: "/quote-request?service=Product%20Launch%20Packaging", badge: "Bundle" },
+    ],
+    supportLinks: [
+      { title: "Need brand design first?", description: "Pair label or packaging work with PrintMe design support.", href: "/products/graphic-design-services", icon: "spark" },
+    ],
   },
   {
-    slug: "signs-banners",
-    title: "Signs & Banners",
-    shortTitle: "Signs",
-    description: "Large-format banners, signage, and poster-style displays for events, storefronts, and visibility.",
-    metaDescription: "Large-format signs, banners, and posters for Scarborough and Toronto businesses.",
+    slug: "large-format-signage",
+    title: "Large Format & Signage",
+    shortTitle: "Large Format",
+    description: "Banners, signs, poster-scale pieces, event graphics, directional displays, and visibility-led print for storefronts, sites, and activations.",
+    metaDescription: "Large-format signs, banners, posters, and custom signage services in Scarborough and Toronto.",
     icon: "banner",
-    highlight: "Helpful for openings, booths, directional signage, sales, and high-visibility local advertising.",
+    highlight: "The large-format family for visibility-first print, from banners and site signs to event and retail display pieces.",
     turnaroundNote: "Large-format timing is confirmed after size, material, and finishing are reviewed.",
-    trustNotes: ["Large-format guidance", "Indoor and outdoor options", "Pickup or delivery discussion"],
+    trustNotes: ["Indoor and outdoor options", "Material guidance", "Installation-aware quoting"],
+    productCountLabel: "Signage, banners, and display work",
+    overview: "Use this family when distance visibility, material durability, and mounting context matter more than simple paper specs.",
+    useCases: ["Storefront visibility", "Trade show and event graphics", "Directional signage", "Outdoor promotional banners"],
+    searchTerms: ["banners", "signs", "large format", "window graphics", "event signage", "retail signage"],
+    spotlightSlugs: ["banners", "signs", "posters"],
+    featuredLinks: [
+      { title: "Banner printing", description: "Indoor and outdoor banners for events, openings, and storefront promos.", href: "/products/banners", icon: "banner", badge: "Large format" },
+      { title: "Sign consultation", description: "Use quote-first support for materials, visibility distance, and mounting needs.", href: "/services/sign-printing", icon: "sign", badge: "Quote first" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "High-visibility essentials",
+        description: "Start here when the message needs to be seen from a distance or across a space.",
+        items: [
+          { title: "Banners", description: "Vinyl-style banners for openings, booths, and sales.", href: "/products/banners", badge: "Popular" },
+          { title: "Signs", description: "Retail, event, office, and directional signage.", href: "/products/signs" },
+          { title: "Large posters", description: "Poster-scale promo pieces and quick-visibility displays.", href: "/products/posters" },
+        ],
+      },
+      {
+        title: "Custom display and event work",
+        description: "Use quote-first when the final use changes the material or finishing decision.",
+        items: [
+          { title: "Window and wall graphics", description: "Visibility-led display graphics for retail and office surfaces.", href: "/quote-request?service=Window%20and%20Wall%20Graphics" },
+          { title: "Foam board and mounted signs", description: "Rigid presentations, board signs, and event display pieces.", href: "/quote-request?service=Mounted%20Signs" },
+          { title: "Trade show displays", description: "Backdrops, counters, and supporting promo graphics for events.", href: "/quote-request?service=Trade%20Show%20Displays", badge: "Event" },
+        ],
+      },
+    ],
+    merchandisingCollections: [
+      { title: "Retail opening kit", description: "Banners, window posters, directional signs, and handout pieces for launches.", href: "/quote-request?service=Retail%20Opening%20Kit", badge: "Bundle" },
+    ],
+    supportLinks: [
+      { title: "Need artwork sizing help?", description: "Talk to PrintMe before finalizing the file for large-format output.", href: "/artwork-guidelines", icon: "document" },
+    ],
   },
   {
-    slug: "photo-id-services",
-    title: "Photo & ID Services",
-    shortTitle: "Photo & ID",
-    description: "Quick in-store support for passport photos and simple ID photo needs.",
-    metaDescription: "Passport photo and ID photo services at PrintMe in Scarborough.",
-    icon: "passport",
-    highlight: "A straightforward in-store option when you need ID photos handled quickly.",
-    turnaroundNote: "Call ahead for timing and any special document requirements.",
-    trustNotes: ["In-store service", "Simple process", "Local Scarborough shop"],
+    slug: "apparel-promotional-products",
+    title: "Apparel & Promotional Products",
+    shortTitle: "Promo & Apparel",
+    description: "Branded apparel, giveaway items, promo merch, and event-ready products that expand PrintMe beyond flat print into broader brand activation support.",
+    metaDescription: "Branded apparel and promotional product services in Scarborough for events, teams, launches, giveaways, and company branding.",
+    icon: "bag",
+    highlight: "The category that signals PrintMe can support branded campaigns, uniforms, merch, and promo programs, not just paper print.",
+    turnaroundNote: "Turnaround depends on sourcing, decoration method, color count, and quantity. Quote-first support is recommended.",
+    trustNotes: ["Quote-first sourcing", "Event and team bundles", "Branding support available"],
+    productCountLabel: "Merch and branded goods",
+    overview: "Use this family when you need branded products people wear, carry, keep, or take home. It connects PrintMe to event, retail, and team-based programs.",
+    useCases: ["Branded uniforms", "Event merch tables", "Giveaways and promo kits", "Corporate gifts and conference items"],
+    searchTerms: ["apparel", "t shirts", "hoodies", "promotional products", "mugs", "pens", "tote bags"],
+    featuredLinks: [
+      { title: "Apparel quote", description: "Tees, hoodies, polos, caps, and teamwear with decoration guidance.", href: "/quote-request?service=Custom%20Apparel", icon: "bag", badge: "New family" },
+      { title: "Promotional products", description: "Mugs, pens, tote bags, notebooks, and branded giveaway items.", href: "/quote-request?service=Promotional%20Products", icon: "spark", badge: "Quote first" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Apparel",
+        description: "Useful for teams, launches, staff uniforms, and branded event wear.",
+        items: [
+          { title: "T-shirts", description: "Branded tees for teams, events, and campaigns.", href: "/quote-request?service=Branded%20T-Shirts" },
+          { title: "Hoodies and sweaters", description: "Layered merch and branded apparel for cooler-weather activations.", href: "/quote-request?service=Branded%20Hoodies" },
+          { title: "Polos and uniforms", description: "Professional apparel for office, retail, and field teams.", href: "/quote-request?service=Branded%20Polos%20and%20Uniforms" },
+        ],
+      },
+      {
+        title: "Promotional products",
+        description: "Giveaway items and keepsakes that extend campaigns beyond paper handouts.",
+        items: [
+          { title: "Mugs and drinkware", description: "Branded items for gifting, team culture, and promotions.", href: "/quote-request?service=Branded%20Mugs%20and%20Drinkware" },
+          { title: "Pens and office giveaways", description: "Practical promo products for front desks, trade shows, and onboarding.", href: "/quote-request?service=Promotional%20Pens%20and%20Office%20Items" },
+          { title: "Tote bags and carry items", description: "Useful branded goods for events, conferences, and retail programs.", href: "/quote-request?service=Branded%20Tote%20Bags" },
+        ],
+      },
+    ],
+    merchandisingCollections: [
+      { title: "Event merch package", description: "Apparel, handouts, banners, and promo products scoped together.", href: "/quote-request?service=Event%20Merch%20Package", badge: "Bundle" },
+    ],
+    supportLinks: [
+      { title: "Need logo preparation?", description: "Use PrintMe branding support before producing apparel or merch.", href: "/products/graphic-design-services", icon: "spark" },
+    ],
   },
   {
-    slug: "document-services",
-    title: "Document Services",
+    slug: "invitations-event-print",
+    title: "Invitations & Event Print",
+    shortTitle: "Event Print",
+    description: "Invitations, greeting cards, thank-you cards, event suites, and celebration print with design-forward presentation and custom finishing support.",
+    metaDescription: "Invitation and event printing in Scarborough for greeting cards, wedding suites, thank-you cards, and premium celebration print.",
+    icon: "brochure",
+    highlight: "A design-led family for moments where presentation, stock, and finish all shape the emotional impact of the piece.",
+    turnaroundNote: "Timing depends on design readiness, finishing, envelopes, inserts, and whether premium embellishments are required.",
+    trustNotes: ["Premium finish support", "Envelope and insert coordination", "Design-first help available"],
+    productCountLabel: "Celebration and event stationery",
+    overview: "Use this category for invitations, RSVP pieces, thank-you cards, event inserts, and printed keepsakes that need more polish than a standard flyer or postcard.",
+    useCases: ["Wedding and social events", "Corporate event invitations", "Greeting cards and thank-you pieces", "Launch invites and VIP mailers"],
+    searchTerms: ["invitation printing", "greeting cards", "wedding invitations", "event print", "thank you cards"],
+    featuredLinks: [
+      { title: "Invitation suites", description: "Invites, RSVP cards, inserts, and envelope coordination.", href: "/quote-request?service=Invitation%20Suites", icon: "envelope", badge: "Premium" },
+      { title: "Greeting cards", description: "Branded or personal cards with print-focused design help.", href: "/quote-request?service=Greeting%20Cards", icon: "card" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Social and celebration print",
+        description: "For weddings, milestone events, thank-you cards, and keepsake pieces.",
+        items: [
+          { title: "Wedding invitations", description: "Premium invitation suites with insert and envelope coordination.", href: "/quote-request?service=Wedding%20Invitations", badge: "Premium" },
+          { title: "Thank-you cards", description: "Branded or personal follow-up cards with premium stock options.", href: "/quote-request?service=Thank%20You%20Cards" },
+          { title: "Greeting cards", description: "Seasonal, branded, or custom greeting card runs.", href: "/quote-request?service=Greeting%20Cards" },
+        ],
+      },
+      {
+        title: "Corporate event print",
+        description: "For launches, private events, fundraising, and invitation-led business moments.",
+        items: [
+          { title: "Event invitations", description: "RSVP-driven invitation pieces for launches and private events.", href: "/quote-request?service=Corporate%20Event%20Invitations" },
+          { title: "Place cards and inserts", description: "Supporting event print for tables, welcome kits, and guest packs.", href: "/quote-request?service=Event%20Place%20Cards%20and%20Inserts" },
+        ],
+      },
+    ],
+    supportLinks: [
+      { title: "Need custom design help?", description: "Invitation and event suites often start with PrintMe design support.", href: "/products/graphic-design-services", icon: "spark" },
+    ],
+  },
+  {
+    slug: "document-technical-printing",
+    title: "Document & Technical Printing",
     shortTitle: "Documents",
-    description: "Everyday document printing, manuals, forms, reports, and technical drawing prints.",
-    metaDescription: "Document printing and engineering drawing print services in Scarborough.",
+    description: "Document printing, manuals, reports, engineering drawings, plan sets, passport photos, and practical daily print support with local file review.",
+    metaDescription: "Document, plan, passport photo, and technical print services in Scarborough for offices, contractors, students, and walk-in customers.",
     icon: "document",
-    highlight: "Ideal for office files, reports, forms, manuals, drawing sets, and contractor paperwork.",
-    turnaroundNote: "Many document jobs can be reviewed quickly depending on page count and finishing.",
-    trustNotes: ["Black-and-white or colour", "Technical drawing support", "Clear file instructions"],
+    highlight: "The practical workhorse category for day-to-day documents, technical sets, and local in-store support services.",
+    turnaroundNote: "Many document jobs can be reviewed quickly depending on page count, finishing, and file organization.",
+    trustNotes: ["Same-day friendly jobs", "Technical drawing support", "Walk-in service options"],
+    productCountLabel: "Documents, plans, and in-store essentials",
+    overview: "Use this category when the priority is accuracy, fast handling, clean sets, or an in-store service rather than presentation-led marketing print.",
+    useCases: ["Reports and manuals", "Contractor plan sets", "Engineering drawings", "Passport photos and local service"],
+    searchTerms: ["document printing", "engineering drawings", "passport photos", "manuals", "reports", "technical printing"],
+    spotlightSlugs: ["document-printing", "engineering-drawings", "passport-photos"],
+    featuredLinks: [
+      { title: "Document printing", description: "Simple office and report printing with upload-first flexibility.", href: "/products/document-printing", icon: "document", badge: "Fast path" },
+      { title: "Engineering drawings", description: "Large-format technical plan printing with scale guidance.", href: "/products/engineering-drawings", icon: "ruler", badge: "Technical" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Office and everyday documents",
+        description: "For reports, forms, manuals, and day-to-day practical print runs.",
+        items: [
+          { title: "Document printing", description: "Reports, forms, presentations, and general office output.", href: "/products/document-printing", badge: "Popular" },
+          { title: "Booklets and manuals", description: "Bound and multi-set document work with finishing discussion.", href: "/quote-request?service=Booklets%20and%20Manuals" },
+          { title: "Training packs and forms", description: "Operational print for schools, offices, and internal teams.", href: "/quote-request?service=Training%20Packs%20and%20Forms" },
+        ],
+      },
+      {
+        title: "Technical and local service",
+        description: "Use these when precision, scale, or in-store assistance matters most.",
+        items: [
+          { title: "Engineering drawings", description: "Plans, drawing sets, and contractor print packages.", href: "/products/engineering-drawings" },
+          { title: "Passport photos", description: "Straightforward in-store photo and ID support.", href: "/products/passport-photos", badge: "In store" },
+          { title: "Scanning and file prep", description: "Support-led handling when the source file still needs cleanup or conversion.", href: "/quote-request?service=Scanning%20and%20File%20Prep" },
+        ],
+      },
+    ],
+    supportLinks: [
+      { title: "Artwork guidelines", description: "Check preferred PDF setup, scale, and file labeling before upload.", href: "/artwork-guidelines", icon: "document" },
+    ],
   },
   {
-    slug: "specialty-custom-printing",
-    title: "Specialty / Custom Printing",
-    shortTitle: "Custom",
-    description: "Custom print support for unusual sizes, packaging pieces, specialty stationery, and design-to-print work.",
-    metaDescription: "Custom print services in Scarborough for specialty print jobs, packaging, and design support.",
-    icon: "custom",
-    highlight: "Best for jobs that need a conversation before production: size, stock, finishing, or file setup.",
-    turnaroundNote: "Quoted after scope, materials, artwork, and deadline are reviewed.",
-    trustNotes: ["Custom solutions", "Personalized service", "Design support available"],
+    slug: "graphic-design-branding",
+    title: "Graphic Design & Branding Services",
+    shortTitle: "Design Services",
+    description: "Graphic design, artwork cleanup, brand adaptation, layout support, and print-ready file creation for customers who need guidance before production.",
+    metaDescription: "Graphic design and branding services in Scarborough for print layout, artwork cleanup, file setup, and business launch support.",
+    icon: "spark",
+    highlight: "The guided service family for customers who know the goal but need stronger artwork, layout, or brand consistency before ordering.",
+    turnaroundNote: "Quoted based on scope, revisions, content readiness, and how many final print pieces are involved.",
+    trustNotes: ["Print-focused design thinking", "Brand setup help", "Cleaner custom ordering"],
+    productCountLabel: "Design help and launch support",
+    overview: "This is where PrintMe beats generic catalog sites: customers can get real design help, not just a confusing upload box and a hope-for-the-best checkout.",
+    useCases: ["Artwork cleanup", "New campaign layout", "Business brand refresh", "Launch kits and coordinated print systems"],
+    searchTerms: ["graphic design", "branding", "artwork help", "print design", "file cleanup", "brand package"],
+    spotlightSlugs: ["graphic-design-services"],
+    featuredLinks: [
+      { title: "Graphic design services", description: "Print-led layout and artwork support for cards, flyers, brochures, signs, and more.", href: "/products/graphic-design-services", icon: "spark", badge: "High value" },
+      { title: "Brand launch support", description: "Bundle cards, stationery, marketing pieces, signage, and guidance into one plan.", href: "/quote-request?service=Business%20Brand%20Launch%20Support", icon: "custom", badge: "Bundle" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Artwork and layout help",
+        description: "For customers who have partial content, old files, or a rough direction but not production-ready artwork.",
+        items: [
+          { title: "Artwork cleanup", description: "Repair, resize, or improve supplied print files before production.", href: "/quote-request?service=Artwork%20Cleanup" },
+          { title: "Layout design", description: "Create or refresh cards, flyers, brochures, and signs.", href: "/products/graphic-design-services", badge: "Popular" },
+          { title: "Press-ready file setup", description: "Correct bleed, scale, panel order, or print preparation issues.", href: "/quote-request?service=Press-Ready%20File%20Setup" },
+        ],
+      },
+      {
+        title: "Brand and business systems",
+        description: "For teams that need more than one isolated piece and want the full set to stay coherent.",
+        items: [
+          { title: "Business launch branding", description: "Cards, stationery, menus, signs, and marketing pieces under one system.", href: "/quote-request?service=Business%20Launch%20Branding" },
+          { title: "Campaign creative support", description: "Coordinate multiple print formats around one message or offer.", href: "/quote-request?service=Campaign%20Creative%20Support" },
+        ],
+      },
+    ],
+    supportLinks: [
+      { title: "Need a quote before design starts?", description: "Start with a guided design quote and define the scope clearly.", href: "/quote-request?service=Graphic%20Design%20Services", icon: "document" },
+    ],
   },
   {
-    slug: "rush-printing",
-    title: "Same-Day / Rush Printing",
-    shortTitle: "Rush",
-    description: "Rush-friendly review for time-sensitive print jobs with ready artwork and clear specifications.",
-    metaDescription: "Rush and same-day printing review for Scarborough and Toronto print customers.",
+    slug: "custom-rush-orders",
+    title: "Custom Orders & Rush Services",
+    shortTitle: "Custom & Rush",
+    description: "Custom print jobs, specialty products, hard-to-fit requests, and rush or same-day review paths for customers who need PrintMe to solve the right workflow fast.",
+    metaDescription: "Custom print jobs, rush printing review, and specialty order services in Scarborough for advanced or time-sensitive requests.",
     icon: "clock",
-    highlight: "Use this path when your deadline matters and you need the shop to confirm what is possible fast.",
-    turnaroundNote: "Same-day availability depends on product, quantity, finishing, and file readiness.",
-    trustNotes: ["Fast response", "Ready-artwork review", "Pickup-focused workflow"],
+    highlight: "The white-glove catchall for unusual jobs, specialty requests, and deadlines that need human confirmation instead of menu guessing.",
+    turnaroundNote: "Timing depends on the product, quantity, finishing, sourcing, and file readiness. Rush review confirms what is realistically possible.",
+    trustNotes: ["White-glove support", "Rush-aware review", "Best for unusual jobs"],
+    productCountLabel: "Custom, specialty, and urgent paths",
+    overview: "This family keeps complex or urgent work visible instead of hiding it behind generic contact pages. It is the clean handoff point for anything that does not fit a standard product flow.",
+    useCases: ["Rush printing", "Specialty materials", "Hard-to-find print items", "Multi-part custom requests"],
+    searchTerms: ["custom printing", "rush printing", "same day printing", "specialty print", "urgent quote"],
+    spotlightSlugs: ["custom-orders"],
+    featuredLinks: [
+      { title: "Custom order desk", description: "Start here when the product is unusual, bundled, or still undefined.", href: "/products/custom-orders", icon: "custom", badge: "Best path" },
+      { title: "Rush printing review", description: "Confirm same-day or urgent possibilities before committing.", href: "/quote-request?service=Rush%20Printing", icon: "clock", badge: "Urgent" },
+    ],
+    subcategoryGroups: [
+      {
+        title: "Custom and specialty work",
+        description: "For jobs that depend on a conversation before the size, stock, method, or price is even stable.",
+        items: [
+          { title: "Custom orders", description: "The clean starting point for unusual print requests and specialty work.", href: "/products/custom-orders", badge: "Core path" },
+          { title: "Specialty finishing", description: "Embossing-style effects, specialty stocks, and tactile upgrades by quote.", href: "/quote-request?service=Specialty%20Finishing" },
+          { title: "Packaging-style custom jobs", description: "Wraps, inserts, kits, and structural pieces that need custom review.", href: "/services/custom-print-jobs" },
+        ],
+      },
+      {
+        title: "Urgent help and guided support",
+        description: "Use these paths when speed or uncertainty matters more than product taxonomy.",
+        items: [
+          { title: "Same-day printing review", description: "Ready-artwork jobs that may be possible on a compressed timeline.", href: "/quote-request?service=Same-Day%20Printing", badge: "Urgent" },
+          { title: "Artwork help before ordering", description: "If the file is the blocker, fix that first instead of forcing checkout.", href: "/products/graphic-design-services" },
+          { title: "Talk to PrintMe", description: "Get direct local support when the right path still is not obvious.", href: "/support", badge: "Support" },
+        ],
+      },
+    ],
+    merchandisingCollections: [
+      { title: "White-glove project intake", description: "Use one guided request to combine design, print, signage, and fulfillment needs.", href: "/quote-request?service=White-Glove%20Project%20Intake", badge: "Premium" },
+    ],
+    supportLinks: [
+      { title: "Need a real person fast?", description: "Use support when the job is urgent, complex, or still unclear.", href: "/support", icon: "phone" },
+    ],
   },
 ];
 
@@ -128,8 +444,8 @@ export const products: PrintProduct[] = [
   {
     slug: "business-cards",
     title: "Business Cards",
-    categorySlug: "business-printing",
-    category: "Business Printing",
+    categorySlug: "business-cards-stationery",
+    category: "Business Cards & Stationery",
     description: "Premium business cards with clean finishes for local professionals and teams.",
     longDescription:
       "Business cards are still one of the easiest ways to make a local introduction feel professional. PrintMe helps with clean setup, practical stock choices, and crisp production for teams, contractors, clinics, realtors, and independent businesses.",
@@ -291,8 +607,8 @@ export const products: PrintProduct[] = [
   {
     slug: "postcards",
     title: "Postcards",
-    categorySlug: "promo-mail-campaigns",
-    category: "Promo, Mail & Campaign Services",
+    categorySlug: "marketing-materials",
+    category: "Marketing Materials",
     description: "Postcards for handouts, direct mail, appointment reminders, promotions, and neighbourhood campaigns.",
     longDescription:
       "Postcards are one of the cleanest ways to promote an offer, announce an event, or support local direct mail. PrintMe helps with sizing, stock, mailing fit, artwork readiness, and campaign timing.",
@@ -388,8 +704,8 @@ export const products: PrintProduct[] = [
   {
     slug: "promotional-printing",
     title: "Promotional Printing",
-    categorySlug: "promo-mail-campaigns",
-    category: "Promo, Mail & Campaign Services",
+    categorySlug: "marketing-materials",
+    category: "Marketing Materials",
     description: "Branded event, outreach, and campaign print bundles for launches, tables, giveaways, and local promotions.",
     longDescription:
       "Promotional printing works best when multiple print pieces need to support the same offer or event. PrintMe can help combine postcards, flyers, posters, signage, table materials, and branded handouts into one practical print plan.",
@@ -414,8 +730,8 @@ export const products: PrintProduct[] = [
   {
     slug: "print-mail-services",
     title: "Print & Mail Services",
-    categorySlug: "promo-mail-campaigns",
-    category: "Promo, Mail & Campaign Services",
+    categorySlug: "marketing-materials",
+    category: "Marketing Materials",
     description: "Print-and-mail support for postcards, campaign pieces, neighbourhood delivery planning, and direct outreach.",
     longDescription:
       "When the job needs more than printing, PrintMe can help shape the print-and-mail path around postcard formats, addressing requirements, timing, and local campaign goals before production begins.",
@@ -440,8 +756,8 @@ export const products: PrintProduct[] = [
   {
     slug: "banners",
     title: "Banners",
-    categorySlug: "signs-banners",
-    category: "Signs & Banners",
+    categorySlug: "large-format-signage",
+    category: "Large Format & Signage",
     description: "Durable banners for openings, booths, outdoor promotions, and events.",
     longDescription:
       "Banners help your message stand out at storefronts, booths, community events, sales, and openings. PrintMe reviews size, material, finishing, and installation needs before production.",
@@ -481,8 +797,8 @@ export const products: PrintProduct[] = [
   {
     slug: "signs",
     title: "Signs",
-    categorySlug: "signs-banners",
-    category: "Signs & Banners",
+    categorySlug: "large-format-signage",
+    category: "Large Format & Signage",
     description: "Retail, office, event, and directional signage with clear material guidance.",
     longDescription:
       "Signs help customers find, understand, and remember your business. PrintMe supports practical signage for offices, retail spaces, events, and temporary local promotions.",
@@ -504,8 +820,8 @@ export const products: PrintProduct[] = [
   {
     slug: "stickers",
     title: "Stickers",
-    categorySlug: "marketing-materials",
-    category: "Marketing Materials",
+    categorySlug: "labels-packaging",
+    category: "Labels & Packaging",
     description: "Custom labels and stickers for packaging, product runs, branding, and promotions.",
     longDescription:
       "Stickers and labels add polish to packaging, events, products, and giveaways. PrintMe can review shape, size, finish, quantity, and artwork requirements before production.",
@@ -527,8 +843,8 @@ export const products: PrintProduct[] = [
   {
     slug: "passport-photos",
     title: "Passport Photos",
-    categorySlug: "photo-id-services",
-    category: "Photo & ID Services",
+    categorySlug: "document-technical-printing",
+    category: "Document & Technical Printing",
     description: "Quick in-store passport and ID photo support.",
     longDescription:
       "PrintMe offers a simple in-store option for passport and ID photos. Call ahead if you have special requirements or want to confirm current timing.",
@@ -550,8 +866,8 @@ export const products: PrintProduct[] = [
   {
     slug: "document-printing",
     title: "Document Printing",
-    categorySlug: "document-services",
-    category: "Document Services",
+    categorySlug: "document-technical-printing",
+    category: "Document & Technical Printing",
     description: "Everyday black-and-white and colour documents, reports, manuals, and forms.",
     longDescription:
       "Print reports, manuals, forms, presentations, and everyday business documents with reliable local service. Finishing, binding, and special instructions can be included in the quote request.",
@@ -602,8 +918,8 @@ export const products: PrintProduct[] = [
   {
     slug: "envelopes",
     title: "Envelopes",
-    categorySlug: "business-printing",
-    category: "Business Printing",
+    categorySlug: "business-cards-stationery",
+    category: "Business Cards & Stationery",
     description: "Custom printed envelopes for stationery, invoices, mailouts, and branded packages.",
     longDescription:
       "Printed envelopes make business mail feel more complete and professional. They work well for offices, clinics, invoices, campaigns, and repeat stationery needs.",
@@ -625,8 +941,8 @@ export const products: PrintProduct[] = [
   {
     slug: "engineering-drawings",
     title: "Engineering Drawing Prints",
-    categorySlug: "document-services",
-    category: "Document Services",
+    categorySlug: "document-technical-printing",
+    category: "Document & Technical Printing",
     description: "Large-format plans and technical drawings for contractors and project teams.",
     longDescription:
       "Print engineering drawings, plans, and technical sheets with clear instructions for size, quantity, and sets. This is useful for contractors, offices, project teams, and site documentation.",
@@ -648,8 +964,8 @@ export const products: PrintProduct[] = [
   {
     slug: "manual-cheques",
     title: "Manual Cheques",
-    categorySlug: "business-printing",
-    category: "Business Printing",
+    categorySlug: "business-cards-stationery",
+    category: "Business Cards & Stationery",
     description: "Manual cheque printing support for business stationery needs.",
     longDescription:
       "Manual cheques require careful setup, business details, numbering, and production review. PrintMe handles this as a quote-first workflow so details can be confirmed before printing.",
@@ -671,8 +987,8 @@ export const products: PrintProduct[] = [
   {
     slug: "custom-orders",
     title: "Custom Orders",
-    categorySlug: "specialty-custom-printing",
-    category: "Specialty / Custom Printing",
+    categorySlug: "custom-rush-orders",
+    category: "Custom Orders & Rush Services",
     description: "Custom print and design support for specialty projects.",
     longDescription:
       "If your project does not fit a standard product, use the custom order path. PrintMe can help clarify size, stock, finish, design support, production limits, and deadline before quoting.",
@@ -694,8 +1010,8 @@ export const products: PrintProduct[] = [
   {
     slug: "graphic-design-services",
     title: "Graphic Design Services",
-    categorySlug: "specialty-custom-printing",
-    category: "Specialty / Custom Printing",
+    categorySlug: "graphic-design-branding",
+    category: "Graphic Design & Branding Services",
     description: "Design support for business cards, flyers, brochures, signs, postcards, and custom print-ready artwork.",
     longDescription:
       "Some jobs are blocked by design rather than printing. PrintMe can help clean up existing files, build print-ready layouts, and shape business cards, flyers, brochures, signage, postcards, and campaign pieces before production begins.",
@@ -719,8 +1035,10 @@ export const products: PrintProduct[] = [
   },
 ];
 
+export const catalogProductPages: PrintProduct[] = [...products, ...productSubpages];
+
 export function getProductBySlug(slug: string) {
-  return products.find((product) => product.slug === slug);
+  return catalogProductPages.find((product) => product.slug === slug);
 }
 
 export function getCategoryBySlug(slug: string) {
@@ -728,13 +1046,13 @@ export function getCategoryBySlug(slug: string) {
 }
 
 export function getProductsByCategory(slug: string) {
-  return products.filter((product) => product.categorySlug === slug);
+  return catalogProductPages.filter((product) => product.categorySlug === slug);
 }
 
 export function getFeaturedProducts() {
-  return products.filter((product) => product.badges?.some((badge) => ["Popular", "Rush available", "In store"].includes(badge))).slice(0, 6);
+  return catalogProductPages.filter((product) => product.badges?.some((badge) => ["Popular", "Rush available", "In store", "Best seller", "Premium"].includes(badge))).slice(0, 6);
 }
 
 export function getRelatedProducts(slugs: string[]) {
-  return products.filter((product) => slugs.includes(product.slug));
+  return catalogProductPages.filter((product) => slugs.includes(product.slug));
 }

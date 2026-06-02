@@ -1,5 +1,6 @@
 import { CheckoutPayload, OrderSnapshot } from "@/types";
 import { getInitialPaymentStatus } from "@/lib/backend/workflows";
+import { evaluateCartPaymentPlan } from "@/lib/payment-workflow";
 
 export function createOrderNumber() {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -12,6 +13,10 @@ export function buildOrderSnapshot(payload: CheckoutPayload): OrderSnapshot {
   const payableCents = Math.round(
     payableItems.reduce((total, item) => total + (item.estimatedTotal || item.unitPrice) * item.quantity, 0) * 100,
   );
+  const paymentPlan = evaluateCartPaymentPlan(payload.items, payload.paymentMode);
+  const quoteReviewRequired =
+    payload.items.some((item) => item.quoteOnly) ||
+    paymentPlan.collectionPath === "review_then_invoice";
 
   return {
     orderNumber: createOrderNumber(),
@@ -22,8 +27,12 @@ export function buildOrderSnapshot(payload: CheckoutPayload): OrderSnapshot {
     items: payload.items,
     subtotalCents: Math.round(payload.subtotal * 100),
     payableCents,
-    quoteReviewRequired: payload.items.some((item) => item.quoteOnly),
-    paymentStatus: getInitialPaymentStatus(payload.paymentMode, false),
+    amountDueNowCents: paymentPlan.dueNowCents,
+    amountDueLaterCents: paymentPlan.dueLaterCents,
+    quoteReviewRequired,
+    paymentMode: paymentPlan.checkoutMode,
+    paymentPlan,
+    paymentStatus: getInitialPaymentStatus(paymentPlan.checkoutMode, false),
     createdAt: new Date().toISOString(),
   };
 }

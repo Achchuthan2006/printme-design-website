@@ -48,6 +48,11 @@ export function AddressBookPanel({
             {address.instructions ? <p className="mt-2 text-xs leading-5 text-slate">{address.instructions}</p> : null}
           </article>
         ))}
+        {addresses.length === 0 ? (
+          <div className="rounded-[1.25rem] border border-dashed border-line/90 bg-canvas p-4 text-sm leading-6 text-slate">
+            Saved pickup and delivery addresses will appear here after the first real account address is stored.
+          </div>
+        ) : null}
       </div>
     </section>
   );

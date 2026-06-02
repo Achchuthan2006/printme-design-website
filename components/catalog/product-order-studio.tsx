@@ -17,14 +17,16 @@ const orderMethodCopy: Record<
     description: string;
     staffBenefit: string;
     icon: string;
+    badge?: string;
   }
 > = {
   "ready-template": {
-    title: "Use a ready template",
-    shortTitle: "Ready template",
-    description: "Fastest path when you want a stored layout, light edits, and a quick move into proofing or ordering.",
+    title: "Start with a template",
+    shortTitle: "Template",
+    description: "Choose a ready-made layout and personalize the essentials.",
     staffBenefit: "Staff receives the chosen template, product, and the exact editable fields instead of a vague design request.",
     icon: "spark",
+    badge: "Fastest",
   },
   "customize-template": {
     title: "Choose a design and customize it",
@@ -33,12 +35,29 @@ const orderMethodCopy: Record<
     staffBenefit: "Staff receives the chosen direction, the business details, and the requested edits in one structured brief.",
     icon: "document",
   },
+  "design-online": {
+    title: "Design online",
+    shortTitle: "Design online",
+    description: "Start from a layout direction and build it into your own version.",
+    staffBenefit: "Staff receives the chosen design direction, the content inputs, and a clearer customization brief before proofing or review.",
+    icon: "document",
+    badge: "Flexible",
+  },
   "upload-finished-design": {
-    title: "Upload my finished design",
-    shortTitle: "Upload artwork",
-    description: "Best when the artwork is already built and you mainly need file review, sizing confirmation, and the right production path.",
+    title: "Upload your design",
+    shortTitle: "Upload",
+    description: "Send a print-ready file when the artwork is already complete.",
     staffBenefit: "Staff receives the product specs, the file, and a clear review context instead of guessing what the upload is for.",
     icon: "upload",
+    badge: "Print-ready",
+  },
+  "buy-now-upload-later": {
+    title: "Buy now, upload later",
+    shortTitle: "Upload later",
+    description: "Lock in the order first, then send artwork afterward.",
+    staffBenefit: "Staff receives a confirmed product setup first, then the final artwork handoff after the order is already structured.",
+    icon: "clock",
+    badge: "Secondary",
   },
   "request-custom-design": {
     title: "Request a full custom design",
@@ -46,8 +65,12 @@ const orderMethodCopy: Record<
     description: "Best when you know the product and goal but still need PrintMe to create the design from scratch.",
     staffBenefit: "Staff receives a proper creative brief with audience, style, content readiness, and timeline needs.",
     icon: "custom",
+    badge: "Guided",
   },
 };
+
+const primaryMethodOrder: ProductOrderMethod[] = ["ready-template", "design-online", "upload-finished-design"];
+const secondaryMethodOrder: ProductOrderMethod[] = ["buy-now-upload-later", "request-custom-design"];
 
 const fieldLabels: Record<string, string> = {
   fullName: "Full name",
@@ -77,11 +100,15 @@ function buildQuoteHref(params: { productSlug: string; method: ProductOrderMetho
 
 function getDefaultMethod(product: PrintProduct, hasTemplates: boolean): ProductOrderMethod {
   if (hasTemplates) {
-    return product.mode === "direct-order" ? "ready-template" : "customize-template";
+    return product.mode === "direct-order" ? "ready-template" : "design-online";
   }
 
   if (product.ctaMode === "upload-first") {
     return "upload-finished-design";
+  }
+
+  if (product.mode === "direct-order") {
+    return "buy-now-upload-later";
   }
 
   return "request-custom-design";
@@ -161,6 +188,9 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
   });
 
   const canUseTemplates = templates.length > 0;
+  const directOrderPath = product.mode !== "quote-only" && product.ctaMode !== "contact";
+  const visiblePrimaryMethods = primaryMethodOrder.filter((method) => (method === "design-online" || method === "ready-template" ? canUseTemplates : true));
+  const visibleSecondaryMethods = secondaryMethodOrder.filter((method) => (method === "buy-now-upload-later" ? directOrderPath : true));
   const selectedTemplateFields = selectedTemplate?.editableFields ?? ["companyName", "phone", "headline"];
   const templateBrief = useMemo(() => {
     if (!selectedTemplate) return "";
@@ -197,11 +227,11 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
       ];
     }
 
-    if (selectedMethod === "customize-template") {
+    if (selectedMethod === "design-online" || selectedMethod === "customize-template") {
       return [
         "Chosen template direction",
-        "Requested edits and business details",
-        "Clear signal that PrintMe needs to adapt the design before production",
+        "Personalization details and online customization inputs",
+        "Clear signal that the design path needs refinement before production",
       ];
     }
 
@@ -213,6 +243,14 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
       ];
     }
 
+    if (selectedMethod === "buy-now-upload-later") {
+      return [
+        "Confirmed product configuration and order setup",
+        "Clear flag that final artwork will arrive after ordering",
+        "A structured follow-up path for file submission and review",
+      ];
+    }
+
     return [
       "Product type and use case",
       "Custom design brief with audience and style expectations",
@@ -220,65 +258,113 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
     ];
   }, [selectedMethod]);
 
-  const directOrderPath = product.mode !== "quote-only" && product.ctaMode !== "contact";
   const readyTemplateHref = directOrderPath ? "#order-builder" : buildQuoteHref({ productSlug: product.slug, method: "ready-template", templateId: selectedTemplate?.id, brief: templateBrief });
-  const customizeTemplateHref = buildQuoteHref({ productSlug: product.slug, method: "customize-template", templateId: selectedTemplate?.id, brief: templateBrief });
+  const designOnlineHref = buildQuoteHref({ productSlug: product.slug, method: "design-online", templateId: selectedTemplate?.id, brief: templateBrief });
   const customDesignHref = buildQuoteHref({ productSlug: product.slug, method: "request-custom-design", brief: customDesignSummary });
   const uploadReviewHref = buildQuoteHref({
     productSlug: product.slug,
     method: "upload-finished-design",
     brief: `Order method: Upload artwork. Customer plans to upload a finished design for ${product.title} and wants file review before production.`,
   });
+  const uploadLaterHref = buildQuoteHref({
+    productSlug: product.slug,
+    method: "buy-now-upload-later",
+    brief: `Order method: Buy now and upload later. Customer wants to confirm the ${product.title} order path first, then send final artwork after checkout.`,
+  });
 
   return (
     <section className="surface-card p-6" id="order-studio">
-      <p className="editorial-kicker">Order studio</p>
-      <h2 className="mt-2 text-3xl font-black text-ink">Choose how you want to order this product.</h2>
+      <p className="editorial-kicker">Order method</p>
+      <h2 className="mt-2 text-3xl font-black text-ink">How would you like to order this product?</h2>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-        Every product follows the same PrintMe logic: choose the product, confirm the specs, choose the right order path, preview what you can, then submit the right details for staff to handle the job clearly.
+        Pick the path that matches how ready your artwork is. PrintMe then routes you into the right template, design, upload, or checkout flow without making you guess.
       </p>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-4">
-        {(Object.keys(orderMethodCopy) as ProductOrderMethod[]).map((method) => {
+      <div className="mt-6 grid gap-6">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate">Main order options</p>
+          <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {visiblePrimaryMethods.map((method) => {
           const item = orderMethodCopy[method];
-          const disabledTemplateMethod = (method === "ready-template" || method === "customize-template") && !canUseTemplates;
 
           return (
             <button
               key={method}
               type="button"
-              onClick={() => {
-                if (disabledTemplateMethod) return;
-                setSelectedMethod(method);
-              }}
+              onClick={() => setSelectedMethod(method)}
               className={cn(
-                "premium-surface flex h-full flex-col p-5 text-left transition",
-                selectedMethod === method ? "border-brand bg-brand-soft/45 shadow-soft" : "hover:border-brand/30",
-                disabledTemplateMethod ? "cursor-not-allowed opacity-60" : "",
+                "group flex h-full flex-col rounded-[1.55rem] border p-5 text-left transition duration-200",
+                selectedMethod === method
+                  ? "border-brand/25 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(253,244,239,0.94))] shadow-[0_18px_34px_rgba(18,17,16,0.08)]"
+                  : "border-line bg-white hover:-translate-y-0.5 hover:border-brand/20 hover:shadow-[0_16px_28px_rgba(18,17,16,0.06)]",
               )}
+              aria-pressed={selectedMethod === method}
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
+              <div className="flex items-start justify-between gap-3">
+              <span className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-[1rem] border text-brand",
+                selectedMethod === method ? "border-brand/20 bg-brand-soft" : "border-line bg-canvas/70 group-hover:border-brand/20 group-hover:bg-brand-soft/60",
+              )}>
                 <Icon name={item.icon} className="h-4.5 w-4.5" />
               </span>
+              {item.badge ? (
+                <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate">
+                  {item.badge}
+                </span>
+              ) : null}
+              </div>
               <h3 className="mt-5 text-base font-black leading-[1.04] text-ink">{item.title}</h3>
               <p className="mt-3 flex-1 text-sm leading-6 text-slate">{item.description}</p>
-              <p className="mt-4 text-[11px] font-black uppercase tracking-[0.16em] text-brand">
-                {disabledTemplateMethod ? "Template flow coming for this product" : item.shortTitle}
-              </p>
+              <p className="mt-4 text-[11px] font-black uppercase tracking-[0.16em] text-brand">{item.shortTitle}</p>
             </button>
           );
         })}
+          </div>
+        </div>
+
+        {visibleSecondaryMethods.length > 0 ? (
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate">More ways to continue</p>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">
+              {visibleSecondaryMethods.map((method) => {
+                const item = orderMethodCopy[method];
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setSelectedMethod(method)}
+                    className={cn(
+                      "group flex h-full flex-col rounded-[1.4rem] border p-4 text-left transition duration-200",
+                      selectedMethod === method ? "border-brand/20 bg-brand-soft/45 shadow-soft" : "border-line bg-canvas/65 hover:border-brand/18 hover:bg-white",
+                    )}
+                    aria-pressed={selectedMethod === method}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-[1rem] border border-brand/15 bg-white text-brand">
+                        <Icon name={item.icon} className="h-4.5 w-4.5" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-black text-ink">{item.title}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8 grid gap-8 xl:grid-cols-[1.08fr_0.92fr]">
         <div className="space-y-6">
-          {(selectedMethod === "ready-template" || selectedMethod === "customize-template") && canUseTemplates ? (
+          {(selectedMethod === "ready-template" || selectedMethod === "design-online") && canUseTemplates ? (
             <section className="rounded-[1.5rem] border border-line bg-canvas p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">Step 2: choose a design direction</p>
                   <h3 className="mt-2 text-2xl font-black text-ink">
-                    {selectedMethod === "ready-template" ? "Pick the cleanest preset" : "Choose a template for PrintMe to adapt"}
+                    {selectedMethod === "ready-template" ? "Pick a template and personalize it" : "Choose the design style you want to build from"}
                   </h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -387,15 +473,15 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
                 <Button href={readyTemplateHref}>
                   {directOrderPath ? "Continue to Specs and Checkout" : "Request Template Quote"}
                 </Button>
-                <Button href={customizeTemplateHref} variant="secondary">Need a PrintMe Proof First?</Button>
+                <Button href={designOnlineHref} variant="secondary">Open Design-Led Flow</Button>
               </div>
             </section>
           ) : null}
 
-          {selectedMethod === "customize-template" && selectedTemplate ? (
+          {selectedMethod === "design-online" && selectedTemplate ? (
             <section className="rounded-[1.5rem] border border-line bg-white p-5 shadow-[0_14px_26px_rgba(18,17,16,0.05)]">
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">Step 3: send the editable brief</p>
-              <h3 className="mt-2 text-2xl font-black text-ink">Choose a direction and tell PrintMe what should change.</h3>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">Step 3: shape the online design brief</p>
+              <h3 className="mt-2 text-2xl font-black text-ink">Tell PrintMe what should appear in the design.</h3>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {selectedTemplateFields.map((field) => (
                   <Field key={field} label={fieldLabels[field]} hint="This gives the team the right content to place into the chosen direction.">
@@ -408,19 +494,19 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
                 ))}
               </div>
               <Field
-                label="Requested edits or customization notes"
-                hint="Mention colour adjustments, logo placement, tone, missing content, back-side changes, or proof expectations."
+                label="Design notes"
+                hint="Mention tone, colour direction, hierarchy, back-side content, or anything the design flow should emphasize."
                 className="mt-5"
               >
                 <Textarea
                   rows={5}
                   value={customizeNotes}
                   onChange={(event) => setCustomizeNotes(event.target.value)}
-                  placeholder="Example: Keep the layout, switch to our clinic colours, add two doctors on the back, and leave space for QR booking."
+                  placeholder="Example: Keep it minimal, switch to our clinic colours, and leave room for a QR booking block."
                 />
               </Field>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Button href={customizeTemplateHref}>Send Structured Template Request</Button>
+                <Button href={designOnlineHref}>Continue with Design Online</Button>
                 <Button href="#order-builder" variant="secondary">Compare Specs First</Button>
               </div>
             </section>
@@ -452,6 +538,28 @@ export function ProductOrderStudio({ product }: { product: PrintProduct }) {
                   <Button href="#order-builder">{directOrderPath ? "Continue to Specs and Checkout" : "Confirm Specs for Review"}</Button>
                   <Button href={uploadReviewHref} variant="secondary">Request File Review First</Button>
                 </div>
+              </div>
+            </section>
+          ) : null}
+
+          {selectedMethod === "buy-now-upload-later" ? (
+            <section className="rounded-[1.5rem] border border-line bg-white p-5 shadow-[0_14px_26px_rgba(18,17,16,0.05)]">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">Step 2: order first, upload afterward</p>
+              <h3 className="mt-2 text-2xl font-black text-ink">Use this when the product details are clear but the artwork is still coming.</h3>
+              <div className="mt-5 grid gap-3">
+                {[
+                  "Lock in the size, quantity, sides, and finish in the product builder first.",
+                  "Place the order now so PrintMe has the exact product setup ready for the artwork.",
+                  "Upload the final file later instead of delaying the whole order path.",
+                ].map((item) => (
+                  <div key={item} className="signal-card text-sm leading-6 text-slate">
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <Button href="#order-builder">Continue to Specs and Checkout</Button>
+                <Button href={uploadLaterHref} variant="secondary">Save the Upload-Later Path</Button>
               </div>
             </section>
           ) : null}

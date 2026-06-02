@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 
 type EngagementContextValue = {
   favorites: string[];
@@ -50,13 +51,35 @@ export function EngagementProvider({ children }: { children: React.ReactNode }) 
   }, [compare, favorites, hydrated, recentlyViewed]);
 
   const toggleFavorite = useCallback((slug: string) => {
-    setFavorites((current) => (current.includes(slug) ? current.filter((item) => item !== slug) : [slug, ...current].slice(0, 12)));
+    setFavorites((current) => {
+      const next = current.includes(slug) ? current.filter((item) => item !== slug) : [slug, ...current].slice(0, 12);
+      trackPrintMeEvent({
+        eventName: "product_saved",
+        pageType: "product",
+        isMicroConversion: true,
+        properties: {
+          productSlug: slug,
+          saved: next.includes(slug),
+        },
+      });
+      return next;
+    });
   }, []);
 
   const toggleCompare = useCallback((slug: string) => {
     setCompare((current) => {
-      if (current.includes(slug)) return current.filter((item) => item !== slug);
-      return [...current, slug].slice(-3);
+      const next = current.includes(slug) ? current.filter((item) => item !== slug) : [...current, slug].slice(-3);
+      trackPrintMeEvent({
+        eventName: "product_compared",
+        pageType: "product",
+        isMicroConversion: true,
+        properties: {
+          productSlug: slug,
+          compared: next.includes(slug),
+          compareCount: next.length,
+        },
+      });
+      return next;
     });
   }, []);
 

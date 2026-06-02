@@ -23,6 +23,10 @@ export default function PickupDeliveryPage() {
             <p className="mt-3 text-sm leading-7 text-slate">Delivery options can be reviewed for Scarborough, Toronto, and surrounding areas based on order size and timing.</p>
           </article>
         </div>
+        <div className="container-shell mt-6 max-w-3xl rounded-2xl border border-line/90 bg-white p-6 text-sm leading-7 text-slate shadow-soft">
+          <p>Pickup and delivery timing are confirmed only after artwork, production readiness, and final order details are checked. Rush-sensitive jobs should be confirmed with PrintMe directly before you depend on a specific handoff time.</p>
+          <p className="mt-4">For pickup questions, delivery fit, or deadline-sensitive coordination, contact {siteConfig.email} or call {siteConfig.phone}.</p>
+        </div>
       </section>
     </>
   );

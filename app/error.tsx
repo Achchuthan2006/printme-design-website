@@ -18,12 +18,12 @@ export default function Error({
             Please try again. If this keeps happening, call PrintMe and we can help with your quote, order, or artwork request directly.
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
+            <Button
               onClick={reset}
-              className="inline-flex items-center justify-center rounded-2xl bg-brand px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_10px_22px_rgba(217,70,32,0.24)] transition hover:-translate-y-0.5 hover:bg-brand-dark"
+              variant="brand"
             >
               Try Again
-            </button>
+            </Button>
             <Button href="/contact" variant="secondary">Contact PrintMe</Button>
           </div>
         </div>

@@ -1,72 +1,105 @@
 import { ProductCard } from "@/components/commerce/product-card";
+import { JourneyBridge } from "@/components/analytics/journey-bridge";
 import { CatalogExplorer } from "@/components/catalog/catalog-explorer";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
-import { BrandArchitecturePanel } from "@/components/catalog/brand-architecture-panel";
-import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
-import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
-import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { FinalCta } from "@/components/catalog/final-cta";
 import { TrustStrip } from "@/components/catalog/trust-strip";
+import { CatalogFamilyGrid } from "@/components/catalog/catalog-family-grid";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { buildMetadata } from "@/lib/metadata";
-import { getFeaturedProducts, productCategories, products } from "@/data/products";
+import { buildBreadcrumbSchema, buildCollectionPageSchema } from "@/lib/seo";
+import { catalogProductPages, productCategories, products, getFeaturedProducts } from "@/data/products";
+import { catalogUtilityLinks, featuredCatalogCollections, industryPaths } from "@/data/catalog";
 
 export const metadata = buildMetadata({
   title: "Print Products",
-  description: "Browse PrintMe products including business cards, flyers, banners, document printing, passport photos, engineering drawings, cheques, and custom orders.",
+  description: "Explore PrintMe's full large-format, stationery, packaging, marketing, document, custom, design, apparel, and promotional print catalog.",
   path: "/products",
+  keywords: [
+    "print catalog scarborough",
+    "large catalog print products",
+    "business cards brochures packaging apparel",
+    "custom printing scarborough toronto",
+  ],
 });
 
-export default function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ query?: string; category?: string }>;
+}) {
+  const params = await searchParams;
   const featuredProducts = getFeaturedProducts();
-  const catalogGuides = [
-    {
-      title: "Browse by product type",
-      description: "Best when you already know the print format and want to compare options quickly.",
-    },
-    {
-      title: "Use product detail pages",
-      description: "Review turnaround, file requirements, pickup or delivery notes, and the safest ordering path before you commit.",
-    },
-    {
-      title: "Switch to quote-first when needed",
-      description: "If the job is custom, specialty, or uncertain, move into a guided quote request instead of forcing a direct order.",
-    },
-  ];
-  const orderMethodSignals = [
-    {
-      title: "Use a ready template",
-      detail: "Fastest when you want a stored layout and only light editable details.",
-    },
-    {
-      title: "Choose a design and customize it",
-      detail: "Best when you want a template direction but still need PrintMe to adapt it.",
-    },
-    {
-      title: "Upload a finished file",
-      detail: "For customers who already have final artwork and need file review plus the right specs.",
-    },
-    {
-      title: "Request a full custom design",
-      detail: "For products that still need creative work, layout help, or brand setup from scratch.",
-    },
-  ];
 
   return (
     <>
+      <JsonLd
+        data={[
+          buildBreadcrumbSchema([{ label: "Products" }]),
+          buildCollectionPageSchema({
+            name: "Print Products",
+            description: "Product family hubs and detailed print product pages across the PrintMe catalog.",
+            path: "/products",
+            items: catalogProductPages.map((product) => ({
+              name: product.title,
+              path: `/products/${product.slug}`,
+            })),
+          }),
+        ]}
+      />
+      <JourneyBridge
+        eventName="category_viewed"
+        pageType="category"
+        funnelName="storefront_discovery"
+        funnelStage="category"
+        journey="storefront_discovery"
+        isMicroConversion
+        properties={{
+          categorySlug: "catalog-root",
+          featuredProductCount: featuredProducts.length,
+          categoryCount: productCategories.length,
+        }}
+      />
+
       <section className="bg-white section-space">
         <div className="container-shell">
           <Breadcrumbs items={[{ label: "Products" }]} />
-          <div className="hero-panel mt-8 px-6 py-7 sm:px-8 lg:px-10 lg:py-9">
-            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <div className="hero-panel mt-8 px-6 py-7 sm:px-8 lg:px-10 lg:py-10">
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
-                <Badge>PrintMe catalog</Badge>
-                <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">Simple product structure. Clear next steps.</h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">Browse by product family, compare common sizes and timing, then order, quote, or upload with less guesswork.</p>
+                <Badge>Large-catalog PrintMe</Badge>
+                <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.92] sm:text-[4.5rem]">
+                  A serious print catalog with cleaner browsing and faster next steps.
+                </h1>
+                <p className="mt-5 max-w-2xl text-base leading-8 text-slate">
+                  Explore product families, custom-service paths, support shortcuts, and dedicated product pages that show the full scale of what PrintMe can handle.
+                </p>
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <Button href="/quote-request">Request a Custom Quote</Button>
+                  <Button href="/services" variant="secondary">Browse Service Pages</Button>
+                </div>
               </div>
-              <TrustStrip items={["20+ years of print experience", "Quote, upload, and direct-order paths", "Pickup and delivery support"]} />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  "Business cards, stationery, and office essentials",
+                  "Marketing materials, direct mail, and promo print",
+                  "Packaging, labels, signage, apparel, and merch",
+                  "Design help, custom orders, and rush-aware support",
+                ].map((item) => (
+                  <div key={item} className="signal-card p-4 text-sm leading-6 text-slate">
+                    <div className="flex items-start gap-3">
+                      <Icon name="check" className="mt-1 h-4 w-4 shrink-0 text-brand" />
+                      <span>{item}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-8">
+              <TrustStrip items={["Full family-based catalog browsing", "Quote, upload, design, and custom-order paths", "Local pickup, delivery discussion, and white-glove support"]} />
             </div>
           </div>
         </div>
@@ -74,76 +107,87 @@ export default function ProductsPage() {
 
       <section className="section-space bg-canvas">
         <div className="container-shell">
-          <div className="mb-10 grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
-            <div className="story-panel pl-7">
-              <p className="editorial-kicker">Browse smarter</p>
-              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Use the catalog to reduce guesswork.</h2>
-              <p className="mt-3 text-sm leading-7 text-slate">
-                Every product page should answer four things fast: what it is for, what sizes matter, how long it usually takes, and whether payment happens now or after review.
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="editorial-kicker">Catalog families</p>
+              <h2 className="display-title mt-3 text-[2.35rem] font-black leading-[0.96]">Browse PrintMe like a full platform, not a small product list.</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
+                Every major print family gets its own hub, deeper subcategory structure, and support shortcuts so users can find standard products, premium options, and custom services from more than one angle.
               </p>
-              <div className="mt-5 space-y-3">
-                {catalogGuides.map((guide) => (
-                  <div key={guide.title} className="signal-card">
-                    <p className="text-sm font-black text-ink">{guide.title}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate">{guide.description}</p>
-                  </div>
-                ))}
-              </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {productCategories.map((category) => (
-                <a key={category.slug} href={`/products/category/${category.slug}`} className="premium-card premium-surface p-5 hover:border-brand/35 hover:shadow-card">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/12 bg-brand-soft text-brand">
-                    <Icon name={category.icon} />
-                  </span>
-                  <h3 className="mt-5 text-xl font-black text-ink">{category.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate">{category.description}</p>
-                </a>
-              ))}
-            </div>
+            <Button href="/quote-request?service=White-Glove%20Project%20Intake" variant="secondary">Need a white-glove intake?</Button>
           </div>
-          <div className="rounded-[1.9rem] border border-line/80 bg-white p-6 shadow-soft">
-            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-              <div>
-                <p className="editorial-kicker">Ordering architecture</p>
-                <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Every major product now follows the same guided logic.</h2>
-                <p className="mt-3 text-sm leading-7 text-slate">
-                  Choose the product first. Confirm the specs. Pick the right order method. Preview what you can. Then submit a clearer order, upload, or custom request for the team.
-                </p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {orderMethodSignals.map((item) => (
-                  <div key={item.title} className="signal-card">
-                    <p className="text-sm font-black text-ink">{item.title}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <CatalogFamilyGrid categories={productCategories} />
         </div>
       </section>
 
       <section className="bg-white section-space">
-        <div className="container-shell">
-          <div className="mb-8">
-            <p className="editorial-kicker">Browse by service family</p>
-            <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">A cleaner way to explore PrintMe</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-              Product families stay under one brand, but each major pillar gets a clearer landing path so signage, core print, and custom design work do not blur together.
-            </p>
+        <div className="container-shell grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="surface-card p-6">
+            <p className="editorial-kicker">Multiple discovery paths</p>
+            <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Customers can find the right job from product, industry, or support intent.</h2>
+            <div className="mt-5 grid gap-3">
+              {[
+                "Browse by product family when the format is already clear.",
+                "Use industry paths when the use case matters more than the product name.",
+                "Use quote, rush, design, or custom-order shortcuts when the job still needs help first.",
+              ].map((item) => (
+                <div key={item} className="signal-card p-4 text-sm leading-6 text-slate">
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
-          <CategoryDirectory />
-          <div className="mt-8">
-            <BrandArchitecturePanel />
+          <div className="grid gap-4 md:grid-cols-2">
+            {industryPaths.map((path) => (
+              <a key={path.slug} href={path.href} className="premium-surface p-5 transition hover:border-brand/25 hover:shadow-card">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
+                  <Icon name={path.icon} className="h-4.5 w-4.5" />
+                </span>
+                <h3 className="mt-5 text-lg font-black text-ink">{path.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate">{path.description}</p>
+              </a>
+            ))}
           </div>
         </div>
       </section>
 
       <section className="bg-canvas section-space">
-        <div className="container-shell grid gap-6 lg:grid-cols-2">
-          <TimelineRulesPanel />
-          <PaymentClarityPanel />
+        <div className="container-shell grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
+          <div className="surface-card p-6">
+            <p className="editorial-kicker">Fast shortcuts</p>
+            <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">High-intent actions stay visible everywhere in the system.</h2>
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              {catalogUtilityLinks.map((item) => (
+                <a key={item.title} href={item.href} className="rounded-[1.25rem] border border-line/70 bg-canvas/75 p-4 transition hover:border-brand/20 hover:bg-white">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border border-brand/15 bg-brand-soft text-brand">
+                      <Icon name={item.icon} className="h-4.5 w-4.5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-black text-ink">{item.title}</p>
+                      <p className="mt-1 text-sm leading-6 text-slate">{item.description}</p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="surface-card p-6">
+            <p className="editorial-kicker">Featured collections</p>
+            <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Show breadth without overwhelming the catalog.</h2>
+            <div className="mt-5 grid gap-3">
+              {featuredCatalogCollections.map((item) => (
+                <a key={item.title} href={item.href} className="rounded-[1.25rem] border border-line/70 bg-canvas/75 p-4 transition hover:border-brand/20 hover:bg-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-black text-ink">{item.title}</p>
+                    {item.badge ? <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate">{item.badge}</span> : null}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate">{item.description}</p>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -151,10 +195,10 @@ export default function ProductsPage() {
         <div className="container-shell">
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="editorial-kicker">Featured</p>
-              <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Most requested products</h2>
+              <p className="editorial-kicker">Best sellers</p>
+              <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Start with the products customers ask for most.</h2>
             </div>
-            <Button href="/quote-request" variant="secondary">Need a custom quote?</Button>
+            <Button href="/quote-request" variant="secondary">Need something more custom?</Button>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {featuredProducts.map((product) => (
@@ -166,9 +210,16 @@ export default function ProductsPage() {
 
       <section className="section-space bg-canvas">
         <div className="container-shell">
-          <CatalogExplorer products={products} categories={productCategories} featuredProducts={featuredProducts} />
+          <CatalogExplorer
+            products={catalogProductPages}
+            categories={productCategories}
+            featuredProducts={featuredProducts}
+            initialQuery={params.query ?? ""}
+            initialCategory={params.category ?? "all"}
+          />
         </div>
       </section>
+
       <FinalCta />
     </>
   );

@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/components/account/auth-provider";
 import { StatusBadge } from "@/components/account/status-badge";
-import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoActivity, demoAddresses, demoFiles, demoInvoices, demoOrders, demoProfile, demoQuotes, demoReorders, demoSavedDesigns } from "@/data/account";
+import { accountHealthSummary, accountOrderProgress, accountSupportShortcuts, demoActivity, demoAddresses, demoFiles, demoInvoices, demoOrders, demoProfile, demoProofPortals, demoQuotes, demoReorders, demoSavedDesigns } from "@/data/account";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 import { StatusTimeline } from "@/components/platform/status-timeline";
 import { AccountActivityFeed } from "@/components/account/account-activity-feed";
 import { AddressBookPanel } from "@/components/account/address-book-panel";
 import { AccountMemoryPanel } from "@/components/account/account-memory-panel";
 import { ReorderStudio } from "@/components/account/reorder-studio";
+import { ReturningCustomerIntelligence } from "@/components/ai/returning-customer-intelligence";
 import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { products } from "@/data/products";
 import { AccountDashboardData } from "@/types";
@@ -55,31 +56,45 @@ export function AccountShell() {
     };
   }, [accessToken, configured, user]);
 
-  const liveProfile = dashboard?.profile ?? profile ?? demoProfile;
-  const liveOrders = dashboard?.orders?.length ? dashboard.orders : demoOrders;
-  const liveQuotes = dashboard?.quotes?.length ? dashboard.quotes : demoQuotes;
-  const liveFiles = dashboard?.files?.length ? dashboard.files : demoFiles;
-  const liveInvoices = dashboard?.invoices?.length ? dashboard.invoices : demoInvoices;
-  const liveAddresses = dashboard?.addresses?.length ? dashboard.addresses : demoAddresses;
-  const liveActivity = dashboard?.activity?.length ? dashboard.activity : demoActivity;
-  const liveReorders = dashboard?.reorders?.length ? dashboard.reorders : demoReorders;
-  const liveSavedDesigns = dashboard?.savedDesigns?.length ? dashboard.savedDesigns : demoSavedDesigns;
-  const liveSummary = dashboard?.summary?.length ? dashboard.summary : accountHealthSummary;
+  const previewMode = !configured;
+  const liveProfile = dashboard?.profile ?? profile ?? (previewMode ? demoProfile : {
+    fullName: user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer",
+    email: user?.email ?? "",
+    phone: typeof user?.user_metadata?.phone === "string" ? user.user_metadata.phone : undefined,
+    companyName: typeof user?.user_metadata?.company_name === "string" ? user.user_metadata.company_name : undefined,
+  });
+  const liveOrders = dashboard?.orders ?? (previewMode ? demoOrders : []);
+  const liveQuotes = dashboard?.quotes ?? (previewMode ? demoQuotes : []);
+  const liveFiles = dashboard?.files ?? (previewMode ? demoFiles : []);
+  const liveInvoices = dashboard?.invoices ?? (previewMode ? demoInvoices : []);
+  const liveAddresses = dashboard?.addresses ?? (previewMode ? demoAddresses : []);
+  const liveActivity = dashboard?.activity ?? (previewMode ? demoActivity : []);
+  const liveReorders = dashboard?.reorders ?? (previewMode ? demoReorders : []);
+  const liveSavedDesigns = dashboard?.savedDesigns ?? (previewMode ? demoSavedDesigns : []);
+  const liveSummary = dashboard?.summary?.length ? dashboard.summary : previewMode ? accountHealthSummary : [
+    { label: "Orders", value: String(liveOrders.length), detail: "Real orders tied to this account." },
+    { label: "Quotes", value: String(liveQuotes.length), detail: "Live quote requests tied to this account." },
+    { label: "Files", value: String(liveFiles.length), detail: "Uploaded artwork attached to this account." },
+    { label: "Invoices", value: String(liveInvoices.length), detail: "Billing records currently available in the account." },
+  ];
+  const liveProofs = previewMode ? demoProofPortals : [];
   const displayName = liveProfile.fullName ?? user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "PrintMe customer";
   const widgets = [
     { title: "Open Orders", value: String(liveOrders.filter((order) => order.status !== "completed").length), description: "Track active jobs and know what needs review next." },
+    { title: "Proofs Waiting", value: String(liveProofs.filter((proof) => proof.status !== "approved_for_production").length), description: "Approve proofs or request changes before production starts." },
     { title: "Saved Quotes", value: String(liveQuotes.length), description: "Keep quote requests organized for faster approvals." },
     { title: "Uploaded Files", value: String(liveFiles.length), description: "Keep artwork ready for quotes, orders, and reorders." },
     { title: "Invoices", value: String(liveInvoices.length), description: "Access billing records as the order system grows." },
   ];
   const quickActions = [
     { title: "Start a reorder-friendly quote", detail: "Use the quote flow when you want a familiar job priced again with updated timing or quantity.", href: "/quote-request", icon: "document" },
+    { title: "Review proofs and approvals", detail: "Open your proof portal to compare versions, request changes, or approve final artwork.", href: "/account/proofs", icon: "inspect" },
     { title: "Upload or organize artwork", detail: "Keep files attached to the right order, quote, or future repeat job.", href: "/account/files", icon: "upload" },
     { title: "Reuse a saved design starter", detail: "Jump back into a template-led or uploaded design path without starting from zero.", href: "/products", icon: "spark" },
     { title: "Talk to support", detail: "Ask about pickup timing, status, invoices, or the next production step.", href: "/support", icon: "chat" },
   ];
-  const featuredOrder = liveOrders[0] ?? demoOrders[0];
-  const featuredTimeline = accountOrderProgress[featuredOrder.id] ?? [];
+  const featuredOrder = liveOrders[0] ?? (previewMode ? demoOrders[0] : null);
+  const featuredTimeline = featuredOrder ? accountOrderProgress[featuredOrder.id] ?? [] : [];
 
   return (
     <div className="space-y-6">
@@ -101,7 +116,7 @@ export function AccountShell() {
               {configured
                 ? dashboard
                   ? "this account is now reading persisted customer profile, order, quote, file, and invoice data when available from the backend."
-                  : "account access is live, and this view falls back to preview data until more persisted records are available."
+                  : "account access is live. Empty sections stay empty until real orders, quotes, files, invoices, and reorders exist for this customer."
                 : "this is a preview dashboard until Supabase auth and persisted customer data are fully configured."}
             </div>
           </div>
@@ -114,7 +129,7 @@ export function AccountShell() {
 
       <SummaryStrip items={liveSummary} />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {widgets.map((widget) => (
           <article key={widget.title} className="premium-card premium-surface p-5 hover:border-brand/25 hover:shadow-card">
             <p className="text-sm font-bold text-slate">{widget.title}</p>
@@ -124,7 +139,7 @@ export function AccountShell() {
         ))}
       </div>
 
-      <section className="grid gap-4 lg:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {quickActions.map((action) => (
           <article key={action.title} className="surface-card p-5">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand">
@@ -157,6 +172,11 @@ export function AccountShell() {
                 </div>
               </article>
             ))}
+            {liveOrders.length === 0 ? (
+              <div className="rounded-[1.35rem] border border-dashed border-line/90 p-5 text-sm leading-6 text-slate">
+                No live orders are attached to this account yet. Start a new order or request a quote and the history will appear here.
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -177,6 +197,11 @@ export function AccountShell() {
                 </div>
               </article>
             ))}
+            {liveQuotes.length === 0 ? (
+              <div className="rounded-[1.35rem] border border-dashed border-line/90 p-5 text-sm leading-6 text-slate">
+                No live quotes are attached to this account yet. Quote requests will appear here after submission.
+              </div>
+            ) : null}
           </div>
         </section>
       </div>
@@ -184,7 +209,7 @@ export function AccountShell() {
       <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
         <StatusTimeline
           title="Most urgent account progress"
-          items={featuredTimeline}
+          items={featuredOrder ? featuredTimeline : [{ label: "No active workflow yet", detail: "As soon as you place an order or submit a quote, live timeline events will start appearing here.", status: "current" }]}
         />
         <div className="space-y-4">
           <div className="rounded-[1.3rem] border border-line/80 bg-white px-4 py-4">
@@ -192,9 +217,9 @@ export function AccountShell() {
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-brand">Current focus</p>
                 <h2 className="mt-2 text-xl font-black text-ink">Most time-sensitive job in your account</h2>
-                <p className="mt-2 text-sm leading-6 text-slate">{featuredOrder.nextStep}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{featuredOrder?.nextStep ?? "Once the first live order or quote lands here, this area will highlight the next action that matters most."}</p>
               </div>
-              <StatusBadge status={featuredOrder.status} />
+              {featuredOrder ? <StatusBadge status={featuredOrder.status} /> : null}
             </div>
           </div>
           <AccountSupportHub
@@ -209,11 +234,18 @@ export function AccountShell() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <AccountActivityFeed items={liveActivity} />
-        <AddressBookPanel addresses={liveAddresses} />
+      <AccountActivityFeed items={liveActivity} />
+      <AddressBookPanel addresses={liveAddresses} />
       </div>
 
       <AccountMemoryPanel products={products} />
+
+      <ReturningCustomerIntelligence
+        orders={liveOrders}
+        quotes={liveQuotes}
+        reorders={liveReorders}
+        savedDesigns={liveSavedDesigns}
+      />
 
       <ReorderStudio items={liveReorders} />
 
@@ -242,6 +274,11 @@ export function AccountShell() {
               </div>
             </article>
           ))}
+          {liveSavedDesigns.length === 0 ? (
+            <div className="rounded-[1.35rem] border border-dashed border-line/90 p-5 text-sm leading-6 text-slate md:col-span-3">
+              Saved design starters will appear here after template-led jobs, uploaded artwork, or design-supported orders are tied to this account.
+            </div>
+          ) : null}
         </div>
       </section>
 

@@ -56,6 +56,7 @@ export function OrdersHistoryPanel({ orders }: { orders: AccountOrder[] }) {
             <p className="font-bold text-ink">{order.total}</p>
             <div className="flex flex-wrap gap-2">
               <Link href={`/account/orders/${order.id}`} className="text-sm font-bold text-brand">Review Details</Link>
+              {order.proofPortalId ? <Link href={`/account/proofs/${order.proofPortalId}`} className="text-sm font-bold text-ink">Open Proof</Link> : null}
               <Link href={order.reorderHref ?? `/quote-request?service=${encodeURIComponent(order.items[0])}`} className="text-sm font-bold text-slate">Start Similar Job</Link>
             </div>
           </article>

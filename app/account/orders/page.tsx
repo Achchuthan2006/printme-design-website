@@ -4,6 +4,7 @@ import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { OrdersHistoryPanel } from "@/components/account/orders-history-panel";
 import { Button } from "@/components/ui/button";
 import { demoOrders } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 import { buildMetadata } from "@/lib/metadata";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 
@@ -14,11 +15,14 @@ export const metadata = buildMetadata({
 });
 
 export default function AccountOrdersPage() {
+  const previewMode = !isSupabaseConfigured();
+  const orders = previewMode ? demoOrders : [];
   const orderSummary = [
-    { label: "Active orders", value: String(demoOrders.filter((order) => order.status !== "completed").length), detail: "Jobs still moving through review, production, or pickup." },
-    { label: "Pickup jobs", value: String(demoOrders.filter((order) => order.fulfillmentMethod.includes("pickup")).length), detail: "Orders expected to hand off at the Scarborough shop." },
-    { label: "Completed orders", value: String(demoOrders.filter((order) => order.status === "completed").length), detail: "Useful starting points for quick repeat work." },
-    { label: "Reorder-ready", value: String(demoOrders.length), detail: "Every order can feed future repeat jobs, invoices, and file reuse." },
+    { label: "Active orders", value: String(orders.filter((order) => order.status !== "completed").length), detail: "Jobs still moving through review, production, or pickup." },
+    { label: "Proofs waiting", value: String(orders.filter((order) => order.proofPortalId).length), detail: "Orders that currently have a proof portal or sign-off path attached." },
+    { label: "Pickup jobs", value: String(orders.filter((order) => order.fulfillmentMethod.includes("pickup")).length), detail: "Orders expected to hand off at the Scarborough shop." },
+    { label: "Completed orders", value: String(orders.filter((order) => order.status === "completed").length), detail: "Useful starting points for quick repeat work." },
+    { label: "Reorder-ready", value: String(orders.length), detail: "Every order can feed future repeat jobs, invoices, and file reuse." },
   ];
 
   return (
@@ -34,12 +38,12 @@ export default function AccountOrdersPage() {
               <Button href="/products">Start New Order</Button>
             </div>
             <SummaryStrip items={orderSummary} className="mt-6" />
-            {demoOrders.length === 0 ? (
+            {orders.length === 0 ? (
               <div className="mt-6">
-                <EmptyState title="No orders yet" description="Start an online print order or request a quote when your job needs review first." ctaLabel="Start My Order" ctaHref="/products" />
+                <EmptyState title={previewMode ? "No orders yet" : "No live orders yet"} description={previewMode ? "Start an online print order or request a quote when your job needs review first." : "As soon as a real order is tied to this account, it will appear here with status, files, and follow-up actions."} ctaLabel="Start My Order" ctaHref="/products" />
               </div>
             ) : (
-              <OrdersHistoryPanel orders={demoOrders} />
+              <OrdersHistoryPanel orders={orders} />
             )}
             <div className="mt-6">
               <AccountSupportHub

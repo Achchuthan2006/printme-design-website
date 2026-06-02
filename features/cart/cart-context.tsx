@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CartItem } from "@/types";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 
 interface CartContextValue {
   items: CartItem[];
@@ -60,6 +61,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               fulfillmentMethod: item.fulfillmentMethod,
               turnaround: item.turnaround,
               quoteOnly: item.quoteOnly ?? item.pricingMode === "quote-only",
+              pricingState: item.pricingState,
+              pricingLabel: item.pricingLabel,
+              pricingExplanation: item.pricingExplanation,
             })),
         );
       }
@@ -86,8 +90,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const itemCount = useMemo(() => items.reduce((total, item) => total + item.quantity, 0), [items]);
 
-  const openCart = useCallback(() => setIsDrawerOpen(true), []);
-  const closeCart = useCallback(() => setIsDrawerOpen(false), []);
+  const openCart = useCallback(() => {
+    trackPrintMeEvent({
+      eventName: "cart_opened",
+      pageType: "cart",
+      isMicroConversion: true,
+      properties: {
+        itemCount,
+      },
+    });
+    setIsDrawerOpen(true);
+  }, [itemCount]);
+
+  const closeCart = useCallback(() => {
+    trackPrintMeEvent({
+      eventName: "cart_closed",
+      pageType: "cart",
+      properties: {
+        itemCount,
+      },
+    });
+    setIsDrawerOpen(false);
+  }, [itemCount]);
   const dismissLastAddedItem = useCallback(() => setLastAddedItem(null), []);
 
   const addItem = useCallback((item: Omit<CartItem, "id">) => {
@@ -99,6 +123,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           ...existing,
           quantity: existing.quantity + item.quantity,
         };
+        trackPrintMeEvent({
+          eventName: "add_to_cart",
+          pageType: "product",
+          funnelName: "direct_checkout",
+          funnelStage: "cart",
+          isMicroConversion: true,
+          properties: {
+            productSlug: item.productSlug,
+            quantity: item.quantity,
+            totalQuantity: mergedItem.quantity,
+            pricingMode: item.pricingMode,
+            orderMethod: item.mode,
+          },
+        });
         setLastAddedItem(mergedItem);
         return current.map((currentItem) => (currentItem.id === existing.id ? mergedItem : currentItem));
       }
@@ -108,6 +146,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         id: crypto.randomUUID(),
       };
 
+      trackPrintMeEvent({
+        eventName: "add_to_cart",
+        pageType: "product",
+        funnelName: "direct_checkout",
+        funnelStage: "cart",
+        isConversion: false,
+        isMicroConversion: true,
+        value: item.estimatedTotal,
+        currency: "CAD",
+        properties: {
+          productSlug: item.productSlug,
+          quantity: item.quantity,
+          pricingMode: item.pricingMode,
+          orderMethod: item.mode,
+        },
+      });
       setLastAddedItem(nextItem);
       return [...current, nextItem];
     });
@@ -115,6 +169,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const removeItem = useCallback((id: string) => {
     setItems((current) => {
+      const removedItem = current.find((item) => item.id === id);
+      if (removedItem) {
+        trackPrintMeEvent({
+          eventName: "cart_item_removed",
+          pageType: "cart",
+          properties: {
+            productSlug: removedItem.productSlug,
+            quantity: removedItem.quantity,
+          },
+        });
+      }
       const next = current.filter((item) => item.id !== id);
       setLastAddedItem((lastItem) => (lastItem?.id === id ? null : lastItem));
       return next;
@@ -123,14 +188,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
     setItems((current) =>
-      current.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item)),
+      current.map((item) => {
+        if (item.id !== id) return item;
+        const nextQuantity = Math.max(1, quantity);
+        if (nextQuantity !== item.quantity) {
+          trackPrintMeEvent({
+            eventName: "cart_quantity_changed",
+            pageType: "cart",
+            properties: {
+              productSlug: item.productSlug,
+              previousQuantity: item.quantity,
+              quantity: nextQuantity,
+            },
+          });
+        }
+        return { ...item, quantity: nextQuantity };
+      }),
     );
   }, []);
 
   const clearCart = useCallback(() => {
+    trackPrintMeEvent({
+      eventName: "cart_cleared",
+      pageType: "cart",
+      properties: {
+        itemCount,
+      },
+    });
     setItems([]);
     setLastAddedItem(null);
-  }, []);
+  }, [itemCount]);
 
   const value = useMemo<CartContextValue>(() => ({
     items,

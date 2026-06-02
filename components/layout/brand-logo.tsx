@@ -13,16 +13,24 @@ export function BrandLogo({
   className,
   inverted = false,
   size = "header",
+  ariaLabel,
+  href = "/",
+  src = "/printme-logo.svg",
+  alt = "PrintMe",
 }: {
   className?: string;
   inverted?: boolean;
   size?: keyof typeof sizeStyles;
+  ariaLabel?: string;
+  href?: string;
+  src?: string;
+  alt?: string;
 }) {
   return (
     <Link
-      href="/"
+      href={href}
       className={cn("inline-flex items-center rounded-md premium-focus", className)}
-      aria-label={siteConfig.name}
+      aria-label={ariaLabel ?? siteConfig.name}
     >
       <span
         className={cn(
@@ -32,8 +40,8 @@ export function BrandLogo({
         )}
       >
         <Image
-          src="/printme-logo.svg"
-          alt="PrintMe"
+          src={src}
+          alt={alt}
           fill
           priority={!inverted}
           sizes={size === "footer" ? "158px" : "(max-width: 640px) 118px, (max-width: 1024px) 132px, 148px"}

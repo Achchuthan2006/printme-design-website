@@ -1,4 +1,5 @@
-import { sizePreviewLibrary } from "@/data/experience";
+import { getSizePreviewItems } from "@/data/experience";
+import { getInteractivePreviewModel } from "@/data/interactive-preview";
 
 function scaleBox(width: number, height: number) {
   const longestSide = Math.max(width, height);
@@ -10,7 +11,8 @@ function scaleBox(width: number, height: number) {
 }
 
 export function ProductSizePreview({ slug, title }: { slug: string; title: string }) {
-  const sizes = sizePreviewLibrary[slug];
+  const sizes = getSizePreviewItems(slug);
+  const previewModel = getInteractivePreviewModel(slug);
 
   if (!sizes?.length) return null;
 
@@ -21,6 +23,11 @@ export function ProductSizePreview({ slug, title }: { slug: string; title: strin
       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
         Use the visual guide below to compare common sizes quickly. Final production specs are still confirmed during review.
       </p>
+      {previewModel ? (
+        <p className="mt-3 rounded-[1.2rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
+          <span className="font-black text-ink">Preview note:</span> {previewModel.comparisonLabel} cues are tuned for {title.toLowerCase()} so customers can understand scale before a proof is required.
+        </p>
+      ) : null}
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         {sizes.map((size) => {
           const box = scaleBox(size.width, size.height);

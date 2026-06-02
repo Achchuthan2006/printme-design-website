@@ -111,16 +111,17 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
     return buildFallbackAdminCommandCenterSnapshot(window);
   }
 
-  const [orders, quotes, uploads, notifications, workflowEvents, supportRequests] = await Promise.all([
+  const [orders, quotes, uploads, notifications, workflowEvents, supportRequests, analyticsEvents] = await Promise.all([
     queryRows("orders", "order_number, workflow_status, payment_status, fulfillment_method, subtotal_cents, payable_cents, created_at, quote_review_required, customer_email"),
     queryRows("quote_requests", "quote_number, status, service_needed, created_at"),
     queryRows("artwork_uploads", "file_id, status, quote_number, order_number, created_at"),
     queryRows("notifications", "id, entity_type, entity_id, trigger_name, provider, delivery_status, created_at"),
     queryRows("workflow_events", "id, entity_type, entity_id, event_type, created_at, visibility, metadata"),
     queryRows("support_requests", "ticket_number, subject, status, priority, created_at"),
+    queryRows("analytics_events", "event_name, session_id, visitor_id, page_type, funnel_name, funnel_stage, event_value, occurred_at, properties"),
   ]);
 
-  if (!orders.length && !quotes.length && !uploads.length && !notifications.length && !workflowEvents.length) {
+  if (!orders.length && !quotes.length && !uploads.length && !notifications.length && !workflowEvents.length && !analyticsEvents.length) {
     return buildFallbackAdminCommandCenterSnapshot(window);
   }
 
@@ -133,6 +134,8 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
   const priorQuotes = quotes.filter((row) => inWindow(row.created_at as string | undefined, priorStart, start));
   const currentUploads = uploads.filter((row) => inWindow(row.created_at as string | undefined, start, end));
   const currentNotifications = notifications.filter((row) => inWindow(row.created_at as string | undefined, start, end));
+  const currentAnalytics = analyticsEvents.filter((row) => inWindow(row.occurred_at as string | undefined, start, end));
+  const priorAnalytics = analyticsEvents.filter((row) => inWindow(row.occurred_at as string | undefined, priorStart, start));
 
   const currentRevenue = currentOrders.reduce(
     (sum, row) => sum + parseCurrencyCents((row.payable_cents as number | undefined) ?? (row.subtotal_cents as number | undefined)),
@@ -153,12 +156,30 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
   const staleQuotes = currentQuotes.filter((row) => ["submitted", "under_review", "waiting_for_files"].includes(String(row.status ?? ""))).length;
   const failedNotifications = currentNotifications.filter((row) => row.delivery_status === "failed").length;
   const openSupport = supportRequests.filter((row) => row.status !== "resolved").length;
+  const currentSessions = new Set(currentAnalytics.map((row) => String(row.session_id ?? "")).filter(Boolean)).size;
+  const priorSessions = new Set(priorAnalytics.map((row) => String(row.session_id ?? "")).filter(Boolean)).size;
+  const productViews = currentAnalytics.filter((row) => row.event_name === "product_viewed").length;
+  const checkoutStarts = currentAnalytics.filter((row) => row.event_name === "checkout_started").length;
+  const proofApprovals = currentAnalytics.filter((row) => row.event_name === "proof_approved").length;
+  const mobileSessions = new Set(
+    currentAnalytics
+      .filter((row) => String((row.properties as Record<string, unknown> | null)?.deviceType ?? "") === "mobile")
+      .map((row) => String(row.session_id ?? "")),
+  ).size;
 
   return {
     window,
     windowLabel: window === "today" ? "Today" : `Last ${window.replace("d", "")} days`,
     comparisonLabel: "Compared with the prior matching period",
     kpis: [
+      {
+        label: "Tracked sessions",
+        value: String(currentSessions),
+        detail: "First-party sessions captured across storefront, quote, checkout, and proof flows.",
+        delta: `${formatDelta(currentSessions, priorSessions, "%")} vs prior`,
+        direction: currentSessions >= priorSessions ? "up" : "down",
+        href: "/admin/insights",
+      },
       {
         label: "Total revenue",
         value: formatCurrency(currentRevenue),
@@ -257,16 +278,23 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
       {
         label: "Quote submission rate",
         value: String(currentQuotes.length),
-        detail: "Tracked quote submissions for the current window.",
+        detail: `${currentQuotes.length} quote submissions from ${Math.max(currentSessions, 1)} tracked sessions.`,
         change: `${formatDelta(currentQuotes.length, priorQuotes.length, "%")} vs prior period`,
         href: "/admin/quotes",
       },
       {
-        label: "Checkout-ready orders",
-        value: String(currentOrders.filter((row) => row.quote_review_required !== true).length),
-        detail: "Orders that did not require quote-only fallback or manual review.",
-        change: "Direct-order path health",
+        label: "Product detail engagement",
+        value: String(productViews),
+        detail: "Product detail views tied to the current reporting window.",
+        change: "Use with add-to-cart and quote starts to find merchandising gaps",
         href: "/admin/orders",
+      },
+      {
+        label: "Checkout starts",
+        value: String(checkoutStarts),
+        detail: "Customers who progressed from browsing/cart into the checkout flow.",
+        change: "Direct-order path health",
+        href: "/admin/insights",
       },
       {
         label: "Payment failures",
@@ -274,13 +302,6 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
         detail: "Orders blocked by unsuccessful payment confirmation.",
         change: "Webhook-backed status",
         href: "/admin/invoices",
-      },
-      {
-        label: "Notification delivery failures",
-        value: String(failedNotifications),
-        detail: "Transactional messages that did not land cleanly and need attention.",
-        change: "Admin-facing reliability signal",
-        href: "/admin/messages",
       },
     ],
     operationsInsights: [
@@ -315,18 +336,18 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
     ],
     customerInsights: [
       {
+        label: "Mobile session share",
+        value: formatPercent((mobileSessions / Math.max(currentSessions, 1)) * 100),
+        detail: "Share of tracked sessions on smaller screens for mobile-friction analysis.",
+        change: "Useful when comparing mobile funnel drop-off vs desktop",
+        href: "/admin/insights",
+      },
+      {
         label: "Returning customers",
         value: String(new Set(currentOrders.map((row) => String(row.customer_email ?? ""))).size),
         detail: "Distinct customer accounts or emails active in the current window.",
         change: "Useful for repeat-business tracking",
         href: "/admin/customers",
-      },
-      {
-        label: "Customers with uploads",
-        value: String(new Set(currentUploads.map((row) => String(row.quote_number ?? row.order_number ?? row.file_id ?? ""))).size),
-        detail: "Jobs with real customer file activity, which usually predicts stronger conversion.",
-        change: "Upload-linked activity",
-        href: "/admin/uploads",
       },
       {
         label: "Customer-visible milestones",
@@ -357,6 +378,13 @@ export async function getAdminCommandCenterSnapshot(window: ReportingWindow = "3
         detail: "Product demand that already includes real artwork and is closer to production.",
         change: "Production-readiness mix",
         href: "/admin/uploads",
+      },
+      {
+        label: "Proof approvals",
+        value: String(proofApprovals),
+        detail: "Tracked proof approvals that removed a key release gate.",
+        change: "Use alongside proof views and revision requests to spot stalls",
+        href: "/admin/proofs",
       },
     ],
     alerts: [

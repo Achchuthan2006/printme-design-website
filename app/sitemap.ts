@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { localLandingPages } from "@/data/cro";
 import { productCategories, products } from "@/data/products";
+import { servicePages } from "@/data/services";
 import { env } from "@/lib/env";
 
 function absoluteUrl(path: string) {
@@ -11,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const corePages = [
     "",
+    "/about",
+    "/products",
     "/services",
     "/quote-request",
     "/contact",
@@ -19,7 +22,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/faq",
     "/pickup-delivery",
     "/payment-info",
-    "/order-status",
   ];
 
   return [
@@ -41,11 +43,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.75,
     })),
+    ...servicePages.map((service) => ({
+      url: absoluteUrl(`/services/${service.slug}`),
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.86,
+    })),
     ...localLandingPages.map((page) => ({
       url: absoluteUrl(`/local/${page.slug}`),
       lastModified: now,
       changeFrequency: "monthly" as const,
-      priority: 0.9,
+      priority: 0.84,
     })),
   ];
 }

@@ -11,7 +11,7 @@ import {
   QuoteWorkflowStatus,
   WorkflowEventType,
 } from "@/lib/backend/workflows";
-import { CheckoutPayload, OrderSnapshot } from "@/types";
+import { CheckoutPayload, CheckoutPaymentMode, OrderSnapshot } from "@/types";
 
 function createReference(prefix: "QT" | "PMT" | "ORD") {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -82,7 +82,7 @@ export interface PrivatePaymentRecordInput {
   providerCheckoutSessionId?: string | null;
   providerPaymentIntentId?: string | null;
   providerChargeId?: string | null;
-  paymentMode: "full" | "deposit";
+  paymentMode: CheckoutPaymentMode;
   status: PaymentWorkflowStatus;
   amountAuthorizedCents?: number | null;
   amountCapturedCents?: number | null;
@@ -104,14 +104,23 @@ export interface WebhookEventInput {
 }
 
 export interface AnalyticsEventInput {
+  eventId?: string;
   eventName: string;
   entityType?: "quote" | "order" | "upload" | "support" | "customer" | "payment";
   entityId?: string | null;
   profileId?: string | null;
   sessionId?: string | null;
+  visitorId?: string | null;
   source?: string;
   path?: string | null;
+  funnelName?: string | null;
   funnelStage?: string | null;
+  pageType?: string;
+  journey?: string | null;
+  isConversion?: boolean;
+  isMicroConversion?: boolean;
+  value?: number;
+  currency?: string;
   properties?: Record<string, unknown>;
 }
 
@@ -228,17 +237,32 @@ export async function recordAnalyticsEvent(input: AnalyticsEventInput) {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseServerConfigured()) return { persisted: false };
 
-  const { error } = await supabase.from("analytics_events").insert([{
+  const payload = {
+    event_id: input.eventId ?? null,
     event_name: input.eventName,
     entity_type: input.entityType ?? null,
     entity_id: input.entityId ?? null,
     profile_id: input.profileId ?? null,
     session_id: input.sessionId ?? null,
+    visitor_id: input.visitorId ?? null,
     source: input.source ?? "web",
     path: input.path ?? null,
+    funnel_name: input.funnelName ?? null,
     funnel_stage: input.funnelStage ?? null,
+    page_type: input.pageType ?? null,
+    journey: input.journey ?? null,
+    is_conversion: input.isConversion ?? false,
+    is_micro_conversion: input.isMicroConversion ?? false,
+    event_value: input.value ?? null,
+    currency: input.currency ?? null,
     properties: input.properties ?? {},
-  }] as never[]);
+  };
+
+  const operation = input.eventId
+    ? supabase.from("analytics_events").upsert([payload] as never[], { onConflict: "event_id" })
+    : supabase.from("analytics_events").insert([payload] as never[]);
+
+  const { error } = await operation;
 
   if (error) {
     logWarn("Analytics event persistence skipped", { eventName: input.eventName, reason: error.message });
@@ -441,7 +465,7 @@ export async function getPrivatePaymentRecordByOrderNumber(orderNumber: string) 
     provider_customer_id?: string | null;
     provider_checkout_session_id?: string | null;
     provider_payment_intent_id?: string | null;
-    payment_mode: "full" | "deposit";
+    payment_mode: CheckoutPaymentMode;
     status: PaymentWorkflowStatus;
     amount_authorized_cents?: number | null;
     amount_captured_cents?: number | null;
@@ -632,7 +656,7 @@ export async function persistQuoteRequest(input: QuoteRequestApiInput, requestMe
 export async function persistOrderDraft(input: {
   payload: CheckoutPayload;
   order: OrderSnapshot;
-  paymentMode: "full" | "deposit";
+  paymentMode: CheckoutPaymentMode;
   stripeSessionId?: string;
   requestMeta: RequestMeta;
 }): Promise<OrderRecord> {

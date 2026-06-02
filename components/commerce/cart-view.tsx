@@ -4,6 +4,7 @@ import { CartSupportPanel } from "@/components/commerce/cart-support-panel";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/features/cart/cart-context";
 import { openSupportChat } from "@/lib/chat";
+import { evaluateCartPaymentPlan, formatPaymentPlanCurrency } from "@/lib/payment-workflow";
 
 function formatLinePrice(value: number, quoteOnly?: boolean) {
   return quoteOnly ? "Quote" : `$${value.toFixed(2)}`;
@@ -30,6 +31,7 @@ export function CartView() {
 
   const hasQuoteItems = items.some((item) => item.quoteOnly);
   const hasMissingArtworkReminder = items.some((item) => item.mode !== "quote-only");
+  const paymentPlan = evaluateCartPaymentPlan(items);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
@@ -59,7 +61,7 @@ export function CartView() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-brand">
-                  {item.pricingMode === "quote-only" ? "Needs quote review" : "Ready for checkout"}
+                  {item.pricingState === "instant-price" ? "Instant pricing" : item.pricingState === "estimated-price" ? "Estimated pricing" : "Needs quote review"}
                 </p>
                 <h2 className="mt-2 text-[1.4rem] font-black leading-[1.02] text-ink">{item.title}</h2>
                 {item.turnaround || item.fulfillmentMethod ? (
@@ -94,6 +96,12 @@ export function CartView() {
               <p className="mt-4 rounded-[1.3rem] border border-line bg-white px-4 py-3 text-sm leading-6 text-slate">
                 <span className="font-bold text-ink">Notes: </span>
                 {item.notes}
+              </p>
+            ) : null}
+            {item.pricingExplanation ? (
+              <p className="mt-4 rounded-[1.3rem] border border-line bg-canvas px-4 py-3 text-sm leading-6 text-slate">
+                <span className="font-bold text-ink">{item.pricingLabel ?? "Pricing path"}: </span>
+                {item.pricingExplanation}
               </p>
             ) : null}
 
@@ -139,6 +147,8 @@ export function CartView() {
             <span>Estimated subtotal</span>
             <span className="font-black text-ink">${subtotal.toFixed(2)}</span>
           </div>
+          <div className="flex justify-between text-slate"><span>Due now</span><span>{formatPaymentPlanCurrency(paymentPlan.dueNowCents)}</span></div>
+          {paymentPlan.dueLaterCents > 0 ? <div className="flex justify-between text-slate"><span>Due later</span><span>{formatPaymentPlanCurrency(paymentPlan.dueLaterCents)}</span></div> : null}
           <div className="flex justify-between text-slate"><span>Tax</span><span>Calculated at checkout</span></div>
           <div className="flex justify-between text-slate"><span>Pickup / delivery</span><span>Confirmed with your order</span></div>
           {hasQuoteItems ? (
@@ -153,6 +163,10 @@ export function CartView() {
           ) : null}
           <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">
             Secure payment is handled by Stripe. Pickup, delivery, and artwork details are rechecked before anything moves into production.
+          </div>
+          <div className="rounded-[1.3rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
+            <p className="font-black text-ink">{paymentPlan.paymentHeadline}</p>
+            <p className="mt-1">{paymentPlan.customerNotes[0]}</p>
           </div>
         </div>
         <div className="mt-5 border-t border-line pt-5">

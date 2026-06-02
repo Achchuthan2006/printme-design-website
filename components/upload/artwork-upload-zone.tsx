@@ -3,6 +3,7 @@
 import { useId, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 import { openSupportChat } from "@/lib/chat";
 import { siteConfig } from "@/lib/site";
 import { uploadArtworkFile } from "@/lib/uploads";
@@ -77,6 +78,20 @@ export function ArtworkUploadZone({
 
   function removeItem(id: string) {
     setItems((current) => {
+      const removed = current.find((item) => item.id === id);
+      if (removed) {
+        trackPrintMeEvent({
+          eventName: "upload_removed",
+          entityType: "upload",
+          entityId: removed.metadata?.id ?? null,
+          pageType: context.scope === "order" ? "checkout" : context.scope === "quote" ? "quote_request" : "product",
+          properties: {
+            scope: context.scope,
+            productSlug: context.productSlug ?? null,
+            fileName: removed.file.name,
+          },
+        });
+      }
       const next = current.filter((item) => item.id !== id);
       onUploaded?.(next.flatMap((item) => (item.metadata ? [item.metadata] : [])));
       return next;
@@ -87,6 +102,21 @@ export function ArtworkUploadZone({
     if (files.length === 0) return;
     const nextItems = files.map(makeUploadItem);
     setItems((current) => [...current, ...nextItems]);
+    trackPrintMeEvent({
+      eventName: "upload_started",
+      entityType: "upload",
+      pageType: context.scope === "order" ? "checkout" : context.scope === "quote" ? "quote_request" : "product",
+      funnelName: context.scope === "order" ? "direct_checkout" : context.scope === "quote" ? "quote_to_cash" : "upload_to_production",
+      funnelStage: "artwork_upload",
+      journey: context.scope === "order" ? "direct_checkout" : context.scope === "quote" ? "quote_to_cash" : "upload_to_production",
+      isMicroConversion: true,
+      properties: {
+        scope: context.scope,
+        productSlug: context.productSlug ?? null,
+        fileCount: files.length,
+        relatedLabel: context.relatedLabel ?? null,
+      },
+    });
 
     startTransition(async () => {
       const uploaded = await Promise.all(
@@ -104,6 +134,23 @@ export function ArtworkUploadZone({
                 currentItem.id === item.id ? { ...currentItem, state: "uploaded", progress: 100, metadata } : currentItem,
               ),
             );
+            trackPrintMeEvent({
+              eventName: "upload_completed",
+              entityType: "upload",
+              entityId: metadata.id,
+              pageType: context.scope === "order" ? "checkout" : context.scope === "quote" ? "quote_request" : "product",
+              funnelName: context.scope === "order" ? "direct_checkout" : context.scope === "quote" ? "quote_to_cash" : "upload_to_production",
+              funnelStage: "artwork_upload",
+              journey: context.scope === "order" ? "direct_checkout" : context.scope === "quote" ? "quote_to_cash" : "upload_to_production",
+              isMicroConversion: true,
+              properties: {
+                scope: context.scope,
+                productSlug: context.productSlug ?? null,
+                fileName: metadata.fileName,
+                fileSize: metadata.fileSize,
+                skipped: Boolean(metadata.skipped),
+              },
+            });
             return metadata;
           } catch (error) {
             setItems((current) =>
@@ -118,6 +165,18 @@ export function ArtworkUploadZone({
                   : currentItem,
               ),
             );
+            trackPrintMeEvent({
+              eventName: "upload_failed",
+              entityType: "upload",
+              pageType: context.scope === "order" ? "checkout" : context.scope === "quote" ? "quote_request" : "product",
+              funnelStage: "artwork_upload",
+              properties: {
+                scope: context.scope,
+                productSlug: context.productSlug ?? null,
+                fileName: item.file.name,
+                reason: error instanceof Error ? error.message : "Upload failed",
+              },
+            });
             return null;
           }
         }),

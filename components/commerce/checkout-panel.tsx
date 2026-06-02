@@ -1,15 +1,23 @@
 "use client";
 
-import { useId, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { CartSupportPanel } from "@/components/commerce/cart-support-panel";
 import { Button } from "@/components/ui/button";
 import { CheckboxTile, FeedbackMessage, Field, Input, Textarea } from "@/components/ui/form-controls";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { useCart } from "@/features/cart/cart-context";
 import { openSupportChat } from "@/lib/chat";
-import { CheckoutAddress, CheckoutCustomer, CheckoutPayload } from "@/types";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
+import { createIdempotencyKey } from "@/lib/submission-guards";
+import { CheckoutAddress, CheckoutCustomer, CheckoutPayload, CheckoutPaymentMode } from "@/types";
 import { siteConfig } from "@/lib/site";
 import { timelineRules } from "@/data/experience";
+import {
+  evaluateCartPaymentPlan,
+  formatPaymentPlanCurrency,
+  getCheckoutPaymentModeLabel,
+  getPaymentCollectionPathLabel,
+} from "@/lib/payment-workflow";
 
 const emptyCustomer: CheckoutCustomer = {
   fullName: "",
@@ -32,12 +40,13 @@ export function CheckoutPanel() {
   const [customer, setCustomer] = useState(emptyCustomer);
   const [deliveryAddress, setDeliveryAddress] = useState(emptyAddress);
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"pickup" | "delivery">("pickup");
-  const [paymentMode, setPaymentMode] = useState<"full" | "deposit">("full");
+  const [paymentMode, setPaymentMode] = useState<CheckoutPaymentMode>("full");
   const [orderNotes, setOrderNotes] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const [submitted, setSubmitted] = useState(false);
 
   const payableItems = useMemo(() => items.filter((item) => !item.quoteOnly), [items]);
   const quoteItems = useMemo(() => items.filter((item) => item.quoteOnly), [items]);
@@ -45,7 +54,63 @@ export function CheckoutPanel() {
     () => payableItems.reduce((total, item) => total + (item.estimatedTotal || item.unitPrice) * item.quantity, 0),
     [payableItems],
   );
-  const needsReviewOnly = payableSubtotal <= 0 && quoteItems.length > 0;
+  const paymentPlan = useMemo(() => evaluateCartPaymentPlan(items, paymentMode), [items, paymentMode]);
+  const fullPlan = useMemo(() => evaluateCartPaymentPlan(items, "full"), [items]);
+  const depositPlan = useMemo(() => evaluateCartPaymentPlan(items, "deposit"), [items]);
+  const reviewPlan = useMemo(() => evaluateCartPaymentPlan(items, "review"), [items]);
+
+  useEffect(() => {
+    if (paymentPlan.checkoutMode !== paymentMode) {
+      setPaymentMode(paymentPlan.checkoutMode);
+    }
+  }, [paymentMode, paymentPlan.checkoutMode]);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    trackPrintMeEvent({
+      eventName: "checkout_started",
+      pageType: "checkout",
+      funnelName: "direct_checkout",
+      funnelStage: "checkout",
+      journey: "direct_checkout",
+      isMicroConversion: true,
+      value: subtotal,
+      currency: "CAD",
+      properties: {
+        itemCount: items.length,
+        quoteOnlyItemCount: quoteItems.length,
+      },
+    });
+  }, [items.length, quoteItems.length, subtotal]);
+
+  useEffect(() => {
+    const hasContent =
+      customer.fullName.trim().length > 0 ||
+      customer.email.trim().length > 0 ||
+      customer.phone.trim().length > 0 ||
+      orderNotes.trim().length > 0;
+
+    if (!hasContent || submitted) return;
+
+    const handleBeforeUnload = () => {
+      trackPrintMeEvent({
+        eventName: "checkout_abandoned",
+        pageType: "checkout",
+        funnelName: "direct_checkout",
+        funnelStage: "checkout",
+        journey: "direct_checkout",
+        properties: {
+          itemCount: items.length,
+          paymentMode: paymentPlan.checkoutMode,
+          fulfillmentMethod,
+        },
+      });
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [customer.email, customer.fullName, customer.phone, fulfillmentMethod, items.length, orderNotes, paymentPlan.checkoutMode, submitted]);
 
   function updateCustomer(field: keyof CheckoutCustomer, value: string) {
     setCustomer((current) => ({ ...current, [field]: value }));
@@ -66,7 +131,7 @@ export function CheckoutPanel() {
       if (!deliveryAddress.city) nextErrors.city = "Enter the delivery city.";
       if (!deliveryAddress.postalCode) nextErrors.postalCode = "Enter the delivery postal code.";
     }
-    if (!accepted) nextErrors.accepted = "Please confirm that PrintMe will review files and order details before production.";
+    if (!accepted) nextErrors.accepted = "Please confirm that payment, proofing, and file review may still gate production.";
 
     return {
       message: Object.keys(nextErrors).length > 0 ? "Please fix the highlighted checkout details before continuing." : "",
@@ -80,6 +145,17 @@ export function CheckoutPanel() {
     if (validation.message) {
       setFieldErrors(validation.errors);
       setError(validation.message);
+      trackPrintMeEvent({
+        eventName: "checkout_validation_failed",
+        pageType: "checkout",
+        funnelName: "direct_checkout",
+        funnelStage: "checkout",
+        properties: {
+          errorCount: Object.keys(validation.errors).length,
+          itemCount: items.length,
+          paymentMode: paymentPlan.checkoutMode,
+        },
+      });
       return;
     }
 
@@ -91,7 +167,7 @@ export function CheckoutPanel() {
       fulfillmentMethod,
       deliveryAddress: fulfillmentMethod === "delivery" ? deliveryAddress : undefined,
       orderNotes,
-      paymentMode,
+      paymentMode: paymentPlan.checkoutMode,
       items,
       subtotal,
     };
@@ -100,7 +176,10 @@ export function CheckoutPanel() {
       try {
         const response = await fetch("/api/checkout/session", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-idempotency-key": createIdempotencyKey("checkout-session"),
+          },
           body: JSON.stringify(payload),
         });
 
@@ -110,6 +189,23 @@ export function CheckoutPanel() {
           throw new Error(result.message ?? "Unable to start checkout.");
         }
 
+        setSubmitted(true);
+        trackPrintMeEvent({
+          eventName: "payment_started",
+          entityType: "order",
+          pageType: "checkout",
+          funnelName: "direct_checkout",
+          funnelStage: "payment",
+          journey: "direct_checkout",
+          isMicroConversion: true,
+          value: paymentPlan.dueNowCents / 100,
+          currency: "CAD",
+          properties: {
+            paymentMode: paymentPlan.checkoutMode,
+            fulfillmentMethod,
+            itemCount: items.length,
+          },
+        });
         window.location.href = result.checkoutUrl;
       } catch (checkoutError) {
         setError(checkoutError instanceof Error ? checkoutError.message : "Unable to start checkout.");
@@ -131,17 +227,39 @@ export function CheckoutPanel() {
     );
   }
 
+  const paymentChoices = [
+    {
+      value: "full" as const,
+      enabled: fullPlan.checkoutMode === "full",
+      label: "Pay in full now",
+      description: `Charge ${formatPaymentPlanCurrency(fullPlan.dueNowCents)} now for the direct-checkout portion of this order.`,
+    },
+    {
+      value: "deposit" as const,
+      enabled: depositPlan.checkoutMode === "deposit",
+      label: "Pay deposit now",
+      description: `Pay ${formatPaymentPlanCurrency(depositPlan.dueNowCents)} now and keep ${formatPaymentPlanCurrency(depositPlan.dueLaterCents)} due later before release or pickup.`,
+    },
+    {
+      value: "review" as const,
+      enabled: reviewPlan.checkoutMode === "review",
+      label: "Review first, pay later",
+      description: "Send the order, files, and notes first. PrintMe follows up with pricing, deposit, or invoice steps after review.",
+    },
+  ];
+
   return (
     <form onSubmit={submitCheckout} className="grid gap-8 lg:grid-cols-[1fr_390px]" noValidate>
       <div className="space-y-6">
         <CartSupportPanel />
 
-        <section className="grid gap-3 md:grid-cols-3">
-            {[
-              { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, questions, and pickup updates." },
-              { label: "Step 2", title: "Fulfillment choice", detail: "Choose pickup or delivery so timing and logistics can be confirmed." },
-              { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or leave guidance so PrintMe knows what is coming next." },
-            ].map((item) => (
+        <section className="grid gap-3 md:grid-cols-4">
+          {[
+            { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, questions, invoices, and pickup updates." },
+            { label: "Step 2", title: "Fulfillment choice", detail: "Pickup or delivery affects timing, handling, and final release." },
+            { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or flag what still needs attention." },
+            { label: "Step 4", title: "Payment path", detail: "Checkout, deposit, or review-first billing is shown clearly before you continue." },
+          ].map((item) => (
             <div key={item.title} className="signal-card">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{item.label}</p>
               <p className="mt-2 text-sm font-black text-ink">{item.title}</p>
@@ -153,7 +271,7 @@ export function CheckoutPanel() {
         <section className="section-frame p-6">
           <p className="editorial-kicker">Step 1</p>
           <h1 className="display-title mt-2 text-[2.3rem] font-black leading-[0.95] text-ink">Where should we send updates?</h1>
-          <p className="mt-3 text-sm leading-6 text-slate">We use these details for order confirmation, artwork questions, pickup updates, and payment follow-up if needed.</p>
+          <p className="mt-3 text-sm leading-6 text-slate">We use these details for confirmations, proof questions, billing follow-up, and pickup or delivery updates.</p>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             {[
               ["fullName", "Full name", "Your name", "text", "name"],
@@ -179,11 +297,11 @@ export function CheckoutPanel() {
         <section className="surface-card p-6">
           <p className="editorial-kicker">Step 2</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Choose pickup or delivery</h2>
-          <p className="mt-3 text-sm leading-6 text-slate">Pickup is fastest for most orders. Delivery is reviewed after the order details are confirmed.</p>
+          <p className="mt-3 text-sm leading-6 text-slate">Pickup is fastest for most orders. Delivery is confirmed after print details and release conditions are cleared.</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
               { value: "pickup", label: "In-store pickup", description: siteConfig.address },
-              { value: "delivery", label: "Local delivery", description: "Delivery is reviewed after order details are confirmed." },
+              { value: "delivery", label: "Local delivery", description: "Delivery timing is confirmed after files, payment, and production details are cleared." },
             ].map((choice) => (
               <label
                 key={choice.value}
@@ -208,16 +326,16 @@ export function CheckoutPanel() {
           {fulfillmentMethod === "delivery" ? (
             <div className="hero-in mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Address line 1" className="md:col-span-2" error={fieldErrors.addressLine1}>
-                <Input value={deliveryAddress.addressLine1} onChange={(event) => updateAddress("addressLine1", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-line1" aria-invalid={Boolean(fieldErrors.addressLine1)} />
+                <Input value={deliveryAddress.addressLine1} onChange={(event) => updateAddress("addressLine1", event.target.value)} required autoComplete="address-line1" aria-invalid={Boolean(fieldErrors.addressLine1)} />
               </Field>
               <Field label="Address line 2" className="md:col-span-2">
                 <Input value={deliveryAddress.addressLine2 ?? ""} onChange={(event) => updateAddress("addressLine2", event.target.value)} autoComplete="address-line2" />
               </Field>
               <Field label="City" error={fieldErrors.city}>
-                <Input value={deliveryAddress.city} onChange={(event) => updateAddress("city", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="address-level2" aria-invalid={Boolean(fieldErrors.city)} />
+                <Input value={deliveryAddress.city} onChange={(event) => updateAddress("city", event.target.value)} required autoComplete="address-level2" aria-invalid={Boolean(fieldErrors.city)} />
               </Field>
               <Field label="Postal code" error={fieldErrors.postalCode}>
-                <Input value={deliveryAddress.postalCode} onChange={(event) => updateAddress("postalCode", event.target.value)} required={fulfillmentMethod === "delivery"} autoComplete="postal-code" aria-invalid={Boolean(fieldErrors.postalCode)} />
+                <Input value={deliveryAddress.postalCode} onChange={(event) => updateAddress("postalCode", event.target.value)} required autoComplete="postal-code" aria-invalid={Boolean(fieldErrors.postalCode)} />
               </Field>
             </div>
           ) : null}
@@ -225,7 +343,7 @@ export function CheckoutPanel() {
 
         <section className="surface-card p-6">
           <p className="editorial-kicker">Turnaround rules</p>
-          <h2 className="mt-2 text-2xl font-black text-ink">Production windows are set by PrintMe</h2>
+          <h2 className="mt-2 text-2xl font-black text-ink">Production windows are confirmed by PrintMe</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {timelineRules.map((rule) => (
               <div key={rule.title} className="rounded-[1.2rem] border border-line bg-canvas p-4">
@@ -240,27 +358,27 @@ export function CheckoutPanel() {
         <section className="surface-card p-6">
           <p className="editorial-kicker">Step 3</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Artwork and production notes</h2>
-          <Field label="Anything we should confirm before print?" hint="Use this for deadlines, colour notes, file naming, packaging details, or anything else we should double-check." className="mt-5">
+          <Field label="Anything we should confirm before print?" hint="Use this for deadlines, colour notes, file naming, packaging details, invoice references, or any other instruction." className="mt-5">
             <Textarea value={orderNotes} onChange={(event) => setOrderNotes(event.target.value)} rows={5} />
           </Field>
           <div className="mt-5 rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
             <p className="font-black text-ink">You do not need every file finalized to continue.</p>
             <p className="mt-1">
-              If artwork is still being updated, tell PrintMe what is missing and when to expect it. We will keep the order moving with the clearest next step possible.
+              If artwork is still being updated, tell PrintMe what is missing and when to expect it. The order can still move into structured review, quoting, or deposit collection.
             </p>
           </div>
           <div className="mt-5">
             <ArtworkUploadZone
               context={{ scope: "order", relatedLabel: "Checkout order" }}
               title="Attach artwork for this order"
-              description="Upload print-ready files now, or add a note if you want to send artwork after checkout."
+              description="Upload print-ready files now, or leave a note if artwork will be sent after checkout or after quote approval."
               helperText="For multi-item carts, name files clearly so we can match them to the correct product."
               className="shadow-none"
             />
           </div>
           <CheckboxTile checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-5 items-start">
             <span className="leading-6 text-slate">
-              I understand PrintMe may review artwork, production details, pickup or delivery requirements, and quote-only items before production begins. This helps prevent avoidable print issues.
+              I understand PrintMe may still need to confirm files, proofs, quote scope, deposits, remaining balances, and fulfillment details before production begins.
             </span>
           </CheckboxTile>
           {fieldErrors.accepted ? <p className="mt-2 text-sm text-brand">{fieldErrors.accepted}</p> : null}
@@ -268,11 +386,11 @@ export function CheckoutPanel() {
       </div>
 
       <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
-        <p className="editorial-kicker">Secure checkout</p>
-        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Confirm your print order</h2>
-        <p className="mt-2 text-sm leading-6 text-slate">Review what can be paid online now, what still needs staff confirmation, and what happens after you submit.</p>
+        <p className="editorial-kicker">Payment and checkout</p>
+        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Know exactly what you are paying now</h2>
+        <p className="mt-2 text-sm leading-6 text-slate">This order adapts between direct checkout, deposit collection, and review-first billing depending on product complexity, files, proofing, and quote needs.</p>
 
-        <div className="mt-5 max-h-[360px] space-y-4 overflow-y-auto pr-1">
+        <div className="mt-5 max-h-[300px] space-y-4 overflow-y-auto pr-1">
           {items.map((item) => (
             <article key={item.id} className="rounded-[1.35rem] border border-line/90 bg-white/88 p-4 shadow-[0_10px_22px_rgba(18,17,16,0.04)]">
               <div className="flex justify-between gap-4">
@@ -280,7 +398,7 @@ export function CheckoutPanel() {
                   <p className="font-black text-ink">{item.title}</p>
                   <p className="mt-1 text-xs text-slate">{item.optionLabels.slice(0, 3).map((option) => option.value).join(" / ")}</p>
                 </div>
-                <p className="text-sm font-black text-ink">{item.quoteOnly ? "Quote" : `$${((item.estimatedTotal || item.unitPrice) * item.quantity).toFixed(2)}`}</p>
+                <p className="text-sm font-black text-ink">{item.quoteOnly ? "Quote review" : `$${((item.estimatedTotal || item.unitPrice) * item.quantity).toFixed(2)}`}</p>
               </div>
             </article>
           ))}
@@ -288,72 +406,103 @@ export function CheckoutPanel() {
 
         <div className="mt-5 space-y-3 border-t border-line pt-5 text-sm">
           <div className="flex justify-between"><span>Estimated subtotal</span><span className="font-black text-ink">${subtotal.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate"><span>Payable online</span><span>${payableSubtotal.toFixed(2)}</span></div>
+          <div className="flex justify-between text-slate"><span>Direct-pay items</span><span>${payableSubtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Quote review items</span><span>{quoteItems.length}</span></div>
+          <div className="flex justify-between text-slate"><span>Payment path</span><span>{getPaymentCollectionPathLabel(paymentPlan.collectionPath)}</span></div>
           <div className="rounded-[1.25rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
-            After checkout, PrintMe confirms files, fulfillment, production window, and any review items before production begins.
+            <p className="font-black text-ink">{paymentPlan.paymentHeadline}</p>
+            <p className="mt-1">
+              {paymentPlan.dueNowCents > 0
+                ? `${formatPaymentPlanCurrency(paymentPlan.dueNowCents)} is due now.`
+                : "No online payment is collected now."}
+              {paymentPlan.dueLaterCents > 0 ? ` ${formatPaymentPlanCurrency(paymentPlan.dueLaterCents)} remains due later.` : ""}
+            </p>
           </div>
           <div className="focus-band px-4 py-3 text-xs leading-5 text-slate">
-            Secure checkout is powered by Stripe. PrintMe still confirms files, fulfillment, and any quote-review items before production begins.
+            Secure payment is handled by Stripe. PrintMe still checks file readiness, proof approval, quote scope, and fulfillment before production starts.
           </div>
         </div>
 
         <fieldset className="mt-5">
-          <legend className="mb-2 text-sm font-black text-ink">Payment option</legend>
+          <legend className="mb-2 text-sm font-black text-ink">Choose your payment path</legend>
           <div className="grid gap-2">
-            {[
-              { value: "full", label: "Pay online now", description: "Use Stripe Checkout for direct-order items that are ready for payment." },
-              { value: "deposit", label: "Pay after review", description: "Used for custom or quote-first jobs after PrintMe confirms specs, timing, and any extra costs.", disabled: true },
-            ].map((choice) => (
+            {paymentChoices.map((choice) => (
               <label
                 key={choice.value}
                 className={`rounded-[1.25rem] border p-3 ${
-                  paymentMode === choice.value ? "border-brand bg-brand-soft" : "border-line bg-white/80"
-                } ${choice.disabled ? "cursor-not-allowed opacity-65" : "cursor-pointer"}`}
+                  paymentPlan.checkoutMode === choice.value ? "border-brand bg-brand-soft" : "border-line bg-white/80"
+                } ${choice.enabled ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
               >
                 <input
                   type="radio"
                   name="paymentMode"
                   value={choice.value}
-                  checked={paymentMode === choice.value}
-                  onChange={(event) => setPaymentMode(event.target.value as "full" | "deposit")}
+                  checked={paymentPlan.checkoutMode === choice.value}
+                  onChange={(event) => {
+                    const nextMode = event.target.value as CheckoutPaymentMode;
+                    setPaymentMode(nextMode);
+                    trackPrintMeEvent({
+                      eventName: "checkout_payment_path_selected",
+                      pageType: "checkout",
+                      funnelName: "direct_checkout",
+                      funnelStage: "checkout",
+                      isMicroConversion: true,
+                      properties: {
+                        paymentMode: nextMode,
+                        dueNowCents: choice.value === "full" ? fullPlan.dueNowCents : choice.value === "deposit" ? depositPlan.dueNowCents : reviewPlan.dueNowCents,
+                      },
+                    });
+                  }}
                   className="sr-only"
-                  disabled={choice.disabled}
+                  disabled={!choice.enabled}
                 />
                 <span className="block text-sm font-bold text-ink">{choice.label}</span>
                 <span className="mt-1 block text-xs text-slate">{choice.description}</span>
+                <span className="mt-2 block text-[10px] font-black uppercase tracking-[0.16em] text-brand">
+                  {choice.enabled ? getCheckoutPaymentModeLabel(choice.value) : "Not available for this order mix"}
+                </span>
               </label>
             ))}
           </div>
         </fieldset>
 
-        {quoteItems.length > 0 ? (
-          <p className="mt-5 rounded-[1.3rem] border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
-            Quote-only items will be reviewed by PrintMe before final pricing or production approval.
-          </p>
-        ) : null}
-        {needsReviewOnly ? (
-          <p className="mt-5 rounded-[1.3rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
-            This checkout will send your details and files for review. If no online-payable items are in the cart, no Stripe payment step is required.
-          </p>
-        ) : null}
+        <div className="mt-5 rounded-[1.3rem] border border-line/80 bg-white/90 px-4 py-4 text-xs leading-5 text-slate">
+          <p className="font-black text-ink">Production release gates</p>
+          <div className="mt-2 space-y-2">
+            {paymentPlan.blocksProductionUntil.map((item) => (
+              <p key={item}>{item}</p>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-[1.3rem] border border-line/80 bg-white/90 px-4 py-4 text-xs leading-5 text-slate">
+          <p className="font-black text-ink">Accepted payment methods</p>
+          <p className="mt-2">{paymentPlan.acceptedMethods.join(" / ")}</p>
+          <div className="mt-3 space-y-2">
+            {paymentPlan.customerNotes.map((item) => (
+              <p key={item}>{item}</p>
+            ))}
+          </div>
+        </div>
 
         {error ? (
-          <FeedbackMessage id={errorId} tone="error" className="mt-5" >
+          <FeedbackMessage id={errorId} tone="error" className="mt-5">
             {error}
           </FeedbackMessage>
         ) : null}
 
         <Button type="submit" disabled={isPending} className="mt-6 w-full">
-          {isPending ? "Starting secure checkout..." : payableSubtotal > 0 ? "Continue to Secure Payment" : "Send Order for Review"}
+          {isPending ? "Starting secure checkout..." : paymentPlan.paymentCtaLabel}
         </Button>
         <p className="mt-3 text-xs leading-5 text-slate">
-          {payableSubtotal > 0
-            ? "You will be sent to Stripe for secure payment, then back to PrintMe for order review and fulfillment confirmation."
-            : "This sends the order details to PrintMe for review. The team will confirm pricing or next steps before production."}
+          {paymentPlan.checkoutMode === "review"
+            ? "This sends the order into structured staff review. PrintMe follows up with quote, deposit, or invoice instructions before production."
+            : paymentPlan.checkoutMode === "deposit"
+              ? "You will be sent to Stripe for secure deposit payment, then back to PrintMe for file, proof, and readiness review."
+              : "You will be sent to Stripe for secure payment, then back to PrintMe for order review and fulfillment confirmation."}
         </p>
         <Button type="button" variant="secondary" className="mt-3 w-full" onClick={openSupportChat}>
-          Ask About Files or Turnaround
+          Ask About Billing or Turnaround
         </Button>
         <p className="mt-4 text-xs leading-5 text-slate">
           Secure payment is handled by Stripe. For help, call {siteConfig.phone} or email {siteConfig.email}.

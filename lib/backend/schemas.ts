@@ -37,7 +37,7 @@ export const checkoutRequestSchema = z
       })
       .optional(),
     orderNotes: z.string().max(2000).optional(),
-    paymentMode: z.enum(["full", "deposit"]),
+    paymentMode: z.enum(["full", "deposit", "review"]),
     items: z.array(cartItemSchema).min(1),
     subtotal: z.number().min(0),
   })

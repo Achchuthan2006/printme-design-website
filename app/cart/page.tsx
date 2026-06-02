@@ -5,6 +5,7 @@ export const metadata = buildMetadata({
   title: "Cart",
   description: "Review your PrintMe cart and continue to checkout.",
   path: "/cart",
+  noIndex: true,
 });
 
 export default function CartPage() {

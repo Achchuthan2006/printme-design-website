@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { demoFiles } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 import { buildMetadata } from "@/lib/metadata";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 
@@ -15,11 +16,13 @@ export const metadata = buildMetadata({
 });
 
 export default function AccountFilesPage() {
+  const previewMode = !isSupabaseConfigured();
+  const files = previewMode ? demoFiles : [];
   const fileSummary = [
-    { label: "Saved files", value: String(demoFiles.length), detail: "Artwork kept ready for quotes, orders, and repeat jobs." },
-    { label: "Awaiting review", value: String(demoFiles.filter((file) => file.status === "awaiting_review").length), detail: "Files that still need PrintMe review before they can move forward." },
-    { label: "Approved for print", value: String(demoFiles.filter((file) => file.status === "approved_for_print").length), detail: "Artwork already cleared for future reuse." },
-    { label: "Reuse-ready", value: String(demoFiles.length), detail: "Files that can speed up repeat orders and support conversations." },
+    { label: "Saved files", value: String(files.length), detail: "Artwork kept ready for quotes, orders, and repeat jobs." },
+    { label: "Awaiting review", value: String(files.filter((file) => file.status === "awaiting_review").length), detail: "Files that still need PrintMe review before they can move forward." },
+    { label: "Approved for print", value: String(files.filter((file) => file.status === "approved_for_print").length), detail: "Artwork already cleared for future reuse." },
+    { label: "Reuse-ready", value: String(files.length), detail: "Files that can speed up repeat orders and support conversations." },
   ];
 
   return (
@@ -47,18 +50,18 @@ export default function AccountFilesPage() {
                 className="shadow-none"
               />
             </div>
-            {demoFiles.length === 0 ? (
+            {files.length === 0 ? (
               <div className="mt-6">
                 <EmptyState
-                  title="No files uploaded"
-                  description="Upload artwork with a quote request so PrintMe can review the file before production."
+                  title={previewMode ? "No files uploaded" : "No live files uploaded yet"}
+                  description={previewMode ? "Upload artwork with a quote request so PrintMe can review the file before production." : "Uploaded artwork will appear here once files are attached to a real quote, order, or account upload."}
                   ctaLabel="Get My Quote"
                   ctaHref="/quote-request"
                 />
               </div>
             ) : (
               <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {demoFiles.map((file) => (
+                {files.map((file) => (
                   <article
                     key={file.id}
                     className="rounded-2xl border border-line/90 p-5 transition hover:border-brand/25 hover:bg-brand-soft/20"

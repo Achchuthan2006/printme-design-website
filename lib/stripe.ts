@@ -1,11 +1,11 @@
 import Stripe from "stripe";
-import { CartItem, OrderSnapshot } from "@/types";
+import { CartItem, CheckoutPaymentMode, OrderSnapshot } from "@/types";
 import { env } from "@/lib/env";
 import { stripeCheckoutMetadataSchema } from "@/lib/backend/schemas";
 
 export interface CheckoutSessionInput {
   order: OrderSnapshot;
-  mode: "deposit" | "full";
+  mode: CheckoutPaymentMode;
   successUrl: string;
   cancelUrl: string;
   idempotencyKey?: string;
@@ -19,13 +19,14 @@ export function getStripeClient() {
 
 function buildLineItems(
   items: CartItem[],
-  paymentMode: "deposit" | "full",
+  paymentMode: CheckoutPaymentMode,
+  depositRate: number,
 ): NonNullable<Stripe.Checkout.SessionCreateParams["line_items"]> {
   return items
     .filter((item) => !item.quoteOnly && (item.estimatedTotal || item.unitPrice) > 0)
     .map((item) => {
       const unitAmount = Math.max(100, Math.round((item.estimatedTotal || item.unitPrice) * 100));
-      const depositAmount = Math.max(100, Math.round(unitAmount * 0.5));
+      const depositAmount = Math.max(100, Math.round(unitAmount * depositRate));
 
       return {
         quantity: item.quantity,
@@ -52,7 +53,7 @@ export async function createCheckoutSession(input: CheckoutSessionInput) {
     };
   }
 
-  const lineItems = buildLineItems(input.order.items, input.mode);
+  const lineItems = buildLineItems(input.order.items, input.mode, input.order.paymentPlan.depositRate);
 
   if (lineItems.length === 0) {
     return {

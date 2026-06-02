@@ -9,10 +9,14 @@ export function CheckoutResult({
   status,
   orderNumber,
   demo,
+  paymentMode,
+  balanceDue,
 }: {
   status: "success" | "cancel" | "failure";
   orderNumber?: string;
   demo?: boolean;
+  paymentMode?: "full" | "deposit" | "review";
+  balanceDue?: string;
 }) {
   const { clearCart } = useCart();
 
@@ -22,13 +26,21 @@ export function CheckoutResult({
 
   const copy = {
     success: {
-      eyebrow: demo ? "Demo checkout" : "Payment received",
+      eyebrow: demo ? "Demo checkout" : paymentMode === "deposit" ? "Deposit received" : paymentMode === "review" ? "Order sent for review" : "Payment received",
       title: "Your print order is in.",
       body:
-        "PrintMe will review artwork, production details, pickup or delivery requirements, and follow up if anything needs attention before production begins.",
+        paymentMode === "review"
+          ? "PrintMe will review artwork, specs, and production requirements before sending the next payment step."
+          : paymentMode === "deposit"
+            ? "PrintMe received the initial payment and will keep the job in review until the remaining balance and production gates are clear."
+            : "PrintMe will review artwork, production details, pickup or delivery requirements, and follow up if anything needs attention before production begins.",
       steps: [
-        "You will receive order confirmation and payment details by email.",
-        "The team reviews files, fulfillment notes, and any quote-review items before production starts.",
+        paymentMode === "review"
+          ? "You will receive order confirmation and the next billing step after staff review."
+          : "You will receive order confirmation and payment details by email.",
+        paymentMode === "deposit"
+          ? `The team reviews files, fulfillment notes, and proof requirements before the remaining balance${balanceDue ? ` of ${balanceDue}` : ""} is collected.`
+          : "The team reviews files, fulfillment notes, and any quote-review items before production starts.",
         "If anything needs clarification, PrintMe reaches out before the job moves ahead.",
       ],
     },
@@ -66,6 +78,11 @@ export function CheckoutResult({
         </p>
       ) : null}
       <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate">{copy.body}</p>
+      {status === "success" && paymentMode === "deposit" && balanceDue ? (
+        <p className="mx-auto mt-4 max-w-xl rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-black text-ink">
+          Remaining balance due later: {balanceDue}
+        </p>
+      ) : null}
       <div className="mx-auto mt-6 grid max-w-2xl gap-3 md:grid-cols-3">
         {copy.steps.map((step, index) => (
           <div key={step} className="rounded-[1.2rem] border border-line/80 bg-white/88 px-4 py-4 text-left shadow-soft">

@@ -1,16 +1,20 @@
 import { PageHero } from "@/components/ui/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
 import { buildMetadata } from "@/lib/metadata";
+import { buildBreadcrumbSchema, buildFaqSchema } from "@/lib/seo";
 import { faqs } from "@/lib/site";
 
 export const metadata = buildMetadata({
   title: "FAQ",
   description: "Answers about printing services, rush turnaround, custom orders, design support, pickup, delivery, and online quote requests at PrintMe Design.",
   path: "/faq",
+  keywords: ["print shop faq", "printing questions scarborough", "rush printing faq"],
 });
 
 export default function FaqPage() {
   return (
     <>
+      <JsonLd data={[buildBreadcrumbSchema([{ label: "FAQ" }]), buildFaqSchema(faqs)!]} />
       <PageHero
         title="Frequently asked questions"
         description="A simple FAQ for customers who need help with services, timing, design support, pickup, delivery, and how to get started."

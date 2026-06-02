@@ -4,6 +4,17 @@ import { ArtworkUploadContext, ArtworkUploadMetadata } from "@/types";
 const UPLOAD_BUCKET = "print-files";
 const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 const ALLOWED_FILE_EXTENSIONS = new Set(["pdf", "ai", "eps", "psd", "jpg", "jpeg", "png", "tif", "tiff", "zip"]);
+const ALLOWED_MIME_TYPES = new Set([
+  "application/pdf",
+  "application/postscript",
+  "application/illustrator",
+  "application/zip",
+  "application/x-zip-compressed",
+  "image/jpeg",
+  "image/png",
+  "image/tiff",
+  "image/vnd.adobe.photoshop",
+]);
 
 function safeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
@@ -16,8 +27,16 @@ function validateArtworkFile(file: File) {
     throw new Error("Please upload a print-ready file type such as PDF, AI, EPS, JPG, PNG, TIFF, PSD, or ZIP.");
   }
 
+  if (file.size <= 0) {
+    throw new Error("This file looks empty. Please choose the final artwork file and try again.");
+  }
+
   if (file.size > MAX_FILE_SIZE_BYTES) {
     throw new Error("This file is over 50 MB. Please compress it or contact PrintMe for large-file transfer help.");
+  }
+
+  if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
+    throw new Error("This file type is not supported for secure upload. Please export a PDF, image, source file, or ZIP package.");
   }
 }
 

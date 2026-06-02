@@ -1,6 +1,7 @@
 import { FaqItem, ServiceItem, TestimonialItem, WhyChooseItem } from "@/types";
+import { getDefaultSiteContext } from "@/lib/tenancy";
 
-export const siteConfig = {
+export const baseSiteConfig = {
   name: "PrintMe Design",
   brandName: "PrintMe",
   tagline: "Scarborough print and design support with clear quotes and dependable local follow-through.",
@@ -13,22 +14,47 @@ export const siteConfig = {
   shortAddress: "1585 Markham Road, Scarborough",
   cityRegion: "Scarborough & Toronto",
   serviceArea: "Scarborough, Toronto & GTA",
+  serviceAreaLocations: ["Scarborough", "Toronto", "Markham", "North York", "Pickering", "GTA"],
   experience: "20+ Years of Experience",
+  location: {
+    streetAddress: "1585 Markham Road Unit 103",
+    addressLocality: "Scarborough",
+    addressRegion: "ON",
+    postalCode: "M1B 2W1",
+    addressCountry: "CA",
+  },
   hours: [
     "Mon - Fri: 9:00 AM - 6:00 PM",
     "Sat: 10:00 AM - 4:00 PM",
     "Sun: By appointment",
   ],
+  hoursSpecification: [
+    {
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "09:00",
+      closes: "18:00",
+    },
+    {
+      dayOfWeek: ["Saturday"],
+      opens: "10:00",
+      closes: "16:00",
+    },
+  ],
   description:
     "A Scarborough print shop for business printing, document printing, passport photos, banners, cheques, technical prints, and custom jobs with practical guidance from quote to pickup.",
 };
 
+const defaultSiteContext = getDefaultSiteContext();
+
+export const siteConfig = {
+  ...baseSiteConfig,
+  ...defaultSiteContext.tenant.site,
+};
+
 export const navigation = [
-  { label: "Products", href: "/products" },
-  { label: "Services", href: "/services" },
+  ...defaultSiteContext.navigation.slice(0, 2),
   { label: "About Us", href: "/about" },
-  { label: "Support", href: "/support" },
-  { label: "Contact", href: "/contact" },
+  ...defaultSiteContext.navigation.slice(2),
 ];
 
 export const serviceOptions = [
@@ -45,6 +71,12 @@ export const serviceOptions = [
   "Promotional Printing",
   "Print & Mail Services",
   "Graphic Design Services",
+  "Packaging & Label Printing",
+  "Apparel Printing",
+  "Promotional Products",
+  "Invitation & Event Print",
+  "Branding & Launch Support",
+  "Rush Printing Review",
   "Passport Photos",
   "Engineering Drawing Prints",
   "Manual Cheques",
@@ -137,6 +169,48 @@ export const services: ServiceItem[] = [
     description: "Print-focused design help for business cards, flyers, brochures, signs, postcards, and custom jobs.",
     icon: "spark",
     badge: "Design help",
+  },
+  {
+    slug: "packaging-label-printing",
+    title: "Packaging & Label Printing",
+    description: "Labels, inserts, sleeves, product wraps, and packaging-style print that needs custom review and brand polish.",
+    icon: "sticker",
+    badge: "Packaging",
+  },
+  {
+    slug: "apparel-printing",
+    title: "Apparel Printing",
+    description: "Branded tees, hoodies, polos, uniforms, and event apparel with sourcing and decoration guidance.",
+    icon: "bag",
+    badge: "Apparel",
+  },
+  {
+    slug: "promotional-products",
+    title: "Promotional Products",
+    description: "Mugs, pens, tote bags, notebooks, giveaway items, and campaign-ready merch bundles.",
+    icon: "spark",
+    badge: "Promo",
+  },
+  {
+    slug: "invitation-event-print",
+    title: "Invitation & Event Print",
+    description: "Invitations, greeting cards, thank-you pieces, event inserts, and premium printed suites.",
+    icon: "envelope",
+    badge: "Premium",
+  },
+  {
+    slug: "branding-launch-support",
+    title: "Branding & Launch Support",
+    description: "Coordinated business launch systems combining design, stationery, signage, handouts, and packaging support.",
+    icon: "custom",
+    badge: "Bundle",
+  },
+  {
+    slug: "rush-printing-review",
+    title: "Rush Printing Review",
+    description: "Same-day and urgent print review for ready-artwork jobs that need a realistic timing answer first.",
+    icon: "clock",
+    badge: "Urgent",
   },
   {
     slug: "passport-photos",

@@ -6,6 +6,7 @@ export const metadata = buildMetadata({
   title: "Order Status",
   description: "Check the status of a PrintMe order or quote.",
   path: "/order-status",
+  noIndex: true,
 });
 
 export default function OrderStatusPage() {

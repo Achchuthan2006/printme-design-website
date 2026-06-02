@@ -29,7 +29,12 @@ export async function POST(request: Request) {
     }
 
     const rawBody = await request.text();
-    const body = JSON.parse(rawBody) as unknown;
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody) as unknown;
+    } catch {
+      return NextResponse.json({ message: "Checkout request body is invalid." }, { status: 400 });
+    }
     const parsed = checkoutRequestSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -60,7 +65,7 @@ export async function POST(request: Request) {
     const persistence = await persistOrderDraft({
       payload: parsed.data as CheckoutPayload,
       order,
-      paymentMode: parsed.data.paymentMode,
+      paymentMode: order.paymentMode,
       requestMeta: {
         ipAddress: ip,
         userAgent: request.headers.get("user-agent") ?? undefined,
@@ -68,8 +73,8 @@ export async function POST(request: Request) {
       },
     });
 
-    const successUrl = `${env.siteUrl}/checkout/success?order=${encodeURIComponent(order.orderNumber)}`;
-    const cancelUrl = `${env.siteUrl}/checkout/cancel?order=${encodeURIComponent(order.orderNumber)}`;
+    const successUrl = `${env.siteUrl}/checkout/success?order=${encodeURIComponent(order.orderNumber)}&mode=${encodeURIComponent(order.paymentMode)}${order.amountDueLaterCents > 0 ? `&balance=${order.amountDueLaterCents}` : ""}`;
+    const cancelUrl = `${env.siteUrl}/checkout/cancel?order=${encodeURIComponent(order.orderNumber)}&mode=${encodeURIComponent(order.paymentMode)}`;
     const billingCustomer = await ensureStripeCustomer({
       email: parsed.data.customer.email,
       fullName: parsed.data.customer.fullName,
@@ -78,7 +83,7 @@ export async function POST(request: Request) {
 
     const session = await createCheckoutSession({
       order,
-      mode: parsed.data.paymentMode,
+      mode: order.paymentMode,
       successUrl,
       cancelUrl,
       idempotencyKey,
@@ -94,7 +99,7 @@ export async function POST(request: Request) {
 
     await recordCheckoutBillingRecord({
       order,
-      paymentMode: parsed.data.paymentMode,
+      paymentMode: order.paymentMode,
       stripeCustomerId: billingCustomer.stripeCustomerId,
       stripeSessionId: "sessionId" in session ? session.sessionId : null,
       currency: "cad",
@@ -117,9 +122,15 @@ export async function POST(request: Request) {
       entityId: order.orderNumber,
       source: "web",
       path: "/checkout",
+      funnelName: "direct_checkout",
       funnelStage: "checkout",
+      pageType: "checkout",
+      journey: "direct_checkout",
+      isConversion: true,
+      value: order.amountDueNowCents / 100,
+      currency: "CAD",
       properties: {
-        paymentMode: parsed.data.paymentMode,
+        paymentMode: order.paymentMode,
         fulfillmentMethod: parsed.data.fulfillmentMethod,
         itemCount: order.items.length,
         stripeStatus: session.status,
@@ -127,7 +138,7 @@ export async function POST(request: Request) {
     });
     await recordNotificationInboxItem({
       title: `New order created: ${order.orderNumber}`,
-      detail: `Checkout started for ${order.items.length} item(s) with ${parsed.data.paymentMode} payment mode.`,
+      detail: `Checkout started for ${order.items.length} item(s) with ${order.paymentMode} payment mode.`,
       audience: "staff",
       channel: session.status === "demo" ? "system" : "payment",
       priority: order.quoteReviewRequired ? "high" : "normal",

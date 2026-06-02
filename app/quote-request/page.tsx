@@ -1,6 +1,8 @@
 import { QuoteRequestForm } from "@/components/forms/quote-request-form";
+import { QuotePricingGuidance } from "@/components/forms/quote-pricing-guidance";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
+import { ContextualHelpPanel } from "@/components/support/contextual-help-panel";
 import { PageHero } from "@/components/ui/page-hero";
 import { buildMetadata } from "@/lib/metadata";
 
@@ -79,7 +81,11 @@ export default async function QuoteRequestPage({
                 ))}
               </div>
             </div>
+            <QuotePricingGuidance serviceSlug={service} />
           </aside>
+        </div>
+        <div className="container-shell mt-8">
+          <ContextualHelpPanel context="quote" title="Quote help built into the request flow" />
         </div>
         <div className="container-shell mt-8">
           <LocalTrustStrip />

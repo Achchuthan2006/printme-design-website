@@ -60,6 +60,7 @@ export function QuotesHistoryPanel({ quotes }: { quotes: AccountQuote[] }) {
             ) : null}
             <div className="mt-4 flex flex-wrap gap-3">
               <Link href={`/account/quotes/${quote.id}`} className="text-sm font-bold text-brand">Review Details</Link>
+              {quote.proofPortalId ? <Link href={`/account/proofs/${quote.proofPortalId}`} className="text-sm font-bold text-ink">Open Proof</Link> : null}
               <Link href={`/quote-request?service=${encodeURIComponent(quote.service)}`} className="text-sm font-bold text-slate">Update Quote Details</Link>
             </div>
           </article>

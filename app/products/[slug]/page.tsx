@@ -1,6 +1,13 @@
 import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
 import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
+import { AiDesignStarter } from "@/components/ai/ai-design-starter";
+import { FileReadinessAssistant } from "@/components/ai/file-readiness-assistant";
+import { IntelligentOrderPath } from "@/components/ai/intelligent-order-path";
+import { SmartProductRecommendations } from "@/components/ai/smart-product-recommendations";
+import { SmartTemplateRecommendations } from "@/components/ai/smart-template-recommendations";
+import { ContextualHelpPanel } from "@/components/support/contextual-help-panel";
+import { InteractiveProductExperience } from "@/components/catalog/interactive-product-experience";
 import { ProductSizePreview } from "@/components/catalog/product-size-preview";
 import { ProductConfigurator } from "@/components/commerce/product-configurator";
 import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
@@ -10,18 +17,24 @@ import { FinalCta } from "@/components/catalog/final-cta";
 import { ProductDecisionTools } from "@/components/catalog/product-decision-tools";
 import { ProductEngagementActions } from "@/components/catalog/product-engagement-actions";
 import { ProductPageBridge } from "@/components/catalog/product-page-bridge";
+import { ProductPricingSystemPanel } from "@/components/catalog/product-pricing-system-panel";
 import { ProductActions } from "@/components/catalog/product-actions";
 import { RelatedServices } from "@/components/catalog/related-services";
+import { JsonLd } from "@/components/seo/json-ld";
 import { SpecList } from "@/components/catalog/spec-list";
 import { ServiceSupportPanel } from "@/components/catalog/service-support-panel";
 import { TrustStrip } from "@/components/catalog/trust-strip";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { buildMetadata } from "@/lib/metadata";
-import { getCategoryBySlug, getProductBySlug, getRelatedProducts, products } from "@/data/products";
+import { buildBreadcrumbSchema, buildFaqSchema, buildProductSchema } from "@/lib/seo";
+import { defaultPricingRule, pricingRules } from "@/data/pricing-rules";
+import { catalogProductPages, getCategoryBySlug, getProductBySlug, getRelatedProducts } from "@/data/products";
+import { getServicePageHrefByServiceSlug } from "@/data/services";
 
 const ProductOrderStudio = dynamic(
   () => import("@/components/catalog/product-order-studio").then((module) => module.ProductOrderStudio),
@@ -31,7 +44,7 @@ const ProductOrderStudio = dynamic(
 );
 
 export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+  return catalogProductPages.map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -42,6 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: product.title,
     description: product.description,
     path: `/products/${product.slug}`,
+    keywords: [product.title.toLowerCase(), `${product.title.toLowerCase()} scarborough`, `${product.title.toLowerCase()} toronto`],
   });
 }
 
@@ -55,6 +69,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const highlightedOptions = product.options
     .filter((option) => option.choices && option.choices.length > 1)
     .slice(0, 3);
+  const pricingRule = pricingRules[product.slug] ?? defaultPricingRule;
+  const faqSchema = buildFaqSchema(product.faqs);
+  const serviceHref = getServicePageHrefByServiceSlug(product.slug);
   const supportPathCopy =
     product.ctaMode === "direct-order"
       ? "Best when the size, quantity, and basic finish are already clear and you want the fastest route into cart."
@@ -80,7 +97,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <>
-      <ProductPageBridge slug={product.slug} />
+      <JsonLd
+        data={[
+          buildBreadcrumbSchema([
+            { label: "Products", href: "/products" },
+            ...(category ? [{ label: category.title, href: `/products/category/${category.slug}` }] : []),
+            { label: product.title },
+          ]),
+          buildProductSchema(product, category, `/products/${product.slug}`),
+          ...(faqSchema ? [faqSchema] : []),
+        ]}
+      />
+      <ProductPageBridge slug={product.slug} categorySlug={product.categorySlug} />
       <section className="relative overflow-hidden bg-white section-space">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.10),transparent_28rem),radial-gradient(circle_at_86%_14%,rgba(31,27,24,0.05),transparent_24rem)]" aria-hidden="true" />
         <div className="container-shell relative">
@@ -94,7 +122,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="hero-panel mt-8 px-6 py-7 sm:px-8 lg:px-10 lg:py-10">
             <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
               <div>
-                <p className="editorial-kicker">{product.category}</p>
+                <p className="editorial-kicker">{product.productLine ?? product.category}</p>
                 <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.92] sm:text-[4.3rem]">{product.title}</h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{product.description}</p>
                 <p className="mt-4 max-w-2xl rounded-[1.4rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm font-bold leading-6 text-brand">
@@ -131,8 +159,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <LocalTrustStrip />
             <div className="grid gap-5 md:grid-cols-3">
               <article className="premium-surface p-5">
-                <p className="text-sm font-bold text-slate">Starting price</p>
-                <p className="mt-3 text-3xl font-black text-ink">{product.startingPrice ? `$${product.startingPrice}` : "Quote"}</p>
+                <p className="text-sm font-bold text-slate">Pricing path</p>
+                <p className="mt-3 text-3xl font-black text-ink">
+                  {pricingRule.behavior === "instant" ? `From $${pricingRule.minimumCharge}` : pricingRule.behavior === "estimate" ? `Est. $${pricingRule.minimumCharge}+` : "Custom quote"}
+                </p>
               </article>
               <article className="premium-surface p-5">
                 <p className="text-sm font-bold text-slate">Turnaround</p>
@@ -148,6 +178,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       : product.ctaMode === "contact"
                         ? "Call or visit the shop"
                         : "Quote-first review"}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-slate">
+                  {pricingRule.behavior === "instant"
+                    ? "Standard configurations can usually move into checkout."
+                    : pricingRule.behavior === "estimate"
+                      ? "Pricing starts as an estimate and may still need staff confirmation."
+                      : "Manual review protects pricing accuracy and margin on this job."}
                 </p>
               </article>
             </div>
@@ -182,11 +219,49 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <PrintReadyChecklist compact />
         </div>
         <div className="container-shell mt-8">
+          <InteractiveProductExperience product={product} />
+        </div>
+        <div className="container-shell mt-8">
           <ProductSizePreview slug={product.slug} title={product.title} />
         </div>
         <div className="container-shell mt-8">
           <ProductDecisionTools product={product} />
         </div>
+        <div className="container-shell mt-8 grid gap-8 xl:grid-cols-2">
+          <IntelligentOrderPath product={product} />
+          <FileReadinessAssistant product={product} />
+        </div>
+        <div className="container-shell mt-8">
+          <ContextualHelpPanel context="product" title={`Support for choosing the right ${product.title.toLowerCase()} path`} />
+        </div>
+        <div className="container-shell mt-8">
+          <SmartTemplateRecommendations product={product} />
+        </div>
+        <div className="container-shell mt-8">
+          <AiDesignStarter product={product} />
+        </div>
+        <div className="container-shell mt-8">
+          <SmartProductRecommendations product={product} />
+        </div>
+        <div className="container-shell mt-8">
+          <ProductPricingSystemPanel product={product} />
+        </div>
+        {serviceHref ? (
+          <div className="container-shell mt-8">
+            <div className="surface-card p-6">
+              <p className="editorial-kicker">Need guidance first?</p>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <h2 className="mt-2 text-3xl font-black text-ink">Use the matching service page when the job still needs a conversation.</h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
+                    This product page is built for specifications and ordering. The service page is better when stock, finish, timing, or use-case fit still needs advice before you lock the job in.
+                  </p>
+                </div>
+                <Button href={serviceHref} variant="secondary">Open Service Page</Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
         {highlightedOptions.length > 0 ? (
           <div className="container-shell mt-8">
             <div className="surface-card p-6">

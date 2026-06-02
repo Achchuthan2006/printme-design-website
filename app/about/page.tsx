@@ -1,16 +1,28 @@
 import { PageHero } from "@/components/ui/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
 import { buildMetadata } from "@/lib/metadata";
+import { buildBreadcrumbSchema, buildLocalBusinessSchema } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const metadata = buildMetadata({
   title: "About",
   description: "Learn more about PrintMe Design, a Scarborough print shop with 20+ years of experience, custom solutions, fast turnaround, and personalized service.",
   path: "/about",
+  keywords: ["about printme", "scarborough print shop", "local print business scarborough"],
 });
 
 export default function AboutPage() {
   return (
     <>
+      <JsonLd
+        data={[
+          buildBreadcrumbSchema([{ label: "About" }]),
+          buildLocalBusinessSchema({
+            path: "/about",
+            description: "About PrintMe Design, a Scarborough print shop serving local business and custom print needs.",
+          }),
+        ]}
+      />
       <PageHero
         title="A Scarborough print shop with 20+ years of hands-on experience"
         description="PrintMe Design is a one-stop local print partner for documents, marketing materials, business stationery, packaging support, technical prints, and custom orders."

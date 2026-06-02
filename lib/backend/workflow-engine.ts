@@ -6,6 +6,7 @@ import {
   updateOrderPaymentState,
 } from "@/lib/backend/repository";
 import { OrderWorkflowStatus, PaymentWorkflowStatus, WorkflowEventType } from "@/lib/backend/workflows";
+import { CheckoutPaymentMode } from "@/types";
 
 const paymentStatusTransitions: Record<PaymentWorkflowStatus, PaymentWorkflowStatus[]> = {
   pending: ["requires_action", "paid", "failed", "cancelled", "refunded", "demo"],
@@ -75,7 +76,7 @@ export async function applyPaymentWorkflowTransition(params: {
     providerCustomerId: existing?.provider_customer_id ?? null,
     providerCheckoutSessionId: params.stripeSessionId ?? existing?.provider_checkout_session_id ?? null,
     providerPaymentIntentId: params.stripePaymentIntentId ?? existing?.provider_payment_intent_id ?? null,
-    paymentMode: existing?.payment_mode ?? "full",
+    paymentMode: (existing?.payment_mode ?? "full") as CheckoutPaymentMode,
     status: params.toStatus,
     amountAuthorizedCents: existing?.amount_authorized_cents ?? params.amountCents ?? null,
     amountCapturedCents: params.toStatus === "paid" ? params.amountCents ?? existing?.amount_captured_cents ?? null : existing?.amount_captured_cents ?? null,

@@ -2,14 +2,17 @@ import { notFound } from "next/navigation";
 import { ProtectedAccount } from "@/components/account/protected-account";
 import { StatusBadge } from "@/components/account/status-badge";
 import { Button } from "@/components/ui/button";
-import { accountQuoteProgress, demoFiles, demoQuotes } from "@/data/account";
+import { accountQuoteProgress, demoFiles, demoQuotes, getProofPortalById } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 import { StatusTimeline } from "@/components/platform/status-timeline";
 
 export default async function AccountQuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  if (isSupabaseConfigured()) notFound();
   const { id } = await params;
   const quote = demoQuotes.find((item) => item.id === id);
   if (!quote) notFound();
   const linkedFiles = demoFiles.filter((file) => quote.linkedFiles?.includes(file.id));
+  const linkedProof = quote.proofPortalId ? getProofPortalById(quote.proofPortalId) : null;
 
   return (
     <section className="section-space bg-canvas">
@@ -61,6 +64,34 @@ export default async function AccountQuoteDetailPage({ params }: { params: Promi
                   </section>
                 ) : null}
 
+                {linkedProof ? (
+                  <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Proof workflow</p>
+                        <h2 className="mt-2 text-2xl font-black text-ink">{linkedProof.jobName}</h2>
+                        <p className="mt-2 text-sm leading-6 text-slate">
+                          This quote is already tied to a proof review cycle with version history, structured revisions, and final sign-off protection.
+                        </p>
+                      </div>
+                      {quote.proofStatus ? <StatusBadge status={quote.proofStatus} /> : null}
+                    </div>
+                    <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
+                      <div className="rounded-[1.2rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                        <p className="font-black text-ink">Current proof step</p>
+                        <p className="mt-2">{linkedProof.nextStepMessage}</p>
+                      </div>
+                      <div className="rounded-[1.2rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                        <p className="font-black text-ink">Approval protection</p>
+                        <p className="mt-2">{linkedProof.approvalWarning}</p>
+                      </div>
+                      <Button href={`/account/proofs/${linkedProof.id}`} className="h-fit">
+                        Open Proof Portal
+                      </Button>
+                    </div>
+                  </section>
+                ) : null}
+
                 <StatusTimeline
                   title="Quote progress"
                   items={accountQuoteProgress[quote.id] ?? [
@@ -73,13 +104,14 @@ export default async function AccountQuoteDetailPage({ params }: { params: Promi
                 <h2 className="text-2xl font-black text-ink">Actions</h2>
                 <div className="mt-5 grid gap-3">
                   <Button href={`/quote-request?service=${encodeURIComponent(quote.service)}`}>Update Quote</Button>
+                  {linkedProof ? <Button href={`/account/proofs/${linkedProof.id}`} variant="secondary">Review Proof</Button> : null}
                   <Button href="/account/files" variant="secondary">Review Linked Files</Button>
                   <Button href="/support" variant="secondary">Ask About This Quote</Button>
                 </div>
                 <div className="mt-5 rounded-[1.25rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
                   <p className="font-black text-ink">Quote-to-order readiness</p>
                   <p className="mt-1">
-                    Approved and priced quotes are structured to become production-ready orders once the final files, quantities, and fulfillment details are confirmed.
+                    Approved and priced quotes are structured to become production-ready orders once the final files, quantities, fulfillment details, and payment step are confirmed.
                   </p>
                 </div>
                 <p className="mt-4 text-xs leading-5 text-slate">

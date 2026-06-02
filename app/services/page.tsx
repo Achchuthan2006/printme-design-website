@@ -3,11 +3,14 @@ import { PageHero } from "@/components/ui/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { CategoryDirectory } from "@/components/catalog/category-directory";
 import { ReviewProofPanel } from "@/components/conversion/review-proof-panel";
+import { JsonLd } from "@/components/seo/json-ld";
 import { ServiceCard } from "@/components/sections/service-card";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { buildMetadata } from "@/lib/metadata";
+import { buildBreadcrumbSchema, buildCollectionPageSchema } from "@/lib/seo";
 import { localLandingPages } from "@/data/cro";
 import { brandVisuals } from "@/data/brand-visuals";
+import { servicePages } from "@/data/services";
 import { services } from "@/lib/site";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,6 +19,12 @@ export const metadata = buildMetadata({
   title: "Print Services in Scarborough",
   description: "Explore business cards, flyers, brochures, posters, signs, stickers, document printing, rush printing, and custom print services at PrintMe Design in Scarborough.",
   path: "/services",
+  keywords: [
+    "print services scarborough",
+    "printing services toronto",
+    "local print shop scarborough",
+    "custom print services",
+  ],
 });
 
 export default function ServicesPage() {
@@ -36,6 +45,20 @@ export default function ServicesPage() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          buildBreadcrumbSchema([{ label: "Services" }]),
+          buildCollectionPageSchema({
+            name: "Print Services",
+            description: "Service landing pages for PrintMe's major print offerings.",
+            path: "/services",
+            items: servicePages.map((service) => ({
+              name: service.title,
+              path: `/services/${service.slug}`,
+            })),
+          }),
+        ]}
+      />
       <PageHero
         title="Choose the print service, then take the clearest next step."
         description="PrintMe handles business cards, flyers, banners, documents, passport photos, technical prints, and custom jobs with practical local guidance from file setup to pickup."

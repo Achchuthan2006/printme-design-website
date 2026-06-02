@@ -1,4 +1,5 @@
 import { PageHero } from "@/components/ui/page-hero";
+import { ContextualHelpPanel } from "@/components/support/contextual-help-panel";
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { artworkGuidelines, uploadWorkflowStatuses } from "@/data/support";
 import { buildMetadata } from "@/lib/metadata";
@@ -68,6 +69,9 @@ export default function ArtworkGuidelinesPage() {
                 If the file is not ready yet, that does not stop the job. PrintMe can still guide the safest next step through quote review or design help first.
               </div>
             </section>
+          </div>
+          <div className="mt-8">
+            <ContextualHelpPanel context="artwork" title="Artwork support where file issues actually happen" />
           </div>
         </div>
       </section>

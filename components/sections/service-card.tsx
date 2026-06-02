@@ -3,8 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 import { ServiceItem } from "@/types";
+import Link from "next/link";
+import { getServicePageHrefByServiceSlug } from "@/data/services";
 
 export function ServiceCard({ service, featured = false }: { service: ServiceItem; featured?: boolean }) {
+  const serviceHref = getServicePageHrefByServiceSlug(service.slug);
+  const quoteHref = `/quote-request?service=${encodeURIComponent(service.title)}`;
+
   return (
     <article className="group premium-card premium-surface flex h-full flex-col overflow-hidden p-3 hover:border-brand/25 hover:shadow-card">
       <ServiceProductVisual slug={service.slug} />
@@ -16,14 +21,20 @@ export function ServiceCard({ service, featured = false }: { service: ServiceIte
           {service.badge || featured ? <Badge>{featured ? "Featured" : service.badge}</Badge> : null}
         </div>
         <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate">Print path</p>
-        <h3 className="mt-2 text-[1.2rem] font-black leading-[1.05] text-ink">{service.title}</h3>
+        <h3 className="mt-2 text-[1.2rem] font-black leading-[1.05] text-ink">
+          <Link href={serviceHref ?? quoteHref} className="transition hover:text-brand">
+            {service.title}
+          </Link>
+        </h3>
         <p className="mt-3 flex-1 text-sm leading-6 text-slate">{service.description}</p>
         <div className="focus-band mt-4 p-3 text-xs leading-5 text-slate">
           Best when you want a local team to review the job, clarify the specs, and point you to the fastest realistic next step.
         </div>
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-black/5 pt-4">
-          <span className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Quote-first support</span>
-          <Button href="/quote-request" variant="secondary" className="px-3 py-2.5 text-xs">
+        <div className="mt-4 grid gap-3 border-t border-black/5 pt-4 sm:grid-cols-2">
+          <Button href={serviceHref ?? "/services"} variant="secondary" className="px-3 py-2.5 text-xs">
+            {serviceHref ? "View Service" : "View Services"}
+          </Button>
+          <Button href={quoteHref} className="px-3 py-2.5 text-xs">
             Request a Quote
           </Button>
         </div>

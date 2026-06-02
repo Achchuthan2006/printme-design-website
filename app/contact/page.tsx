@@ -1,14 +1,17 @@
 import { PageHero } from "@/components/ui/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { Icon } from "@/components/ui/icon";
 import { buildMetadata } from "@/lib/metadata";
+import { buildBreadcrumbSchema, buildLocalBusinessSchema } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const metadata = buildMetadata({
-  title: "Contact",
+  title: "Contact PrintMe",
   description: "Contact PrintMe Design in Scarborough for document printing, passport photos, flyers, banners, cheques, technical drawings, and custom print work.",
   path: "/contact",
+  keywords: ["print shop contact scarborough", "print shop address scarborough", "local print shop phone number"],
 });
 
 export default function ContactPage() {
@@ -20,6 +23,15 @@ export default function ContactPage() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          buildBreadcrumbSchema([{ label: "Contact" }]),
+          buildLocalBusinessSchema({
+            path: "/contact",
+            description: "Contact and location details for PrintMe's Scarborough print shop.",
+          }),
+        ]}
+      />
       <PageHero
         title="Call, visit, or message PrintMe before the deadline gets tight."
         description="Contact our Scarborough print shop for quotes, file questions, passport photo availability, pickup details, or help choosing the right print path."

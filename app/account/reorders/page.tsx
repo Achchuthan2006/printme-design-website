@@ -4,6 +4,7 @@ import { ReorderStudio } from "@/components/account/reorder-studio";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 import { Button } from "@/components/ui/button";
 import { demoReorders } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 import { buildMetadata } from "@/lib/metadata";
 
 export const metadata = buildMetadata({
@@ -13,11 +14,13 @@ export const metadata = buildMetadata({
 });
 
 export default function AccountReordersPage() {
+  const previewMode = !isSupabaseConfigured();
+  const reorders = previewMode ? demoReorders : [];
   const reorderSummary = [
-    { label: "Repeat-ready jobs", value: String(demoReorders.length), detail: "Previous orders and quotes prepared to restart faster." },
-    { label: "Best via cart", value: String(demoReorders.filter((item) => item.recommendedPath === "cart").length), detail: "Jobs with cleaner direct-order potential when the setup stays close." },
-    { label: "Best via quote", value: String(demoReorders.filter((item) => item.recommendedPath === "quote").length), detail: "Jobs that still benefit from a team review before production." },
-    { label: "Saved file leverage", value: String(demoReorders.length), detail: "Repeat requests that can reuse artwork, notes, or prior production context." },
+    { label: "Repeat-ready jobs", value: String(reorders.length), detail: "Previous orders and quotes prepared to restart faster." },
+    { label: "Best via cart", value: String(reorders.filter((item) => item.recommendedPath === "cart").length), detail: "Jobs with cleaner direct-order potential when the setup stays close." },
+    { label: "Best via quote", value: String(reorders.filter((item) => item.recommendedPath === "quote").length), detail: "Jobs that still benefit from a team review before production." },
+    { label: "Saved file leverage", value: String(reorders.length), detail: "Repeat requests that can reuse artwork, notes, or prior production context." },
   ];
 
   return (
@@ -38,7 +41,7 @@ export default function AccountReordersPage() {
               </div>
             </section>
             <SummaryStrip items={reorderSummary} />
-            <ReorderStudio items={demoReorders} title="Saved repeat-job shortcuts" />
+            <ReorderStudio items={reorders} title="Saved repeat-job shortcuts" />
             <AccountSupportHub
               title="Repeat business help"
               description="Use support when a repeat job needs updated specs, a new file, delivery changes, or a cleaner quote-to-order handoff."

@@ -5,6 +5,8 @@ import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { ProductCategory } from "@/types";
 
 export function CategoryHero({ category }: { category: ProductCategory }) {
+  const groupedPathCount = category.subcategoryGroups?.reduce((sum, group) => sum + group.items.length, 0) ?? 0;
+
   return (
     <section className="relative overflow-hidden bg-white section-space">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,32,0.08),transparent_28rem),radial-gradient(circle_at_86%_16%,rgba(18,17,16,0.04),transparent_22rem)]" aria-hidden="true" />
@@ -17,11 +19,11 @@ export function CategoryHero({ category }: { category: ProductCategory }) {
               <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.93] sm:text-[4rem]">{category.title}</h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-slate">{category.description}</p>
               <p className="mt-4 max-w-2xl text-sm font-bold leading-6 text-ink">
-                Browse the service family, compare the common paths, then order, upload, or request a quote depending on how ready the job is.
+                Browse the family, compare grouped subcategories, then order, upload, or request a quote depending on how ready the job is.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button href="/quote-request">Request a Quote</Button>
-                <Button href="/artwork-guidelines" variant="secondary">Check Artwork First</Button>
+                <Button href="/products" variant="secondary">Browse Full Catalog</Button>
               </div>
             </div>
             <div className="premium-surface bg-canvas p-6">
@@ -29,8 +31,11 @@ export function CategoryHero({ category }: { category: ProductCategory }) {
                 <Icon name={category.icon} className="h-7 w-7" />
               </div>
               <h2 className="display-title mt-5 text-[2rem] font-black leading-[0.96]">{category.highlight}</h2>
-              <p className="mt-4 text-sm leading-7 text-slate">{category.turnaroundNote}</p>
+              <p className="mt-4 text-sm leading-7 text-slate">{category.overview ?? category.turnaroundNote}</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.15rem] border border-line/80 bg-white p-3 text-xs font-bold uppercase tracking-[0.08em] text-ink shadow-soft">
+                  {groupedPathCount} grouped paths
+                </div>
                 {category.trustNotes.map((note) => (
                   <div key={note} className="rounded-[1.15rem] border border-line/80 bg-white p-3 text-xs font-bold uppercase tracking-[0.08em] text-ink shadow-soft">
                     {note}

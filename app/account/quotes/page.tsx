@@ -4,17 +4,21 @@ import { AccountSupportHub } from "@/components/account/account-support-hub";
 import { QuotesHistoryPanel } from "@/components/account/quotes-history-panel";
 import { Button } from "@/components/ui/button";
 import { demoQuotes } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 import { buildMetadata } from "@/lib/metadata";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 
 export const metadata = buildMetadata({ title: "Account Quotes", description: "Review PrintMe quote requests and future approval steps.", path: "/account/quotes" });
 
 export default function AccountQuotesPage() {
+  const previewMode = !isSupabaseConfigured();
+  const quotes = previewMode ? demoQuotes : [];
   const quoteSummary = [
-    { label: "Open quotes", value: String(demoQuotes.filter((quote) => !["approved", "expired"].includes(quote.status)).length), detail: "Requests still moving through review, pricing, or approval." },
-    { label: "Ready to approve", value: String(demoQuotes.filter((quote) => quote.status === "priced").length), detail: "Quotes closest to becoming real orders." },
-    { label: "Custom work", value: String(demoQuotes.filter((quote) => quote.service === "Custom Orders").length), detail: "Jobs that may need more staff guidance before production." },
-    { label: "File-led quotes", value: String(demoQuotes.length), detail: "Quote requests structured to connect to uploads, notes, and future orders." },
+    { label: "Open quotes", value: String(quotes.filter((quote) => !["approved", "expired"].includes(quote.status)).length), detail: "Requests still moving through review, pricing, or approval." },
+    { label: "Proof-linked quotes", value: String(quotes.filter((quote) => quote.proofPortalId).length), detail: "Quotes already tied to a formal proof review or revision cycle." },
+    { label: "Ready to approve", value: String(quotes.filter((quote) => quote.status === "priced").length), detail: "Quotes closest to becoming real orders." },
+    { label: "Custom work", value: String(quotes.filter((quote) => quote.service === "Custom Orders").length), detail: "Jobs that may need more staff guidance before production." },
+    { label: "File-led quotes", value: String(quotes.length), detail: "Quote requests structured to connect to uploads, notes, and future orders." },
   ];
 
   return (
@@ -30,10 +34,10 @@ export default function AccountQuotesPage() {
               <Button href="/quote-request">Request New Quote</Button>
             </div>
             <SummaryStrip items={quoteSummary} className="mt-6" />
-            {demoQuotes.length === 0 ? (
-              <div className="mt-6"><EmptyState title="No quotes yet" description="Send a quote request when you want PrintMe to review specs, artwork, timing, and pricing before you commit." ctaLabel="Request a Quote" ctaHref="/quote-request" /></div>
+            {quotes.length === 0 ? (
+              <div className="mt-6"><EmptyState title={previewMode ? "No quotes yet" : "No live quotes yet"} description={previewMode ? "Send a quote request when you want PrintMe to review specs, artwork, timing, and pricing before you commit." : "Live quote requests will appear here after submission so you can track review, pricing, and next steps."} ctaLabel="Request a Quote" ctaHref="/quote-request" /></div>
             ) : (
-              <QuotesHistoryPanel quotes={demoQuotes} />
+              <QuotesHistoryPanel quotes={quotes} />
             )}
             <div className="mt-6">
               <AccountSupportHub

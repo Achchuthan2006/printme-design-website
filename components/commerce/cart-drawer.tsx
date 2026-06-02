@@ -141,6 +141,7 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
                     <p className="font-bold text-slate">Qty {item.quantity}</p>
                     <p className="font-black text-ink">{item.quoteOnly ? "Quote review" : `$${((item.estimatedTotal || item.unitPrice) * item.quantity).toFixed(2)}`}</p>
                   </div>
+                  {item.pricingLabel ? <p className="mt-2 text-xs leading-5 text-slate">{item.pricingLabel}</p> : null}
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate">
                     {item.turnaround ? <span className="rounded-full border border-line bg-canvas px-2.5 py-1">{item.turnaround}</span> : null}
                     {item.fulfillmentMethod ? <span className="rounded-full border border-line bg-canvas px-2.5 py-1">{item.fulfillmentMethod}</span> : null}

@@ -57,12 +57,14 @@ cp .env.example .env.local
 - `STRIPE_WEBHOOK_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `ADMIN_PORTAL_ENABLED`
+- `ADMIN_PORTAL_USERNAME`
+- `ADMIN_PORTAL_PASSWORD`
 - `ADMIN_USER_EMAILS`
 - `NEXT_PUBLIC_ADMIN_USER_EMAILS`
 - `NEXT_PUBLIC_ANALYTICS_ID`
 
 Supabase Storage also expects a private bucket named `print-files` for customer artwork uploads.
-Keep `ADMIN_USER_EMAILS` and `NEXT_PUBLIC_ADMIN_USER_EMAILS` identical while the admin portal still relies on a temporary frontend-visible staff allowlist.
+Keep `ADMIN_USER_EMAILS` and `NEXT_PUBLIC_ADMIN_USER_EMAILS` identical while the admin portal still relies on a temporary frontend-visible staff allowlist. Also set `ADMIN_PORTAL_USERNAME` and `ADMIN_PORTAL_PASSWORD` before enabling `/admin` so the internal dashboard is blocked at the edge before any server-rendered admin data is generated.
 
 4. Run the development server:
 
@@ -104,11 +106,20 @@ docs/
 
 ## Brand and design system docs
 
+- [docs/master-platform-architecture.md](/C:/Users/Achch/Desktop/PrintMe/docs/master-platform-architecture.md)
+- [docs/unified-master-platform-architecture.md](/C:/Users/Achch/Desktop/PrintMe/docs/unified-master-platform-architecture.md)
+- [docs/platform-operating-system-blueprint.md](/C:/Users/Achch/Desktop/PrintMe/docs/platform-operating-system-blueprint.md)
+- [docs/api-first-composable-platform-architecture.md](/C:/Users/Achch/Desktop/PrintMe/docs/api-first-composable-platform-architecture.md)
 - [docs/README.md](/C:/Users/Achch/Desktop/PrintMe/docs/README.md)
 - [docs/brand-style-guide.md](/C:/Users/Achch/Desktop/PrintMe/docs/brand-style-guide.md)
 - [docs/design-system.md](/C:/Users/Achch/Desktop/PrintMe/docs/design-system.md)
 - [docs/component-library.md](/C:/Users/Achch/Desktop/PrintMe/docs/component-library.md)
 - [docs/backend-architecture.md](/C:/Users/Achch/Desktop/PrintMe/docs/backend-architecture.md)
+- [docs/ai-intelligence-audit.md](/C:/Users/Achch/Desktop/PrintMe/docs/ai-intelligence-audit.md)
+- [docs/multi-tenant-expansion-architecture.md](/C:/Users/Achch/Desktop/PrintMe/docs/multi-tenant-expansion-architecture.md)
+- [docs/multi-location-franchise-white-label-blueprint.md](/C:/Users/Achch/Desktop/PrintMe/docs/multi-location-franchise-white-label-blueprint.md)
+- [docs/post-launch-optimization-operating-system.md](/C:/Users/Achch/Desktop/PrintMe/docs/post-launch-optimization-operating-system.md)
+- [docs/scaling-automation-roadmap.md](/C:/Users/Achch/Desktop/PrintMe/docs/scaling-automation-roadmap.md)
 - [docs/launch-readiness.md](/C:/Users/Achch/Desktop/PrintMe/docs/launch-readiness.md)
 
 ## Integration notes
@@ -135,7 +146,7 @@ docs/
 4. Create the private Supabase Storage bucket `print-files` and restrict file access with authenticated/storage policies before accepting real artwork.
 5. Configure SendGrid sender authentication for `printmedesign.com` and verify the quote/admin email recipients.
 6. Configure Stripe Checkout live keys, webhook endpoint, and Stripe Dashboard payment methods before accepting production payments.
-7. Keep `ADMIN_PORTAL_ENABLED=false` until staff access is tested. When enabling it, keep `ADMIN_USER_EMAILS` and `NEXT_PUBLIC_ADMIN_USER_EMAILS` aligned so the customer and admin shells enforce the same approved staff list.
+7. Keep `ADMIN_PORTAL_ENABLED=false` until staff access is tested. When enabling it, set `ADMIN_PORTAL_USERNAME` and `ADMIN_PORTAL_PASSWORD`, then keep `ADMIN_USER_EMAILS` and `NEXT_PUBLIC_ADMIN_USER_EMAILS` aligned so the customer and admin shells enforce the same approved staff list.
 8. Add analytics/search tooling through `NEXT_PUBLIC_ANALYTICS_ID` or a future provider wrapper, then verify quote, call, upload, cart, and checkout events.
 9. Run `npm run build` before each release and smoke-test homepage, products, quote request, upload, cart, checkout, account, and admin routes.
 10. After launch, monitor platform logs for quote failures, checkout failures, upload errors, and failed auth/admin access.
@@ -154,7 +165,7 @@ docs/
 - Persist uploaded file metadata to Supabase once authenticated quote/order/customer IDs are available
 - Proof approval workflow for reviewed artwork
 - Order tracking and status updates
-- Enforce staff/admin roles with Supabase RLS instead of the temporary admin portal gate
+- Enforce staff/admin roles with Supabase RLS instead of the temporary basic-auth-plus-allowlist admin portal gate
 - Reorder flow for returning customers
 
 ## Assumptions

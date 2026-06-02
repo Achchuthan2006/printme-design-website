@@ -10,9 +10,11 @@ import { FeedbackMessage, Field, Input, Select, Textarea } from "@/components/ui
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { PrintReadyChecklist } from "@/components/upload/print-ready-checklist";
 import { useAuth } from "@/components/account/auth-provider";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 import { siteConfig } from "@/lib/site";
 import { timelineRules } from "@/data/experience";
 import { ArtworkUploadMetadata, ProductOrderMethod } from "@/types";
+import { createIdempotencyKey } from "@/lib/submission-guards";
 
 const initialState = {
   fullName: "",
@@ -29,9 +31,11 @@ const initialState = {
 type FormState = typeof initialState;
 
 const orderMethodLabels: Record<ProductOrderMethod, string> = {
-  "ready-template": "Use a ready template",
+  "ready-template": "Start with a template",
   "customize-template": "Choose a design and customize it",
-  "upload-finished-design": "Upload my finished design",
+  "design-online": "Design online",
+  "upload-finished-design": "Upload your design",
+  "buy-now-upload-later": "Buy now and upload artwork later",
   "request-custom-design": "Request a full custom design",
 };
 
@@ -61,6 +65,9 @@ export function QuoteRequestForm({
   const [uploadedFiles, setUploadedFiles] = useState<ArtworkUploadMetadata[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const [honeypot, setHoneypot] = useState("");
+  const [started, setStarted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (!prefillingService) return;
@@ -72,7 +79,45 @@ export function QuoteRequestForm({
     setForm((current) => (current.projectDetails === initialBrief ? current : { ...current, projectDetails: initialBrief }));
   }, [initialBrief]);
 
+  useEffect(() => {
+    const hasContent = Object.values(form).some((value) => value.trim().length > 0) || uploadedFiles.length > 0;
+    if (!hasContent || submitted) return;
+
+    const handleBeforeUnload = () => {
+      trackPrintMeEvent({
+        eventName: "quote_abandoned",
+        pageType: "quote_request",
+        funnelName: "quote_to_cash",
+        funnelStage: "quote_request",
+        journey: "quote_to_cash",
+        properties: {
+          serviceNeeded: form.serviceNeeded || prefillingService || null,
+          uploadedFileCount: uploadedFiles.length,
+        },
+      });
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form, prefillingService, submitted, uploadedFiles.length]);
+
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
+    if (!started) {
+      setStarted(true);
+      trackPrintMeEvent({
+        eventName: "quote_started",
+        pageType: "quote_request",
+        funnelName: "quote_to_cash",
+        funnelStage: "quote_request",
+        journey: "quote_to_cash",
+        isMicroConversion: true,
+        properties: {
+          serviceNeeded: prefillingService || null,
+          orderMethod: normalizedMethod || null,
+          templateSelected: initialTemplate || null,
+        },
+      });
+    }
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => {
       if (!current[field]) return current;
@@ -96,6 +141,16 @@ export function QuoteRequestForm({
       });
       setFieldErrors(nextErrors);
       setStatus({ type: "error", message: "Please fix the highlighted fields so we can quote accurately." });
+      trackPrintMeEvent({
+        eventName: "quote_validation_failed",
+        pageType: "quote_request",
+        funnelName: "quote_to_cash",
+        funnelStage: "quote_request",
+        properties: {
+          errorCount: Object.keys(nextErrors).length,
+          serviceNeeded: form.serviceNeeded || prefillingService || null,
+        },
+      });
       return;
     }
 
@@ -103,7 +158,7 @@ export function QuoteRequestForm({
 
     startTransition(async () => {
       try {
-        const structuredProjectDetails = [
+      const structuredProjectDetails = [
           normalizedMethod ? `Order method: ${methodLabel}.` : null,
           initialTemplate ? `Selected template: ${initialTemplate}.` : null,
           validated.data.projectDetails,
@@ -111,10 +166,19 @@ export function QuoteRequestForm({
           .filter(Boolean)
           .join("\n");
 
+        if (honeypot.trim().length > 0) {
+          setStatus({
+            type: "success",
+            message: "Your request has been received. PrintMe will follow up if anything else is needed.",
+          });
+          return;
+        }
+
         const response = await fetch("/api/quote-request", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "x-idempotency-key": createIdempotencyKey("quote-request"),
           },
           body: JSON.stringify({
             ...validated.data,
@@ -128,11 +192,28 @@ export function QuoteRequestForm({
           throw new Error(result.message || "Something went wrong. Please try again.");
         }
 
+        setSubmitted(true);
         setForm(initialState);
         setUploadedFiles([]);
         setStatus({
           type: "success",
           message: "Your quote request is in. PrintMe will review the details and follow up with pricing, timing, and the best next step.",
+        });
+        trackPrintMeEvent({
+          eventName: "quote_submitted",
+          pageType: "quote_request",
+          funnelName: "quote_to_cash",
+          funnelStage: "quote_request",
+          journey: "quote_to_cash",
+          isConversion: true,
+          value: undefined,
+          properties: {
+            serviceNeeded: validated.data.serviceNeeded,
+            fulfillmentMethod: validated.data.fulfillmentMethod,
+            orderMethod: normalizedMethod || null,
+            templateSelected: initialTemplate || null,
+            uploadedFileCount: uploadedFiles.length,
+          },
         });
       } catch (error) {
         setStatus({
@@ -161,6 +242,15 @@ export function QuoteRequestForm({
   return (
     <div className="surface-card p-6 sm:p-8">
       <form onSubmit={onSubmit} className="space-y-6" noValidate>
+        <input
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(event) => setHoneypot(event.target.value)}
+          className="hidden"
+          aria-hidden="true"
+          name="website"
+        />
         {prefillingService ? (
           <div className="rounded-[1.4rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
             <p className="font-black text-ink">Service already selected: {prefillingService}</p>
@@ -205,8 +295,8 @@ export function QuoteRequestForm({
               Create an account or sign in first so future quotes, uploads, orders, and repeat jobs stay tied to one dashboard.
             </p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <Button href="/account/create?redirect=%2Fquote-request" className="px-4 py-2.5 text-xs">Create Account</Button>
-              <Button href="/account/login?redirect=%2Fquote-request" variant="secondary" className="px-4 py-2.5 text-xs">Sign In</Button>
+              <Button href="/account/create?redirect=%2Fquote-request" className="px-4 py-2.5 text-xs" onClick={() => trackPrintMeEvent({ eventName: "customer_login_prompt_viewed", pageType: "quote_request", properties: { action: "create-account" } })}>Create Account</Button>
+              <Button href="/account/login?redirect=%2Fquote-request" variant="secondary" className="px-4 py-2.5 text-xs" onClick={() => trackPrintMeEvent({ eventName: "customer_login_prompt_viewed", pageType: "quote_request", properties: { action: "sign-in" } })}>Sign In</Button>
             </div>
           </div>
         ) : null}

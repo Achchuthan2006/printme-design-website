@@ -7,7 +7,7 @@ import {
   upsertPrivateBillingCustomer,
   upsertPrivatePaymentRecord,
 } from "@/lib/backend/repository";
-import { OrderSnapshot } from "@/types";
+import { CheckoutPaymentMode, OrderSnapshot } from "@/types";
 
 function getStripeServerClient() {
   if (!env.stripeSecretKey) return null;
@@ -71,7 +71,7 @@ export async function ensureStripeCustomer(input: {
 
 export async function recordCheckoutBillingRecord(input: {
   order: OrderSnapshot;
-  paymentMode: "full" | "deposit";
+  paymentMode: CheckoutPaymentMode;
   stripeCustomerId?: string | null;
   stripeSessionId?: string | null;
   stripePaymentIntentId?: string | null;
@@ -87,7 +87,7 @@ export async function recordCheckoutBillingRecord(input: {
     providerCheckoutSessionId: input.stripeSessionId ?? existing?.provider_checkout_session_id ?? null,
     providerPaymentIntentId: input.stripePaymentIntentId ?? existing?.provider_payment_intent_id ?? null,
     paymentMode: input.paymentMode,
-    status: existing?.status ?? (input.stripeSessionId ? "pending" : "demo"),
+    status: existing?.status ?? (input.stripeSessionId ? "pending" : input.paymentMode === "review" ? "requires_action" : "demo"),
     amountAuthorizedCents: input.order.payableCents,
     amountCapturedCents: existing?.amount_captured_cents ?? null,
     amountRefundedCents: existing?.amount_refunded_cents ?? 0,

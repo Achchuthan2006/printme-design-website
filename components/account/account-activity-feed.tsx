@@ -61,6 +61,11 @@ export function AccountActivityFeed({
             </div>
           </article>
         ))}
+        {items.length === 0 ? (
+          <div className="rounded-[1.25rem] border border-dashed border-line/90 px-4 py-5 text-sm leading-6 text-slate">
+            Account activity will appear here once quotes, orders, files, invoices, or support events are tied to this customer.
+          </div>
+        ) : null}
       </div>
     </section>
   );

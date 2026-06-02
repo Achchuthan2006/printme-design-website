@@ -20,7 +20,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Too many upload events. Please wait a moment and try again." }, { status: 429 });
     }
 
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json({ message: "Upload metadata body is invalid." }, { status: 400 });
+    }
     const parsed = uploadMetadataSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -59,13 +62,17 @@ export async function POST(request: Request) {
       });
     }
     await recordAnalyticsEvent({
-      eventName: "upload_received",
+      eventName: "upload_completed",
       entityType: "upload",
       entityId: parsed.data.id,
       profileId: profileId ?? null,
       source: "web",
       path: "/upload-artwork",
+      funnelName: parsed.data.context.scope === "order" ? "direct_checkout" : parsed.data.context.scope === "quote" ? "quote_to_cash" : "upload_to_production",
       funnelStage: "artwork_upload",
+      pageType: parsed.data.context.scope === "order" ? "checkout" : parsed.data.context.scope === "quote" ? "quote_request" : "product",
+      journey: parsed.data.context.scope === "order" ? "direct_checkout" : parsed.data.context.scope === "quote" ? "quote_to_cash" : "upload_to_production",
+      isMicroConversion: true,
       properties: {
         scope: parsed.data.context.scope,
         quoteId: parsed.data.context.quoteId,

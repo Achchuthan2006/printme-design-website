@@ -6,8 +6,10 @@ import {
   AccountQuote,
   AccountReorderTemplate,
   AccountSavedDesign,
+  CustomerProofStatus,
   CustomerAddress,
   CustomerProfile,
+  ProofPortalRecord,
 } from "@/types";
 
 export const demoProfile: CustomerProfile = {
@@ -61,11 +63,15 @@ export const demoOrders: AccountOrder[] = [
     total: "$128.00",
     fulfillmentMethod: "In-store pickup",
     items: ["Business Cards", "Flyers"],
+    paymentLabel: "Deposit received",
+    balanceLabel: "$64.00 due before pickup",
     fileStatus: "awaiting_review",
     nextStep: "Artwork review is in progress before production is locked in.",
     reorderHref: "/quote-request?service=business-cards",
     linkedFiles: ["file-demo-1", "file-demo-3"],
     deliveryWindow: "Pickup update expected within 1 business day of artwork approval.",
+    proofPortalId: "proof-demo-1",
+    proofStatus: "awaiting_customer_approval",
   },
   {
     id: "ord-demo-2",
@@ -75,6 +81,7 @@ export const demoOrders: AccountOrder[] = [
     total: "$89.00",
     fulfillmentMethod: "Local delivery",
     items: ["Banners"],
+    paymentLabel: "Paid in full",
     fileStatus: "approved_for_print",
     nextStep: "This job is complete and ready to be used as the starting point for a repeat order.",
     reorderHref: "/quote-request?service=banners",
@@ -89,6 +96,7 @@ export const demoOrders: AccountOrder[] = [
     total: "$214.00",
     fulfillmentMethod: "In-store pickup",
     items: ["Postcards", "Brochures"],
+    paymentLabel: "Paid in full",
     fileStatus: "ready_for_production",
     nextStep: "This order is printed and waiting for pickup confirmation.",
     reorderHref: "/quote-request?service=postcards",
@@ -127,6 +135,8 @@ export const demoQuotes: AccountQuote[] = [
     estimatedValue: "$180",
     nextStep: "Approved quotes can move into a production-ready order once final files are confirmed.",
     linkedFiles: ["file-demo-7"],
+    proofPortalId: "proof-demo-2",
+    proofStatus: "revision_requested",
   },
 ];
 
@@ -224,8 +234,13 @@ export const demoInvoices: AccountInvoice[] = [
     orderNumber: "PM-20260522-A12FQ",
     date: "May 22, 2026",
     amount: "$128.00",
-    status: "unpaid",
-    dueLabel: "Due after artwork approval",
+    status: "partially_paid",
+    paymentStageLabel: "Deposit received",
+    amountPaid: "$64.00",
+    amountDue: "$64.00",
+    nextPaymentLabel: "Pay remaining balance",
+    dueLabel: "Balance due before pickup",
+    payNowHref: "/support",
   },
   {
     id: "inv-demo-2",
@@ -234,6 +249,8 @@ export const demoInvoices: AccountInvoice[] = [
     date: "May 18, 2026",
     amount: "$89.00",
     status: "paid",
+    paymentStageLabel: "Paid in full",
+    amountPaid: "$89.00",
     dueLabel: "Paid May 18, 2026",
   },
   {
@@ -243,6 +260,8 @@ export const demoInvoices: AccountInvoice[] = [
     date: "May 14, 2026",
     amount: "$214.00",
     status: "paid",
+    paymentStageLabel: "Paid in full",
+    amountPaid: "$214.00",
     dueLabel: "Paid May 14, 2026",
   },
 ];
@@ -419,7 +438,228 @@ export const accountSupportShortcuts = [
 export const accountHealthSummary = [
   { label: "Active jobs", value: "4", detail: "Orders and quotes that still need an update, approval, or pickup." },
   { label: "Files waiting", value: "2", detail: "Artwork currently awaiting review or proof direction." },
+  { label: "Proof approvals", value: "2", detail: "Proofs currently waiting on approval or revision handling." },
   { label: "Saved designs", value: "3", detail: "Template or uploaded design starters ready for reuse." },
   { label: "Ready to reorder", value: "3", detail: "Completed or priced jobs that can be restarted quickly." },
   { label: "Billing items", value: "1", detail: "Invoices or payment actions that may need attention." },
 ];
+
+export const customerProofStatusLabels: Record<CustomerProofStatus, string> = {
+  proof_in_preparation: "Proof in preparation",
+  proof_ready_for_review: "Proof ready for review",
+  awaiting_customer_approval: "Awaiting your approval",
+  revision_requested: "Revision requested",
+  updated_proof_sent: "Updated proof sent",
+  approved_for_production: "Approved for production",
+  stalled_pending_response: "Reminder pending",
+};
+
+export const demoProofPortals: ProofPortalRecord[] = [
+  {
+    id: "proof-demo-1",
+    orderId: "ord-demo-1",
+    orderNumber: "PM-20260522-A12FQ",
+    jobName: "June promo flyer",
+    customerName: "Aisha Khan",
+    customerCompany: "Scarborough Wellness Clinic",
+    orderSummary: ["Flyers / 8.5 x 11", "1,000 quantity", "Double-sided colour", "Pickup at Scarborough shop"],
+    orderMethod: "upload-finished-design",
+    status: "awaiting_customer_approval",
+    currentVersionId: "proof-demo-1-v2",
+    reviewChecklist: [
+      { id: "check-spelling", label: "Spelling and grammar", detail: "Review all headings, offer text, and disclaimers carefully.", required: true },
+      { id: "check-contact", label: "Phone, email, website, and address", detail: "Make sure every contact detail matches what should print.", required: true },
+      { id: "check-layout", label: "Layout and alignment", detail: "Check logo placement, spacing, margins, and image crops.", required: true },
+      { id: "check-specs", label: "Size and print setup", detail: "Confirm the piece size and that this proof matches the intended print format.", required: true },
+    ],
+    revisionCategories: [
+      { id: "copy", label: "Text or spelling", description: "Correct wording, phone, email, address, or any service copy." },
+      { id: "layout", label: "Layout or positioning", description: "Adjust spacing, alignment, logo placement, or sizing." },
+      { id: "colour", label: "Colour or imagery", description: "Request a colour, image, or visual tone adjustment." },
+      { id: "production", label: "Specs or print setup", description: "Flag a size, quantity, or print setup concern before approval." },
+    ],
+    nextStepMessage: "Once approved, PrintMe will lock this proof version and release the job into production.",
+    approvalWarning: "Final approval means production can begin and further changes may not be possible without affecting timing or cost.",
+    supportMessage: "Use this portal for proof actions so version history, approvals, and revision notes stay tied to the correct job.",
+    remindAfter: "Automatic reminder scheduled if no response is received within 24 hours.",
+    lastCustomerAction: "Viewed proof today at 10:18 AM",
+    proofScope: "double-sided",
+    productionBlockedUntilApproval: true,
+    versions: [
+      {
+        id: "proof-demo-1-v1",
+        versionNumber: 1,
+        label: "Version 1",
+        status: "outdated",
+        releasedAt: "May 22, 2026 / 2:10 PM",
+        releasedBy: "Maria / Prepress",
+        changeSummary: ["Initial colour-balancing proof prepared from uploaded PDF."],
+        staffNotes: ["Customer asked for a warmer image treatment after first review."],
+        customerInstructions: ["Check wording, logo size, and offer layout."],
+        surfaces: [
+          {
+            id: "proof-demo-1-v1-front",
+            label: "Front",
+            side: "front",
+            headline: "Summer wellness checkup campaign",
+            summary: "Original front-side proof with initial image treatment and contact block.",
+            keyFields: ["Headline", "Clinic phone", "Website", "QR block"],
+          },
+          {
+            id: "proof-demo-1-v1-back",
+            label: "Back",
+            side: "back",
+            headline: "Promotion details and appointment CTA",
+            summary: "Reverse side with service highlights and booking details.",
+            keyFields: ["Offer text", "Address", "Booking CTA", "Hours"],
+          },
+        ],
+      },
+      {
+        id: "proof-demo-1-v2",
+        versionNumber: 2,
+        label: "Version 2",
+        status: "current",
+        releasedAt: "May 23, 2026 / 9:40 AM",
+        releasedBy: "Maria / Prepress",
+        changeSummary: ["Adjusted front-side image warmth.", "Increased logo size slightly.", "Tightened booking callout spacing on reverse side."],
+        staffNotes: ["Prepared after customer requested stronger logo visibility.", "Ready for sign-off if copy is correct."],
+        customerInstructions: ["Please review spelling, clinic phone number, website, and the placement of the booking CTA before approving."],
+        surfaces: [
+          {
+            id: "proof-demo-1-v2-front",
+            label: "Front",
+            side: "front",
+            headline: "Summer wellness checkup campaign",
+            summary: "Current front-side proof with warmer image treatment and larger brand mark.",
+            keyFields: ["Headline", "Clinic phone", "Website", "Logo scale"],
+            notes: "Front side was updated after the first review round.",
+          },
+          {
+            id: "proof-demo-1-v2-back",
+            label: "Back",
+            side: "back",
+            headline: "Promotion details and appointment CTA",
+            summary: "Current reverse side with improved spacing around the booking block.",
+            keyFields: ["Offer text", "Address", "Booking CTA", "Hours"],
+            notes: "Confirm address, office hours, and booking URL exactly as they should print.",
+          },
+        ],
+      },
+    ],
+    actions: [
+      { id: "proof-demo-1-act-1", type: "proof_sent", actor: "prepress", happenedAt: "May 22, 2026 / 2:10 PM", title: "Initial proof released", detail: "Version 1 was published for customer review.", versionLabel: "Version 1", visibility: "both" },
+      { id: "proof-demo-1-act-2", type: "revision_requested", actor: "customer", happenedAt: "May 22, 2026 / 5:24 PM", title: "Customer requested a revision", detail: "Asked for warmer image treatment and slightly larger logo.", versionLabel: "Version 1", visibility: "both" },
+      { id: "proof-demo-1-act-3", type: "proof_sent", actor: "prepress", happenedAt: "May 23, 2026 / 9:40 AM", title: "Updated proof sent", detail: "Version 2 was uploaded with the requested visual changes.", versionLabel: "Version 2", visibility: "both" },
+      { id: "proof-demo-1-act-4", type: "reminder_sent", actor: "system", happenedAt: "May 24, 2026 / 9:45 AM", title: "Reminder scheduled", detail: "Portal will send a reminder if approval is still pending after 24 hours.", versionLabel: "Version 2", visibility: "staff" },
+    ],
+  },
+  {
+    id: "proof-demo-2",
+    quoteId: "quote-demo-3",
+    orderNumber: "Q-Graphic-20260517",
+    jobName: "Summer campaign adaptation",
+    customerName: "Aisha Khan",
+    customerCompany: "Scarborough Wellness Clinic",
+    orderSummary: ["Graphic design services", "Flyer and postcard adaptation", "Revision round active"],
+    orderMethod: "request-custom-design",
+    status: "revision_requested",
+    currentVersionId: "proof-demo-2-v3",
+    reviewChecklist: [
+      { id: "check-brand", label: "Brand consistency", detail: "Check logo, colours, and hierarchy against your clinic brand.", required: true },
+      { id: "check-copy", label: "Offer wording", detail: "Confirm the updated seasonal offer text and any legal notes.", required: true },
+      { id: "check-format", label: "Piece format", detail: "Review both postcard and flyer layouts before final approval.", required: true },
+    ],
+    revisionCategories: [
+      { id: "copy", label: "Text or wording", description: "Correct or rewrite service copy, contact details, or disclaimers." },
+      { id: "layout", label: "Layout adjustment", description: "Adjust image placement, spacing, hierarchy, or panel balance." },
+      { id: "branding", label: "Brand treatment", description: "Refine colours, logo treatment, or visual tone." },
+      { id: "other", label: "Other revision", description: "Capture any additional design change with a clear note." },
+    ],
+    nextStepMessage: "A new proof version will be prepared after your requested updates are reviewed by the design team.",
+    approvalWarning: "When you approve the final version, the approved proof becomes the locked reference for production-ready output.",
+    supportMessage: "The portal keeps comments tied to the exact proof version so staff do not have to interpret loose email notes.",
+    remindAfter: "Design team review of revision notes is expected within one business day.",
+    lastCustomerAction: "Revision request sent yesterday at 4:10 PM",
+    proofScope: "multi-page",
+    productionBlockedUntilApproval: true,
+    versions: [
+      {
+        id: "proof-demo-2-v2",
+        versionNumber: 2,
+        label: "Version 2",
+        status: "outdated",
+        releasedAt: "May 21, 2026 / 11:20 AM",
+        releasedBy: "Avery / Design",
+        changeSummary: ["Added summer campaign imagery.", "Balanced postcard reverse-side copy."],
+        staffNotes: ["Good candidate for final sign-off after one more branding pass."],
+        customerInstructions: ["Review both formats together and confirm seasonal headline."],
+        surfaces: [
+          {
+            id: "proof-demo-2-v2-page-1",
+            label: "Flyer layout",
+            side: "page",
+            headline: "Flyer concept",
+            summary: "Version 2 flyer adaptation for the summer campaign.",
+            keyFields: ["Headline", "Service list", "Phone", "QR"],
+          },
+          {
+            id: "proof-demo-2-v2-page-2",
+            label: "Postcard layout",
+            side: "page",
+            headline: "Postcard concept",
+            summary: "Version 2 postcard adaptation with mailing-side CTA.",
+            keyFields: ["Headline", "Offer text", "Address", "CTA"],
+          },
+        ],
+      },
+      {
+        id: "proof-demo-2-v3",
+        versionNumber: 3,
+        label: "Version 3",
+        status: "current",
+        releasedAt: "May 22, 2026 / 3:10 PM",
+        releasedBy: "Avery / Design",
+        changeSummary: ["Simplified reverse-side hierarchy.", "Refined accent colour treatment.", "Prepared matching flyer/postcard set for final review."],
+        staffNotes: ["Customer asked for another branding pass on the postcard reverse side."],
+        customerInstructions: ["Please review the reverse-side branding treatment and confirm the summer offer wording across both pieces."],
+        surfaces: [
+          {
+            id: "proof-demo-2-v3-page-1",
+            label: "Flyer layout",
+            side: "page",
+            headline: "Flyer concept",
+            summary: "Current flyer proof with updated accent colour balance.",
+            keyFields: ["Offer headline", "Services", "Booking contact", "Footer details"],
+          },
+          {
+            id: "proof-demo-2-v3-page-2",
+            label: "Postcard layout",
+            side: "page",
+            headline: "Postcard concept",
+            summary: "Current postcard proof awaiting reverse-side brand approval.",
+            keyFields: ["Headline", "Brand panel", "Offer text", "Contact details"],
+            notes: "Brand panel still needs the customer's final sign-off.",
+          },
+        ],
+      },
+    ],
+    actions: [
+      { id: "proof-demo-2-act-1", type: "proof_sent", actor: "designer", happenedAt: "May 21, 2026 / 11:20 AM", title: "Version 2 shared", detail: "Design shared a matching flyer and postcard proof set.", versionLabel: "Version 2", visibility: "both" },
+      { id: "proof-demo-2-act-2", type: "proof_sent", actor: "designer", happenedAt: "May 22, 2026 / 3:10 PM", title: "Version 3 shared", detail: "Updated proof set reflects refined hierarchy and accent colour treatment.", versionLabel: "Version 3", visibility: "both" },
+      { id: "proof-demo-2-act-3", type: "revision_requested", actor: "customer", happenedAt: "May 22, 2026 / 4:10 PM", title: "Revision note received", detail: "Customer requested one more adjustment to the postcard reverse-side branding treatment.", versionLabel: "Version 3", visibility: "both" },
+    ],
+  },
+];
+
+export function getProofPortalById(id: string) {
+  return demoProofPortals.find((proof) => proof.id === id);
+}
+
+export function getProofPortalByOrderId(orderId: string) {
+  return demoProofPortals.find((proof) => proof.orderId === orderId);
+}
+
+export function getProofPortalByQuoteId(quoteId: string) {
+  return demoProofPortals.find((proof) => proof.quoteId === quoteId);
+}

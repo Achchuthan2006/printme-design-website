@@ -82,12 +82,13 @@ export async function POST(request: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const orderNumber = getSessionOrderNumber(session);
+        const metadata = parseCheckoutSessionMetadata(session.metadata);
 
         if (orderNumber) {
           await handlePaymentTransition({
             orderNumber,
             toStatus: "paid",
-            workflowStatus: "paid",
+            workflowStatus: metadata?.paymentMode === "deposit" ? "payment_pending" : "paid",
             stripeSessionId: session.id,
             stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : undefined,
             amountCents: session.amount_total ?? undefined,
@@ -105,13 +106,20 @@ export async function POST(request: Request) {
             });
           }
           await recordAnalyticsEvent({
-            eventName: "payment_confirmed",
+            eventName: "payment_completed",
             entityType: "payment",
             entityId: orderNumber,
             source: "stripe-webhook",
+            funnelName: "direct_checkout",
             funnelStage: "payment",
+            pageType: "checkout",
+            journey: "direct_checkout",
+            isConversion: true,
+            value: (session.amount_total ?? 0) / 100,
+            currency: (session.currency ?? "cad").toUpperCase(),
             properties: {
               eventType: event.type,
+              orderNumber,
               amountCents: session.amount_total ?? undefined,
             },
           });
@@ -149,12 +157,13 @@ export async function POST(request: Request) {
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const orderNumber = paymentIntent.metadata.orderNumber;
+        const paymentMode = paymentIntent.metadata.paymentMode;
 
         if (orderNumber) {
           await handlePaymentTransition({
             orderNumber,
             toStatus: "paid",
-            workflowStatus: "paid",
+            workflowStatus: paymentMode === "deposit" ? "payment_pending" : "paid",
             stripePaymentIntentId: paymentIntent.id,
             amountCents: paymentIntent.amount_received ?? paymentIntent.amount ?? undefined,
             currency: paymentIntent.currency ?? "cad",
@@ -185,9 +194,13 @@ export async function POST(request: Request) {
             entityType: "payment",
             entityId: orderNumber,
             source: "stripe-webhook",
+            funnelName: "direct_checkout",
             funnelStage: "payment",
+            pageType: "checkout",
+            journey: "direct_checkout",
             properties: {
               eventType: event.type,
+              orderNumber,
               amountCents: paymentIntent.amount ?? undefined,
             },
           });

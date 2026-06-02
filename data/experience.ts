@@ -106,6 +106,31 @@ export const sizePreviewLibrary: Record<string, SizePreviewItem[]> = {
   ],
 };
 
+const sizePreviewAliases: Record<string, string> = {
+  "standard-business-cards": "business-cards",
+  "premium-business-cards": "business-cards",
+  "matte-business-cards": "business-cards",
+  "rounded-corner-business-cards": "business-cards",
+  "luxury-business-cards": "business-cards",
+  "standard-flyers": "flyers",
+  "folded-flyers": "brochures",
+  "dl-flyers": "flyers",
+  "premium-flyers": "flyers",
+  "trifold-brochures": "brochures",
+  "yard-signs": "signs",
+  "foam-board-signs": "signs",
+  "acrylic-signs": "signs",
+  "roll-up-banners": "banners",
+  "window-graphics": "signs",
+  "product-labels": "stickers",
+  "box-sleeves": "stickers",
+};
+
+export function getSizePreviewItems(slug: string) {
+  const sourceSlug = sizePreviewAliases[slug] ?? slug;
+  return sizePreviewLibrary[sourceSlug] ?? null;
+}
+
 export const signageFocusPoints = [
   "Large-format jobs are organized around material, placement, and visibility first.",
   "Most sign and banner work starts with a quote so size, finishing, and install details are checked properly.",

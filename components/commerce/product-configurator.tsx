@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FeedbackMessage, Field, Select, Textarea } from "@/components/ui/form-controls";
 import { useCart } from "@/features/cart/cart-context";
 import { openSupportChat } from "@/lib/chat";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 import {
   buildOptionLabels,
   calculateProductPrice,
   getDefaultOptions,
   getDisplayValue,
+  getPricingPathLabelFromEvaluation,
 } from "@/lib/pricing";
 import { ProductOption, PrintProduct } from "@/types";
 import { cn } from "@/lib/utils";
@@ -101,18 +103,45 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
 
   const price = useMemo(() => calculateProductPrice(product, options), [product, options]);
   const optionLabels = useMemo(() => buildOptionLabels(product, options), [product, options]);
-  const canAddToCart = product.mode !== "quote-only" && product.ctaMode !== "contact";
-  const configurableOptions = useMemo(
-    () => product.options.filter((option) => option.group !== "turnaround"),
-    [product.options],
-  );
+  const canAddToCart = price.canCheckoutDirectly && product.ctaMode !== "contact";
+  const configurableOptions = useMemo(() => product.options, [product.options]);
   const nextStepCopy = canAddToCart
     ? "Choose the practical specs here first, then use the order studio to decide whether you want a template, an upload path, or a custom design handoff."
     : "Confirm the practical specs here first, then use the order studio to choose the clearest quote, upload, or custom-design path.";
 
+  useEffect(() => {
+    trackPrintMeEvent({
+      eventName: "product_specs_configured",
+      pageType: "product",
+      funnelName: "storefront_discovery",
+      funnelStage: "specs",
+      journey: "storefront_discovery",
+      isMicroConversion: true,
+      properties: {
+        productSlug: product.slug,
+        state: "configurator_viewed",
+      },
+    });
+  }, [product.slug]);
+
   function updateOption(name: string, value: string) {
     setStatus("idle");
     setOptions((current) => ({ ...current, [name]: value }));
+    const option = product.options.find((item) => item.name === name);
+    trackPrintMeEvent({
+      eventName: "product_specs_configured",
+      pageType: "product",
+      funnelName: "storefront_discovery",
+      funnelStage: "specs",
+      journey: "storefront_discovery",
+      isMicroConversion: true,
+      properties: {
+        productSlug: product.slug,
+        optionName: name,
+        optionGroup: option?.group ?? null,
+        optionValue: value,
+      },
+    });
   }
 
   function validate() {
@@ -143,10 +172,26 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
       fulfillmentMethod: getDisplayValue(product.options.find((option) => option.name === "fulfillment") ?? product.options[0], options.fulfillment),
       turnaround: getDisplayValue(product.options.find((option) => option.name === "turnaround") ?? product.options[0], options.turnaround),
       quoteOnly: price.pricingMode === "quote-only",
+      pricingState: price.pricingState,
+      pricingLabel: price.pricingLabel,
+      pricingExplanation: price.pricingExplanation,
     });
 
     setError("");
     setStatus("added");
+    trackPrintMeEvent({
+      eventName: "order_method_selected",
+      pageType: "product",
+      funnelName: "direct_checkout",
+      funnelStage: "cart",
+      journey: "direct_checkout",
+      isMicroConversion: true,
+      properties: {
+        productSlug: product.slug,
+        orderMethod: "direct-order",
+        pricingMode: price.pricingMode,
+      },
+    });
   }
 
   return (
@@ -160,8 +205,28 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
         <p className="mt-4 rounded-[1.2rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
           <span className="font-black text-ink">Best next step:</span> {nextStepCopy}
         </p>
+        <p className="mt-4 rounded-[1.2rem] border border-line bg-white/90 px-4 py-3 text-sm leading-6 text-slate">
+          <span className="font-black text-ink">Pricing path:</span> PrintMe now supports instant pricing, structured estimates, or quote review depending on the selected specs, turnaround, artwork path, and production risk.
+        </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <Button href="#order-studio" variant="secondary" className="px-4 py-2.5 text-xs">
+          <Button
+            href="#order-studio"
+            variant="secondary"
+            className="px-4 py-2.5 text-xs"
+            onClick={() =>
+              trackPrintMeEvent({
+                eventName: "order_method_selected",
+                pageType: "product",
+                funnelName: "storefront_discovery",
+                funnelStage: "order_method",
+                isMicroConversion: true,
+                properties: {
+                  productSlug: product.slug,
+                  orderMethod: "review-order-methods",
+                },
+              })
+            }
+          >
             Step 2: Choose Order Method
           </Button>
         </div>
@@ -185,7 +250,10 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
             </div>
           )}
           <div className="rounded-[1.3rem] border border-line bg-canvas p-4">
-            <p className="text-sm font-black text-ink">Turnaround is confirmed by PrintMe, not selected here.</p>
+            <p className="text-sm font-black text-ink">Turnaround and production timing</p>
+            <p className="mt-2 text-sm leading-6 text-slate">
+              Select the timing path that best matches the job. Rush and same-day choices may still require staff confirmation before timing is finalized.
+            </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {timelineRules.map((rule) => (
                 <div key={rule.title} className="rounded-[1rem] border border-line/80 bg-white px-3 py-3">
@@ -216,18 +284,52 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
 
             <div className="mt-5 rounded-[1.4rem] border border-white/80 bg-white/80 p-4 shadow-soft">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-slate">
-                  {price.pricingMode === "quote-only" ? "Pricing" : price.pricingMode === "starting-from" ? "Starting estimate" : "Estimated total"}
-                </span>
+                <span className="text-sm font-bold text-slate">{getPricingPathLabelFromEvaluation(price)}</span>
                 <span className="text-2xl font-black text-ink">
                   {price.pricingMode === "quote-only" ? "Quote" : `$${price.estimatedTotal}`}
                 </span>
               </div>
               <p className="mt-2 text-xs leading-5 text-slate">
-                {price.pricingMode === "quote-only"
-                  ? "This product needs PrintMe review before pricing can be confirmed."
-                  : "Estimate before tax, delivery, artwork setup, or specialty finishing. Files are still reviewed before production begins."}
+                {price.pricingExplanation}
               </p>
+            </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Pricing logic</p>
+              <p className="mt-2 text-sm font-bold text-ink">{price.pricingLabel}</p>
+              <div className="mt-3 space-y-2 text-xs leading-5 text-slate">
+                {price.adjustments.slice(0, 4).map((item) => (
+                  <div key={`${item.label}-${item.amount}`} className="flex justify-between gap-3">
+                    <span>{item.label}</span>
+                    <span className="font-black text-ink">+${item.amount.toFixed(2)}</span>
+                  </div>
+                ))}
+                {price.quoteReasons.length > 0 ? (
+                  <p className="rounded-[1rem] border border-brand/15 bg-brand-soft px-3 py-2 text-brand">
+                    Staff review trigger: {price.quoteReasons[0]}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4 text-xs leading-5 text-slate">
+              <p className="font-black text-ink">Business guardrails</p>
+              <p className="mt-1">{price.paymentPathNote}</p>
+              {price.guardrails.length > 0 ? <p className="mt-2">{price.guardrails[0]}</p> : null}
+            </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4 text-xs leading-5 text-slate">
+              <p className="font-black text-ink">What affects price</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {price.pricingFactors.map((factor) => (
+                  <span key={factor} className="value-chip">{factor}</span>
+                ))}
+              </div>
+              <div className="mt-3 space-y-2">
+                {price.customerSummary.slice(0, 2).map((item) => (
+                  <p key={item}>{item}</p>
+                ))}
+              </div>
             </div>
 
             {error ? <FeedbackMessage tone="error" className="mt-4 font-bold">{error}</FeedbackMessage> : null}
@@ -254,7 +356,24 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
                   </Button>
                 </>
               ) : null}
-              <Button href={`/quote-request?service=${product.slug}`} variant="secondary">
+              <Button
+                href={`/quote-request?service=${product.slug}`}
+                variant="secondary"
+                onClick={() =>
+                  trackPrintMeEvent({
+                    eventName: "order_method_selected",
+                    pageType: "product",
+                    funnelName: "quote_to_cash",
+                    funnelStage: "quote_request",
+                    journey: "quote_to_cash",
+                    isMicroConversion: true,
+                    properties: {
+                      productSlug: product.slug,
+                      orderMethod: "quote-first",
+                    },
+                  })
+                }
+              >
                 Request a Quote Instead
               </Button>
               <Button type="button" variant="ghost" onClick={openSupportChat}>

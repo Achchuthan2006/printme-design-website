@@ -2,14 +2,17 @@ import { notFound } from "next/navigation";
 import { ProtectedAccount } from "@/components/account/protected-account";
 import { StatusBadge } from "@/components/account/status-badge";
 import { Button } from "@/components/ui/button";
-import { accountOrderProgress, demoFiles, demoOrders } from "@/data/account";
+import { accountOrderProgress, demoFiles, demoOrders, getProofPortalById } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 import { StatusTimeline } from "@/components/platform/status-timeline";
 
 export default async function AccountOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  if (isSupabaseConfigured()) notFound();
   const { id } = await params;
   const order = demoOrders.find((item) => item.id === id);
   if (!order) notFound();
   const linkedFiles = demoFiles.filter((file) => order.linkedFiles?.includes(file.id));
+  const linkedProof = order.proofPortalId ? getProofPortalById(order.proofPortalId) : null;
 
   return (
     <section className="section-space bg-canvas">
@@ -22,6 +25,7 @@ export default async function AccountOrderDetailPage({ params }: { params: Promi
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Order details</p>
                   <h1 className="mt-2 text-3xl font-black text-ink">{order.orderNumber}</h1>
                   <p className="mt-2 text-sm text-slate">{order.date} / {order.fulfillmentMethod}</p>
+                  {order.paymentLabel ? <p className="mt-2 text-xs font-black uppercase tracking-[0.12em] text-brand">{order.paymentLabel}</p> : null}
                 </div>
                 <StatusBadge status={order.status} />
               </div>
@@ -55,6 +59,33 @@ export default async function AccountOrderDetailPage({ params }: { params: Promi
                     </div>
                   </section>
                 ) : null}
+                {linkedProof ? (
+                  <section className="rounded-2xl border border-line/90 bg-white p-6 shadow-soft">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-brand">Proof approval</p>
+                        <h2 className="mt-2 text-2xl font-black text-ink">{linkedProof.jobName}</h2>
+                        <p className="mt-2 text-sm leading-6 text-slate">
+                          Review the active proof version, request structured changes, and record final approval before production starts.
+                        </p>
+                      </div>
+                      {order.proofStatus ? <StatusBadge status={order.proofStatus} /> : null}
+                    </div>
+                    <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
+                      <div className="rounded-[1.2rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                        <p className="font-black text-ink">Current proof status</p>
+                        <p className="mt-2">{linkedProof.nextStepMessage}</p>
+                      </div>
+                      <div className="rounded-[1.2rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                        <p className="font-black text-ink">Approval rule</p>
+                        <p className="mt-2">{linkedProof.approvalWarning}</p>
+                      </div>
+                      <Button href={`/account/proofs/${linkedProof.id}`} className="h-fit">
+                        Open Proof Portal
+                      </Button>
+                    </div>
+                  </section>
+                ) : null}
                 <StatusTimeline
                   title="Order progress"
                   items={accountOrderProgress[order.id] ?? [
@@ -66,6 +97,7 @@ export default async function AccountOrderDetailPage({ params }: { params: Promi
                 <h2 className="text-2xl font-black text-ink">Actions</h2>
                 <div className="mt-5 grid gap-3">
                   <Button href={order.reorderHref ?? `/quote-request?service=${encodeURIComponent(order.items[0])}`}>Reorder Similar</Button>
+                  {linkedProof ? <Button href={`/account/proofs/${linkedProof.id}`} variant="secondary">Review Proof</Button> : null}
                   <Button href="/account/invoices" variant="secondary">Download Invoice</Button>
                   <Button href="/account/files" variant="secondary">Review Linked Files</Button>
                   <Button href="/support" variant="secondary">Contact Support</Button>
@@ -74,6 +106,12 @@ export default async function AccountOrderDetailPage({ params }: { params: Promi
                   <p className="font-black text-ink">Best next step</p>
                   <p className="mt-1">{order.nextStep ?? "Use support if the deadline changed, artwork needs updating, or you want to reuse this job with a new quantity or finish."}</p>
                 </div>
+                {order.balanceLabel ? (
+                  <div className="mt-4 rounded-[1.25rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
+                    <p className="font-black text-ink">Payment status</p>
+                    <p className="mt-1">{order.balanceLabel}</p>
+                  </div>
+                ) : null}
                 {order.deliveryWindow ? (
                   <div className="mt-4 rounded-[1.25rem] border border-line bg-canvas p-4 text-sm leading-6 text-slate">
                     <p className="font-black text-ink">Pickup or delivery note</p>

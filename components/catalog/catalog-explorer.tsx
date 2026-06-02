@@ -1,12 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/commerce/product-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/form-controls";
 import { useEngagement } from "@/features/engagement/engagement-context";
-import { getTemplatesForProduct } from "@/data/templates";
-import { PrintProduct, ProductCategory } from "@/types";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
+import { buildDiscoveryExperience, DiscoveryFilterState } from "@/lib/discovery";
+import { cn } from "@/lib/utils";
+import { DiscoveryFacetGroup, PrintProduct, ProductCategory } from "@/types";
+
+const sortOptions = [
+  { value: "best-match", label: "Best match" },
+  { value: "popular", label: "Most popular" },
+  { value: "premium", label: "Premium first" },
+  { value: "fastest", label: "Fastest turnaround" },
+  { value: "template-ready", label: "Template ready" },
+  { value: "quote-first", label: "Quote-first work" },
+  { value: "a-z", label: "A-Z" },
+] as const;
 
 function ProductRow({ title, products }: { title: string; products: PrintProduct[] }) {
   if (products.length === 0) return null;
@@ -26,20 +38,80 @@ function ProductRow({ title, products }: { title: string; products: PrintProduct
   );
 }
 
+function facetGroupToFilterKey(group: DiscoveryFacetGroup): keyof DiscoveryFilterState {
+  if (group.id.includes("size")) return "size";
+  if (group.id.includes("material") || group.id.includes("stock")) return "material";
+  if (group.id.includes("finish")) return "finish";
+  if (group.id.includes("turnaround")) return "turnaround";
+  if (group.id.includes("premium")) return "premium";
+  if (group.id.includes("template")) return "template";
+  if (group.id.includes("quote") || group.id.includes("order-path")) return "orderPath";
+  if (group.id.includes("environment")) return "environment";
+  return "orderPath";
+}
+
+function FacetGroup({
+  group,
+  filters,
+  onToggle,
+}: {
+  group: DiscoveryFacetGroup;
+  filters: DiscoveryFilterState;
+  onToggle: (group: DiscoveryFacetGroup, value: string) => void;
+}) {
+  const key = facetGroupToFilterKey(group);
+  const activeValues = filters[key] ?? [];
+
+  return (
+    <div className="rounded-[1.25rem] border border-line bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-black text-ink">{group.label}</p>
+          {group.helpText ? <p className="mt-1 text-xs leading-5 text-slate">{group.helpText}</p> : null}
+        </div>
+      </div>
+      <div className="mt-4 grid gap-2">
+        {group.options.map((option) => {
+          const active = activeValues.includes(option.value);
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onToggle(group, option.value)}
+              className={cn(
+                "flex items-center justify-between rounded-[1rem] border px-3 py-3 text-left transition",
+                active ? "border-brand bg-brand-soft text-brand" : "border-line bg-canvas hover:border-brand/20",
+              )}
+            >
+              <span className="text-sm font-black text-ink">{option.label}</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.14em] text-slate">{option.count}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function CatalogExplorer({
   products,
   categories,
   featuredProducts,
+  initialQuery = "",
+  initialCategory = "all",
 }: {
   products: PrintProduct[];
   categories: ProductCategory[];
   featuredProducts: PrintProduct[];
+  initialQuery?: string;
+  initialCategory?: string;
 }) {
   const { favorites, compare, recentlyViewed, clearCompare } = useEngagement();
-  const [query, setQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [modeFilter, setModeFilter] = useState("all");
-  const [sort, setSort] = useState("recommended");
+  const [query, setQuery] = useState(initialQuery);
+  const [categoryFilter, setCategoryFilter] = useState(initialCategory);
+  const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>("best-match");
+  const [filters, setFilters] = useState<DiscoveryFilterState>({});
+  const deferredQuery = useDeferredValue(query);
 
   const favoriteProducts = useMemo(
     () => favorites.map((slug) => products.find((product) => product.slug === slug)).filter(Boolean) as PrintProduct[],
@@ -54,45 +126,96 @@ export function CatalogExplorer({
     [products, recentlyViewed],
   );
 
-  const visibleProducts = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    const filtered = products.filter((product) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        product.title.toLowerCase().includes(normalizedQuery) ||
-        product.category.toLowerCase().includes(normalizedQuery) ||
-        product.description.toLowerCase().includes(normalizedQuery);
-      const matchesCategory = categoryFilter === "all" || product.categorySlug === categoryFilter;
-      const matchesMode =
-        modeFilter === "all" ||
-        (modeFilter === "template-ready" ? getTemplatesForProduct(product.slug).length > 0 : product.ctaMode === modeFilter || product.mode === modeFilter);
-      return matchesQuery && matchesCategory && matchesMode;
-    });
+  const discovery = useMemo(
+    () =>
+      buildDiscoveryExperience({
+        query: deferredQuery,
+        categorySlug: categoryFilter === "all" ? undefined : categoryFilter,
+        filters,
+        sort,
+      }),
+    [categoryFilter, deferredQuery, filters, sort],
+  );
 
-    if (sort === "a-z") return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === "price") {
-      return [...filtered].sort((a, b) => (a.startingPrice ?? Number.MAX_SAFE_INTEGER) - (b.startingPrice ?? Number.MAX_SAFE_INTEGER));
-    }
+  const activeFilterChips = useMemo(
+    () =>
+      Object.entries(filters).flatMap(([key, values]) =>
+        (values ?? []).map((value) => ({
+          key: key as keyof DiscoveryFilterState,
+          value,
+          label: value,
+        })),
+      ),
+    [filters],
+  );
 
-    return [...filtered].sort((a, b) => {
-      const aFeatured = featuredProducts.some((product) => product.slug === a.slug) ? 1 : 0;
-      const bFeatured = featuredProducts.some((product) => product.slug === b.slug) ? 1 : 0;
-      return bFeatured - aFeatured;
+  useEffect(() => {
+    setFilters({});
+  }, [categoryFilter]);
+
+  useEffect(() => {
+    const normalizedQuery = deferredQuery.trim();
+    if (normalizedQuery.length < 2 && activeFilterChips.length === 0) return;
+
+    const timeout = window.setTimeout(() => {
+      trackPrintMeEvent({
+        eventName: "catalog_search_used",
+        pageType: "category",
+        funnelName: "storefront_discovery",
+        funnelStage: "search",
+        isMicroConversion: true,
+        properties: {
+          queryLength: normalizedQuery.length,
+          resultCount: discovery.products.length,
+          categoryFilter,
+          activeFilterCount: activeFilterChips.length,
+          sort,
+        },
+      });
+    }, 450);
+
+    return () => window.clearTimeout(timeout);
+  }, [activeFilterChips.length, categoryFilter, deferredQuery, discovery.products.length, sort]);
+
+  function toggleFacet(group: DiscoveryFacetGroup, value: string) {
+    const key = facetGroupToFilterKey(group);
+    setFilters((current) => {
+      const activeValues = current[key] ?? [];
+      const nextValues =
+        group.type === "single"
+          ? activeValues.includes(value)
+            ? []
+            : [value]
+          : activeValues.includes(value)
+            ? activeValues.filter((item) => item !== value)
+            : [...activeValues, value];
+
+      return {
+        ...current,
+        [key]: nextValues,
+      };
     });
-  }, [categoryFilter, featuredProducts, modeFilter, products, query, sort]);
+  }
+
+  function removeFilterChip(key: keyof DiscoveryFilterState, value: string) {
+    setFilters((current) => ({
+      ...current,
+      [key]: (current[key] ?? []).filter((item) => item !== value),
+    }));
+  }
 
   return (
     <div>
       <section className="surface-card p-6">
-        <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
           <div>
-            <p className="editorial-kicker">Find the right product faster</p>
-            <h2 className="mt-2 text-3xl font-black text-ink">Search, filter, save, and compare without losing the clean flow</h2>
+            <p className="editorial-kicker">Discovery engine</p>
+            <h2 className="mt-2 text-3xl font-black text-ink">Search, refine, recover, and compare without digging through the catalog manually</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-              Use search when you know the item, filters when you know the job type, and saved/compare tools when you are still narrowing things down.
+              Search by product, material, finish, use case, or service intent. Then narrow the result with category-aware filters that reflect how print jobs are actually chosen.
             </p>
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products or services" aria-label="Search products" />
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-[1.3fr_0.9fr_0.85fr]">
+              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products, templates, services, or materials" aria-label="Search PrintMe catalog" />
               <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="input-base">
                 <option value="all">All categories</option>
                 {categories.map((category) => (
@@ -101,28 +224,58 @@ export function CatalogExplorer({
                   </option>
                 ))}
               </select>
-              <select value={modeFilter} onChange={(event) => setModeFilter(event.target.value)} className="input-base">
-                <option value="all">All order paths</option>
-                <option value="direct-order">Direct order</option>
-                <option value="quote-first">Quote first</option>
-                <option value="upload-first">Upload first</option>
-                <option value="template-ready">Template ready</option>
-              </select>
-              <select value={sort} onChange={(event) => setSort(event.target.value)} className="input-base">
-                <option value="recommended">Recommended first</option>
-                <option value="a-z">A-Z</option>
-                <option value="price">Price</option>
+              <select value={sort} onChange={(event) => setSort(event.target.value as (typeof sortOptions)[number]["value"])} className="input-base">
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
+            {discovery.search.suggestions.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {discovery.search.suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => setQuery(suggestion)}
+                    className="value-chip"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {activeFilterChips.length > 0 ? (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {activeFilterChips.map((chip) => (
+                  <button
+                    key={`${chip.key}-${chip.value}`}
+                    type="button"
+                    onClick={() => removeFilterChip(chip.key, chip.value)}
+                    className="rounded-full border border-brand/20 bg-brand-soft px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-brand"
+                  >
+                    {chip.label} x
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFilters({})}
+                  className="text-[11px] font-black uppercase tracking-[0.16em] text-slate transition hover:text-ink"
+                >
+                  Clear all
+                </button>
+              </div>
+            ) : null}
           </div>
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <div className="signal-card">
               <p className="text-sm font-black text-ink">Recently viewed</p>
-              <p className="mt-1 text-sm leading-6 text-slate">{recentProducts.length} remembered so returning users can jump back in.</p>
+              <p className="mt-1 text-sm leading-6 text-slate">{recentProducts.length} remembered so returning users can jump back into the right job faster.</p>
             </div>
             <div className="signal-card">
               <p className="text-sm font-black text-ink">Saved products</p>
-              <p className="mt-1 text-sm leading-6 text-slate">{favoriteProducts.length} saved to revisit later without starting over.</p>
+              <p className="mt-1 text-sm leading-6 text-slate">{favoriteProducts.length} saved to revisit without restarting discovery.</p>
             </div>
             <div className="signal-card">
               <p className="text-sm font-black text-ink">Compare tray</p>
@@ -152,7 +305,7 @@ export function CatalogExplorer({
                 <p className="text-lg font-black text-ink">{product.title}</p>
                 <p className="mt-2 text-sm leading-6 text-slate">{product.description}</p>
                 <div className="mt-4 grid gap-2 text-xs leading-5 text-slate">
-                  <div><span className="font-black text-ink">Path:</span> {product.mode === "direct-order" ? "Direct order" : product.mode === "hybrid" ? "Order or quote" : "Quote first"}</div>
+                  <div><span className="font-black text-ink">Path:</span> {product.ctaMode === "direct-order" ? "Direct order" : product.ctaMode === "upload-first" ? "Upload first" : product.ctaMode === "contact" ? "Contact first" : "Quote first"}</div>
                   <div><span className="font-black text-ink">Timing:</span> {product.turnaround}</div>
                   <div><span className="font-black text-ink">Start:</span> {product.startingPrice ? `$${product.startingPrice}` : "Quote"}</div>
                 </div>
@@ -162,22 +315,146 @@ export function CatalogExplorer({
         </section>
       ) : null}
 
-      <section className="mt-10">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h3 className="text-2xl font-black text-ink">Browse results</h3>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate">{visibleProducts.length} products</p>
-        </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {visibleProducts.map((product) => (
-            <ProductCard key={product.slug} product={product} />
-          ))}
-        </div>
-        {visibleProducts.length === 0 ? (
-          <div className="mt-6 rounded-[1.35rem] border border-line bg-canvas p-6 text-sm leading-6 text-slate">
-            <p className="font-black text-ink">No products match the current filters.</p>
-            <p className="mt-2">Try a broader category, remove a filter, or open the quote path if the job is more custom than standard.</p>
+      <section className="mt-10 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
+        <aside className="space-y-4">
+          <div className="surface-card p-5">
+            <p className="editorial-kicker">Context-aware filters</p>
+            <h3 className="mt-2 text-2xl font-black text-ink">Only show the filters that help this part of the catalog</h3>
+            <p className="mt-3 text-sm leading-6 text-slate">
+              Facets shift based on category and result set, so signs emphasize material and environment while cards and flyers emphasize size, finish, premium level, and ordering path.
+            </p>
           </div>
-        ) : null}
+          {discovery.facets.map((group) => (
+            <FacetGroup key={group.id} group={group} filters={filters} onToggle={toggleFacet} />
+          ))}
+        </aside>
+
+        <div className="space-y-6">
+          {(deferredQuery.trim() || categoryFilter !== "all") && (discovery.templates.length > 0 || discovery.services.length > 0 || discovery.support.length > 0) ? (
+            <section className="surface-card p-6">
+              <p className="editorial-kicker">Guided discovery</p>
+              <h3 className="mt-2 text-2xl font-black text-ink">Useful matches beyond standard product cards</h3>
+              <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                {discovery.templates.length > 0 ? (
+                  <div className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                    <p className="text-sm font-black text-ink">Templates</p>
+                    <div className="mt-3 grid gap-2">
+                      {discovery.templates.slice(0, 3).map((template) => (
+                        <a key={template.id} href={template.href} className="rounded-[1rem] border border-line/70 bg-white px-3 py-3 transition hover:border-brand/20">
+                          <p className="text-sm font-black text-ink">{template.title}</p>
+                          <p className="mt-1 text-xs leading-5 text-slate">{template.summary}</p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {discovery.services.length > 0 ? (
+                  <div className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                    <p className="text-sm font-black text-ink">Services</p>
+                    <div className="mt-3 grid gap-2">
+                      {discovery.services.slice(0, 3).map((service) => (
+                        <a key={service.slug} href={`/services/${service.slug}`} className="rounded-[1rem] border border-line/70 bg-white px-3 py-3 transition hover:border-brand/20">
+                          <p className="text-sm font-black text-ink">{service.shortTitle}</p>
+                          <p className="mt-1 text-xs leading-5 text-slate">{service.summary}</p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {discovery.support.length > 0 ? (
+                  <div className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                    <p className="text-sm font-black text-ink">Support shortcuts</p>
+                    <div className="mt-3 grid gap-2">
+                      {discovery.support.slice(0, 3).map((item) => (
+                        <a key={item.title} href={item.href} className="rounded-[1rem] border border-line/70 bg-white px-3 py-3 transition hover:border-brand/20">
+                          <p className="text-sm font-black text-ink">{item.title}</p>
+                          <p className="mt-1 text-xs leading-5 text-slate">{item.description}</p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          <section>
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-2xl font-black text-ink">Browse results</h3>
+                <p className="mt-1 text-sm leading-6 text-slate">
+                  {discovery.products.length} product matches
+                  {categoryFilter !== "all" ? " in this category" : ""}
+                  {deferredQuery.trim() ? ` for "${deferredQuery.trim()}"` : ""}
+                </p>
+              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate">{discovery.products.length} products</p>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {discovery.products.map((product) => (
+                <ProductCard key={product.slug} product={product} />
+              ))}
+            </div>
+            {discovery.products.length === 0 ? (
+              <div className="mt-6 space-y-4 rounded-[1.35rem] border border-line bg-canvas p-6">
+                <div>
+                  <p className="font-black text-ink">No products match the current discovery setup.</p>
+                  <p className="mt-2 text-sm leading-6 text-slate">Instead of leaving the user stuck, PrintMe now suggests the closest recovery paths, broader category routes, and human-help shortcuts.</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {discovery.recovery.map((item) => (
+                    <a key={item.title} href={item.href} className="rounded-[1.1rem] border border-line bg-white p-4 transition hover:border-brand/20">
+                      <p className="text-sm font-black text-ink">{item.title}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate">{item.description}</p>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </section>
+
+          {discovery.products.length > 0 ? (
+            <section className="surface-card p-6">
+              <p className="editorial-kicker">Recommendation layer</p>
+              <h3 className="mt-2 text-2xl font-black text-ink">Guide customers toward premium, template-ready, or consultation-led paths</h3>
+              <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                <div className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                  <p className="text-sm font-black text-ink">Premium picks</p>
+                  <div className="mt-3 grid gap-2">
+                    {discovery.recommendations.premium.slice(0, 3).map((product) => (
+                      <a key={product.slug} href={`/products/${product.slug}`} className="rounded-[1rem] border border-line/70 bg-white px-3 py-3 transition hover:border-brand/20">
+                        <p className="text-sm font-black text-ink">{product.title}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate">{product.description}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                  <p className="text-sm font-black text-ink">Template-ready</p>
+                  <div className="mt-3 grid gap-2">
+                    {discovery.recommendations.templateReady.slice(0, 3).map((product) => (
+                      <a key={product.slug} href={`/products/${product.slug}#interactive-preview`} className="rounded-[1rem] border border-line/70 bg-white px-3 py-3 transition hover:border-brand/20">
+                        <p className="text-sm font-black text-ink">{product.title}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate">{product.description}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-[1.25rem] border border-line bg-canvas p-4">
+                  <p className="text-sm font-black text-ink">Consultative routes</p>
+                  <div className="mt-3 grid gap-2">
+                    {discovery.recommendations.supportLinks.slice(0, 3).map((item) => (
+                      <a key={item.title} href={item.href} className="rounded-[1rem] border border-line/70 bg-white px-3 py-3 transition hover:border-brand/20">
+                        <p className="text-sm font-black text-ink">{item.title}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate">{item.description}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
+        </div>
       </section>
     </div>
   );

@@ -7,8 +7,10 @@ import { StatusBadge } from "@/components/account/status-badge";
 import { SummaryStrip } from "@/components/platform/summary-strip";
 import { StatusTimeline } from "@/components/platform/status-timeline";
 import { accountOrderProgress, accountQuoteProgress, demoOrders, demoQuotes } from "@/data/account";
+import { isSupabaseConfigured } from "@/lib/env";
 
 export function OrderStatusExperience() {
+  const previewMode = !isSupabaseConfigured();
   const [reference, setReference] = useState("");
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -49,12 +51,14 @@ export function OrderStatusExperience() {
           <Button type="submit" className="w-full lg:w-auto">Check My Status</Button>
         </div>
         <p id="order-status-help" className="mt-4 rounded-2xl border border-brand/15 bg-brand-soft px-4 py-3 text-xs leading-5 text-brand">
-          Demo tracking is enabled here with preview account records. Live account-based status, timeline events, and notification history are already architected into the platform direction.
+          {previewMode
+            ? "Preview tracking is enabled in this local environment. In production, this lookup should be backed by real account and order data."
+            : "Use your order or quote reference plus the matching email address. If you need a faster answer, contact PrintMe directly."}
         </p>
       </form>
 
       {submitted ? (
-        resultType ? (
+        previewMode && resultType ? (
           <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
             <section className="surface-card p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -117,9 +121,13 @@ export function OrderStatusExperience() {
               </section>
             </div>
           </div>
-        ) : (
+        ) : previewMode ? (
           <FeedbackMessage tone="error">
             No matching preview order or quote was found. Try a known order number like `PM-20260522-A12FQ`, or contact PrintMe directly if timing is urgent.
+          </FeedbackMessage>
+        ) : (
+          <FeedbackMessage>
+            PrintMe will verify the status against the live order workflow. If your lookup does not return immediately, contact support so the team can confirm the next step directly.
           </FeedbackMessage>
         )
       ) : null}

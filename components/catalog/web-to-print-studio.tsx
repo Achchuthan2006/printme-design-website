@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArtworkUploadZone } from "@/components/upload/artwork-upload-zone";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { getTemplatesForProduct } from "@/data/templates";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 import { ProductTemplate, PrintProduct } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,21 @@ export function WebToPrintStudio({ product }: { product: PrintProduct }) {
   const [activeView, setActiveView] = useState<string>(templates[0]?.views[0]?.id ?? "front");
 
   const visibleTemplates = industryFilter === "All" ? templates : templates.filter((template) => template.industry === industryFilter);
+
+  useEffect(() => {
+    trackPrintMeEvent({
+      eventName: "template_browse_started",
+      pageType: "product",
+      funnelName: "template_workflow",
+      funnelStage: "template_browse",
+      journey: "template_workflow",
+      isMicroConversion: true,
+      properties: {
+        productSlug: product.slug,
+        templateCount: templates.length,
+      },
+    });
+  }, [product.slug, templates.length]);
 
   return (
     <section className="surface-card p-6" id="design-lab">
@@ -107,7 +123,20 @@ export function WebToPrintStudio({ product }: { product: PrintProduct }) {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setIndustryFilter("All")}
+                    onClick={() => {
+                      setIndustryFilter("All");
+                      trackPrintMeEvent({
+                        eventName: "template_filter_changed",
+                        pageType: "product",
+                        funnelName: "template_workflow",
+                        funnelStage: "template_browse",
+                        isMicroConversion: true,
+                        properties: {
+                          productSlug: product.slug,
+                          industryFilter: "All",
+                        },
+                      });
+                    }}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] transition",
                       industryFilter === "All" ? "border-brand bg-brand-soft text-brand" : "border-line bg-white text-slate",
@@ -119,7 +148,20 @@ export function WebToPrintStudio({ product }: { product: PrintProduct }) {
                     <button
                       key={industry}
                       type="button"
-                      onClick={() => setIndustryFilter(industry)}
+                      onClick={() => {
+                        setIndustryFilter(industry);
+                        trackPrintMeEvent({
+                          eventName: "template_filter_changed",
+                          pageType: "product",
+                          funnelName: "template_workflow",
+                          funnelStage: "template_browse",
+                          isMicroConversion: true,
+                          properties: {
+                            productSlug: product.slug,
+                            industryFilter: industry,
+                          },
+                        });
+                      }}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] transition",
                         industryFilter === industry ? "border-brand bg-brand-soft text-brand" : "border-line bg-white text-slate",
@@ -139,6 +181,20 @@ export function WebToPrintStudio({ product }: { product: PrintProduct }) {
                     onClick={() => {
                       setSelectedTemplate(template);
                       setActiveView(template.views[0]?.id ?? "front");
+                      trackPrintMeEvent({
+                        eventName: "template_selected",
+                        pageType: "product",
+                        funnelName: "template_workflow",
+                        funnelStage: "template_selected",
+                        journey: "template_workflow",
+                        isMicroConversion: true,
+                        properties: {
+                          productSlug: product.slug,
+                          templateId: template.id,
+                          templateTitle: template.title,
+                          templateIndustry: template.industry,
+                        },
+                      });
                     }}
                     className={cn(
                       "rounded-[1.35rem] border p-4 text-left transition hover:border-brand/30 hover:bg-white/95",
@@ -193,7 +249,22 @@ export function WebToPrintStudio({ product }: { product: PrintProduct }) {
                   <button
                     key={view.id}
                     type="button"
-                    onClick={() => setActiveView(view.id)}
+                    onClick={() => {
+                      setActiveView(view.id);
+                      trackPrintMeEvent({
+                        eventName: "template_preview_changed",
+                        pageType: "product",
+                        funnelName: "template_workflow",
+                        funnelStage: "template_preview",
+                        isMicroConversion: true,
+                        properties: {
+                          productSlug: product.slug,
+                          templateId: selectedTemplate.id,
+                          viewId: view.id,
+                          viewLabel: view.label,
+                        },
+                      });
+                    }}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] transition",
                       activeView === view.id ? "border-brand bg-brand-soft text-brand" : "border-line bg-white text-slate",
@@ -207,7 +278,26 @@ export function WebToPrintStudio({ product }: { product: PrintProduct }) {
                 <TemplateMockup template={selectedTemplate} viewId={activeView} />
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <Button href="#order-builder">Use this template direction</Button>
+                <Button
+                  href="#order-builder"
+                  onClick={() =>
+                    trackPrintMeEvent({
+                      eventName: "template_customization_started",
+                      pageType: "product",
+                      funnelName: "template_workflow",
+                      funnelStage: "customization_started",
+                      journey: "template_workflow",
+                      isMicroConversion: true,
+                      properties: {
+                        productSlug: product.slug,
+                        templateId: selectedTemplate.id,
+                        templateTitle: selectedTemplate.title,
+                      },
+                    })
+                  }
+                >
+                  Use this template direction
+                </Button>
                 <Button href={`/quote-request?service=${product.slug}`} variant="secondary">
                   Ask PrintMe to adapt it
                 </Button>

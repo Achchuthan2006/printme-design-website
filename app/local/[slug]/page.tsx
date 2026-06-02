@@ -3,12 +3,16 @@ import Link from "next/link";
 import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { LocalContactCard } from "@/components/conversion/local-contact-card";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { buildMetadata } from "@/lib/metadata";
+import { env } from "@/lib/env";
+import { buildBreadcrumbSchema, buildFaqSchema, buildLocalBusinessSchema } from "@/lib/seo";
 import { getLocalLandingPage, localLandingPages } from "@/data/cro";
 import { services } from "@/lib/site";
+import { getServicePageHrefByServiceSlug } from "@/data/services";
 
 export function generateStaticParams() {
   return localLandingPages.map((page) => ({ slug: page.slug }));
@@ -31,9 +35,39 @@ export default async function LocalLandingPage({ params }: { params: Promise<{ s
   if (!page) notFound();
 
   const relatedServices = services.filter((service) => page.services.includes(service.title));
+  const faqSchema = buildFaqSchema(page.faqs);
 
   return (
     <>
+      <JsonLd
+        data={[
+          buildBreadcrumbSchema([
+            { label: "Services", href: "/services" },
+            { label: page.title },
+          ]),
+          buildLocalBusinessSchema({
+            path: `/local/${page.slug}`,
+            description: page.metaDescription,
+            areaServed: [page.location],
+          }),
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "@id": `${env.siteUrl}/local/${page.slug}#service`,
+            name: page.title,
+            serviceType: page.serviceFocus,
+            description: page.intro,
+            areaServed: {
+              "@type": "City",
+              name: page.location,
+            },
+            provider: {
+              "@id": `${env.siteUrl}/#organization`,
+            },
+          },
+          ...(faqSchema ? [faqSchema] : []),
+        ]}
+      />
       <section className="relative overflow-hidden bg-white section-space">
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-soft/60 to-transparent" aria-hidden="true" />
         <div className="container-shell relative grid gap-10 lg:grid-cols-[1fr_360px] lg:items-start">
@@ -71,7 +105,7 @@ export default async function LocalLandingPage({ params }: { params: Promise<{ s
             {relatedServices.map((service) => (
               <Link
                 key={service.slug}
-                href={`/products/${service.slug}`}
+                href={getServicePageHrefByServiceSlug(service.slug) ?? `/quote-request?service=${encodeURIComponent(service.title)}`}
                 className="rounded-2xl border border-line/90 bg-canvas p-5 shadow-soft transition hover:-translate-y-1 hover:border-brand/35 hover:bg-brand-soft/30"
               >
                 <p className="text-lg font-black text-ink">{service.title}</p>

@@ -3,39 +3,39 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminNavItems } from "@/data/admin";
-import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { Card } from "@/components/ui/card";
+import { NavItemLink, NavList } from "@/components/ui/navigation";
 
 export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="rounded-[1.7rem] border border-white/10 bg-ink p-4 text-white shadow-card lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]">
-      <Link href="/admin" className="liquid-glass-dark block rounded-xl p-4">
+    <Card as="aside" variant="dark" className="lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]">
+      <Link href="/admin" className="premium-focus liquid-glass-dark block rounded-xl p-4">
         <BrandLogo size="header" inverted className="!rounded-none !ring-0 !ring-offset-0" />
         <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.35em] text-white/55">Operations</span>
       </Link>
 
-      <nav className="mt-5 space-y-1" aria-label="Admin navigation">
+      <NavList className="mt-5" aria-label="Admin navigation">
         {adminNavItems.map((item) => {
           const active = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
           return (
-            <Link
+            <NavItemLink
               key={item.href}
               href={item.href}
-              className={cn(
-                "block rounded-xl px-4 py-3 text-sm font-extrabold text-white/70 transition hover:bg-white/10 hover:text-white",
-                active && "bg-white text-ink shadow-soft hover:bg-white hover:text-ink",
-              )}
+              tone="inverse"
+              active={active}
+              className="rounded-xl px-4 py-3 text-sm font-extrabold"
             >
               {item.label}
-            </Link>
+            </NavItemLink>
           );
         })}
-      </nav>
+      </NavList>
 
-      <div className="liquid-glass-dark mt-5 rounded-xl p-4">
+      <Card variant="dark" className="mt-5 rounded-xl p-4">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-brand">Staff note</p>
         <p className="mt-2 text-xs leading-5 text-white/65">
           Admin data is scaffolded for Supabase role-based access, status logs, and staff assignments.
@@ -43,7 +43,7 @@ export function AdminNav() {
         <a href={siteConfig.phoneHref} className="mt-3 block text-sm font-black text-white">
           {siteConfig.phone}
         </a>
-      </div>
-    </aside>
+      </Card>
+    </Card>
   );
 }

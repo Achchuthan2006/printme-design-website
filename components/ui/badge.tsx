@@ -1,14 +1,29 @@
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
-export function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "brand" | "outline" | "secondary"
+}
+
+export function badgeVariants({ variant = "default", className = "" }: Partial<BadgeProps>) {
+  return cn(
+    "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2",
+    {
+      // Standard dark badge
+      "border border-transparent bg-ink text-white shadow-sm": variant === "default",
+      // Brand emphasis badge
+      "border border-transparent bg-brand text-white shadow-sm": variant === "brand",
+      // Secondary soft badge
+      "border border-line bg-canvas text-slate": variant === "secondary",
+      // Outline only
+      "border border-ink text-ink": variant === "outline",
+    },
+    className
+  )
+}
+
+export function Badge({ className, variant = "default", ...props }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border border-brand/20 bg-white/90 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.22em] text-brand shadow-[0_10px_24px_rgba(22,19,17,0.05),inset_0_1px_0_rgba(255,255,255,0.8)]",
-        className,
-      )}
-    >
-      {children}
-    </span>
-  );
+    <div className={badgeVariants({ variant, className })} {...props} />
+  )
 }

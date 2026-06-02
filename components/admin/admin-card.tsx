@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 export function AdminCard({
   children,
@@ -8,9 +8,9 @@ export function AdminCard({
   className?: string;
 }) {
   return (
-    <section className={cn("liquid-glass rounded-[1.75rem] p-5 premium-depth", className)}>
+    <Card as="section" variant="glass" className={className}>
       {children}
-    </section>
+    </Card>
   );
 }
 

@@ -17,6 +17,7 @@ import {
 } from "@/types";
 import { buildProfileDraftFromUser } from "@/lib/backend/auth";
 import { User } from "@supabase/supabase-js";
+import { buildRecordedPaymentSummary, formatPaymentPlanCurrency } from "@/lib/payment-workflow";
 
 function formatCurrency(cents?: number | null) {
   return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(((cents ?? 0) || 0) / 100);
@@ -62,6 +63,8 @@ function mapQuoteStatus(status?: string | null): AccountQuote["status"] {
 function mapInvoiceStatus(status?: string | null): AccountInvoice["status"] {
   if (status === "paid") return "paid";
   if (status === "void") return "void";
+  if (status === "partially_paid" || status === "deposit_paid") return "partially_paid";
+  if (status === "deposit_pending") return "deposit_pending";
   return "unpaid";
 }
 
@@ -175,7 +178,7 @@ export async function getCustomerDashboardData(user: User): Promise<AccountDashb
     queryTable("customer_addresses", "id, label, address_line_1, address_line_2, city, province, postal_code, is_default", [
       { column: "profile_id", value: profileId },
     ]),
-    queryTable("orders", "order_number, workflow_status, fulfillment_method, subtotal_cents, payable_cents, created_at", [
+    queryTable("orders", "order_number, workflow_status, payment_status, payment_mode, fulfillment_method, subtotal_cents, payable_cents, quote_review_required, created_at", [
       { column: "profile_id", value: profileId },
       { column: "customer_email", value: email },
     ]),
@@ -207,17 +210,29 @@ export async function getCustomerDashboardData(user: User): Promise<AccountDashb
     isDefaultDelivery: Boolean(record.is_default),
   })) satisfies CustomerAddress[];
 
-  const orders = ordersRaw.map((record, index) => ({
-    id: String(record.order_number ?? `ord-${index}`),
-    orderNumber: String(record.order_number ?? `PM-${index}`),
-    date: formatDate(record.created_at as string | null | undefined),
-    status: mapOrderStatus(record.workflow_status as string | null | undefined),
-    total: formatCurrency(Number(record.payable_cents ?? record.subtotal_cents ?? 0)),
-    fulfillmentMethod: String(record.fulfillment_method ?? "pickup"),
-    items: [],
-    nextStep: `Current backend status: ${String(record.workflow_status ?? "pending review").replaceAll("_", " ")}.`,
-    reorderHref: `/quote-request?service=reorder&source=${encodeURIComponent(String(record.order_number ?? ""))}`,
-  })) satisfies AccountOrder[];
+  const orders = ordersRaw.map((record, index) => {
+    const paymentPlan = buildRecordedPaymentSummary({
+      subtotalCents: Number(record.subtotal_cents ?? record.payable_cents ?? 0),
+      payableCents: Number(record.payable_cents ?? record.subtotal_cents ?? 0),
+      paymentMode: (String(record.payment_mode ?? "full") as "full" | "deposit" | "review"),
+      paymentStatus: String(record.payment_status ?? "pending"),
+      quoteReviewRequired: Boolean(record.quote_review_required),
+    });
+
+    return {
+      id: String(record.order_number ?? `ord-${index}`),
+      orderNumber: String(record.order_number ?? `PM-${index}`),
+      date: formatDate(record.created_at as string | null | undefined),
+      status: mapOrderStatus(record.workflow_status as string | null | undefined),
+      total: formatCurrency(Number(record.payable_cents ?? record.subtotal_cents ?? 0)),
+      fulfillmentMethod: String(record.fulfillment_method ?? "pickup"),
+      items: [],
+      paymentLabel: paymentPlan.paymentHeadline,
+      balanceLabel: paymentPlan.dueLaterCents > 0 ? `${formatPaymentPlanCurrency(paymentPlan.dueLaterCents)} due later` : undefined,
+      nextStep: `Current backend status: ${String(record.workflow_status ?? "pending review").replaceAll("_", " ")}.`,
+      reorderHref: `/quote-request?service=reorder&source=${encodeURIComponent(String(record.order_number ?? ""))}`,
+    };
+  }) satisfies AccountOrder[];
 
   const quotes = quotesRaw.map((record, index) => ({
     id: String(record.quote_number ?? `quote-${index}`),
@@ -240,15 +255,34 @@ export async function getCustomerDashboardData(user: User): Promise<AccountDashb
     reusable: true,
   })) satisfies AccountFile[];
 
-  const invoices = invoicesRaw.map((record, index) => ({
-    id: String(record.invoice_number ?? `inv-${index}`),
-    invoiceNumber: String(record.invoice_number ?? `INV-${index}`),
-    orderNumber: String(record.order_number ?? "Pending order"),
-    date: formatDate(record.issued_at as string | null | undefined),
-    amount: formatCurrency(Number(record.total_cents ?? 0)),
-    status: mapInvoiceStatus(record.payment_status as string | null | undefined),
-    dueLabel: record.due_at ? `Due ${formatDate(record.due_at as string)}` : undefined,
-  })) satisfies AccountInvoice[];
+  const invoices = invoicesRaw.map((record, index) => {
+    const totalCents = Number(record.total_cents ?? 0);
+    const status = mapInvoiceStatus(record.payment_status as string | null | undefined);
+    const paidCents = status === "paid" ? totalCents : status === "partially_paid" ? Math.round(totalCents * 0.5) : 0;
+    const dueCents = Math.max(0, totalCents - paidCents);
+
+    return {
+      id: String(record.invoice_number ?? `inv-${index}`),
+      invoiceNumber: String(record.invoice_number ?? `INV-${index}`),
+      orderNumber: String(record.order_number ?? "Pending order"),
+      date: formatDate(record.issued_at as string | null | undefined),
+      amount: formatCurrency(totalCents),
+      status,
+      paymentStageLabel:
+        status === "paid"
+          ? "Paid in full"
+          : status === "partially_paid"
+            ? "Partial payment received"
+            : status === "deposit_pending"
+              ? "Deposit requested"
+              : "Awaiting payment",
+      amountPaid: paidCents > 0 ? formatCurrency(paidCents) : undefined,
+      amountDue: dueCents > 0 ? formatCurrency(dueCents) : undefined,
+      nextPaymentLabel: dueCents > 0 ? `Pay ${formatCurrency(dueCents)}` : undefined,
+      dueLabel: record.due_at ? `Due ${formatDate(record.due_at as string)}` : undefined,
+      payNowHref: dueCents > 0 ? "/support" : undefined,
+    };
+  }) satisfies AccountInvoice[];
 
   const activity: AccountActivityItem[] = activityRaw.slice(0, 6).map((record, index) => ({
     id: `activity-${index}`,

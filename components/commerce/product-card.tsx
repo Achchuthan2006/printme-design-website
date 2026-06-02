@@ -1,9 +1,12 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductEngagementActions } from "@/components/catalog/product-engagement-actions";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 import { Icon } from "@/components/ui/icon";
 import { getTemplatesForProduct } from "@/data/templates";
+import { trackPrintMeEvent } from "@/lib/analytics/client";
 import { PrintProduct } from "@/types";
 
 export function ProductCard({ product }: { product: PrintProduct }) {
@@ -22,7 +25,9 @@ export function ProductCard({ product }: { product: PrintProduct }) {
             {product.mode === "direct-order" ? "Order online" : product.mode === "hybrid" ? "Order or quote" : "Quote first"}
           </span>
         </div>
-        <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate">{product.category}</p>
+        <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate">
+          {product.productLine ?? product.category}
+        </p>
         <h2 className="mt-2 text-[1.32rem] font-black leading-[1.04] text-ink">{product.title}</h2>
         <p className="mt-3 flex-1 text-sm leading-6 text-slate">{product.description}</p>
         <div className="mt-4">
@@ -44,7 +49,24 @@ export function ProductCard({ product }: { product: PrintProduct }) {
           <p className="text-sm font-black text-ink">
             {product.startingPrice ? `Starts at $${product.startingPrice}` : "Quote first"}
           </p>
-          <Button href={`/products/${product.slug}`} className="px-4 py-2 text-[11px]">
+          <Button
+            href={`/products/${product.slug}`}
+            className="px-4 py-2 text-[11px]"
+            onClick={() =>
+              trackPrintMeEvent({
+                eventName: "product_card_clicked",
+                pageType: "category",
+                funnelName: "storefront_discovery",
+                funnelStage: "product_list",
+                isMicroConversion: true,
+                properties: {
+                  productSlug: product.slug,
+                  categorySlug: product.categorySlug,
+                  ctaMode: product.ctaMode,
+                },
+              })
+            }
+          >
             View Details
           </Button>
         </div>

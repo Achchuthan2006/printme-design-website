@@ -47,6 +47,11 @@ export function ReorderStudio({
             </div>
           </article>
         ))}
+        {items.length === 0 ? (
+          <div className="rounded-[1.25rem] border border-dashed border-line/90 p-5 text-sm leading-6 text-slate">
+            Reorder shortcuts will appear here after the first completed order or approved quote creates a repeat-ready starting point.
+          </div>
+        ) : null}
       </div>
     </section>
   );

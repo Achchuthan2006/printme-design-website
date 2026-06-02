@@ -22,7 +22,12 @@ export async function POST(request: Request) {
     }
 
     const rawBody = await request.text();
-    const body = JSON.parse(rawBody) as unknown;
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody) as unknown;
+    } catch {
+      return NextResponse.json({ message: "Quote request body is invalid." }, { status: 400 });
+    }
     const parsed = quoteRequestSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -66,7 +71,11 @@ export async function POST(request: Request) {
       entityId: storedQuote.quoteNumber,
       source: "web",
       path: "/quote-request",
+      funnelName: "quote_to_cash",
       funnelStage: "quote_request",
+      pageType: "quote_request",
+      journey: "quote_to_cash",
+      isConversion: true,
       properties: {
         serviceNeeded: parsed.data.serviceNeeded,
         fulfillmentMethod: parsed.data.fulfillmentMethod,

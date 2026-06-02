@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckboxTile, FeedbackMessage, Field, Input } from "@/components/ui/form-controls";
 import { Icon } from "@/components/ui/icon";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { sanitizeInternalRedirect } from "@/lib/security";
 import { useAuth } from "@/components/account/auth-provider";
 
 type AuthMode = "login" | "signup";
@@ -21,7 +22,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter();
   const params = useSearchParams();
   const { user, configured } = useAuth();
-  const redirect = params.get("redirect") ?? "/account";
+  const redirect = sanitizeInternalRedirect(params.get("redirect"), "/account");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
