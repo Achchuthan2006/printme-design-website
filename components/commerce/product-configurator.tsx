@@ -105,9 +105,19 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
   const optionLabels = useMemo(() => buildOptionLabels(product, options), [product, options]);
   const canAddToCart = price.canCheckoutDirectly && product.ctaMode !== "contact";
   const configurableOptions = useMemo(() => product.options, [product.options]);
+  const quoteHref = useMemo(() => {
+    const params = new URLSearchParams({ service: product.slug });
+
+    for (const [key, value] of Object.entries(options)) {
+      if (!value) continue;
+      params.set(key, value);
+    }
+
+    return `/quote-request?${params.toString()}`;
+  }, [options, product.slug]);
   const nextStepCopy = canAddToCart
-    ? "Choose the practical specs here first, then use the order studio to decide whether you want a template, an upload path, or a custom design handoff."
-    : "Confirm the practical specs here first, then use the order studio to choose the clearest quote, upload, or custom-design path.";
+    ? "Choose the listed standard specs here first, confirm the live price, then add the job to cart when the setup matches what you need."
+    : "Choose the closest standard specs first. If the job falls outside them, use the quote path instead of forcing a bad checkout flow.";
 
   useEffect(() => {
     trackPrintMeEvent({
@@ -200,13 +210,13 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
         <p className="editorial-kicker">Build your order</p>
         <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
-          Step 1 is always product specs. Confirm the size, quantity, finish, and fulfillment basics here before you choose the final order method.
+          Start with the standard storefront options. This section is where buyers decide whether the job fits direct ordering or should move into quote review.
         </p>
         <p className="mt-4 rounded-[1.2rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
           <span className="font-black text-ink">Best next step:</span> {nextStepCopy}
         </p>
         <p className="mt-4 rounded-[1.2rem] border border-line bg-white/90 px-4 py-3 text-sm leading-6 text-slate">
-          <span className="font-black text-ink">Pricing path:</span> PrintMe now supports instant pricing, structured estimates, or quote review depending on the selected specs, turnaround, artwork path, and production risk.
+          <span className="font-black text-ink">Pricing path:</span> PrintMe shows instant pricing, structured estimates, or quote review depending on the selected specs, turnaround, artwork path, and production risk.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <Button
@@ -267,7 +277,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
 
         <aside className="border-t border-line bg-[#f7f1ea] p-5 lg:border-l lg:border-t-0">
           <div className="lg:sticky lg:top-24">
-            <p className="editorial-kicker">Live print summary</p>
+            <p className="editorial-kicker">Live buying summary</p>
             <h3 className="mt-2 text-xl font-black text-ink">{product.title}</h3>
             <div className="mt-5 space-y-3">
               {optionLabels.length > 0 ? (
@@ -313,7 +323,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
             </div>
 
             <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4 text-xs leading-5 text-slate">
-              <p className="font-black text-ink">Business guardrails</p>
+              <p className="font-black text-ink">Order and payment guardrails</p>
               <p className="mt-1">{price.paymentPathNote}</p>
               {price.guardrails.length > 0 ? <p className="mt-2">{price.guardrails[0]}</p> : null}
             </div>
@@ -341,7 +351,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
 
             <div className="mt-5 grid gap-3">
               <Button type="button" onClick={addToCart} disabled={!canAddToCart}>
-                {canAddToCart ? "Add to Cart" : "Quote Required"}
+                {canAddToCart ? "Add Standard Order to Cart" : "Quote Required"}
               </Button>
               <Button href="#order-studio" variant="secondary">
                 Review Order Methods
@@ -357,7 +367,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
                 </>
               ) : null}
               <Button
-                href={`/quote-request?service=${product.slug}`}
+                href={quoteHref}
                 variant="secondary"
                 onClick={() =>
                   trackPrintMeEvent({

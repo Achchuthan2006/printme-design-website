@@ -8,9 +8,43 @@ import { Button } from "@/components/ui/button";
 import { buildMetadata } from "@/lib/metadata";
 import { getDiscoveryFacetGroups, getDiscoveryRecommendations } from "@/lib/discovery";
 import { buildBreadcrumbSchema, buildCollectionPageSchema } from "@/lib/seo";
+import { getPricingRule } from "@/lib/pricing";
 import { getCategoryBySlug, getProductsByCategory, productCategories } from "@/data/products";
 import { catalogUtilityLinks, getCatalogNavigationFamilies, getCategoryPreviewProducts, getRelatedServicesForCategory } from "@/data/catalog";
 import Link from "next/link";
+
+function getCategoryPriceSummary(productSlugs: ReturnType<typeof getProductsByCategory>) {
+  if (productSlugs.length === 0) {
+    return { label: "Custom quote", detail: "Pricing is confirmed through review." };
+  }
+
+  const minimum = Math.min(
+    ...productSlugs.map((product) => product.startingPrice ?? getPricingRule(product).minimumCharge).filter((value) => value > 0),
+  );
+  const instantCount = productSlugs.filter((product) => getPricingRule(product).behavior === "instant").length;
+
+  return instantCount > 0
+    ? {
+        label: `From $${minimum}`,
+        detail: `${instantCount} product ${instantCount === 1 ? "path has" : "paths have"} standard listed pricing.`,
+      }
+    : {
+        label: `Quote from $${minimum}`,
+        detail: "Most products in this family need review before final pricing is confirmed.",
+      };
+}
+
+function getCategoryOptionLabels(products: ReturnType<typeof getProductsByCategory>) {
+  return Array.from(
+    new Set(
+      products.flatMap((product) =>
+        product.options
+          .filter((option) => option.type !== "textarea" && (option.choices?.length ?? 0) > 0)
+          .map((option) => option.label),
+      ),
+    ),
+  ).slice(0, 4);
+}
 
 export function generateStaticParams() {
   return productCategories.map((category) => ({ slug: category.slug }));
@@ -40,6 +74,37 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
   const groupedPathCount = navigationCategory.subcategoryGroups?.reduce((sum, group) => sum + group.items.length, 0) ?? 0;
   const discoveryFacets = getDiscoveryFacetGroups(categoryProducts, category.slug).slice(0, 4);
   const discoveryRecommendations = getDiscoveryRecommendations(categoryProducts, category);
+  const priceSummary = getCategoryPriceSummary(categoryProducts);
+  const optionLabels = getCategoryOptionLabels(categoryProducts);
+  const instantReadyCount = categoryProducts.filter((product) => product.mode !== "quote-only").length;
+  const quoteFirstCount = categoryProducts.filter((product) => product.ctaMode === "quote-first" || product.mode === "quote-only").length;
+  const buyerAnswers = [
+    {
+      question: "What is in this category?",
+      answer: category.title,
+      detail: category.highlight,
+    },
+    {
+      question: "What are the standard options?",
+      answer: optionLabels.length > 0 ? optionLabels.join(" / ") : "Custom review",
+      detail: optionLabels.length > 0 ? "These are the main option groups buyers compare first." : "Most products here are configured through quote review instead of fixed menus.",
+    },
+    {
+      question: "How much does it cost?",
+      answer: priceSummary.label,
+      detail: priceSummary.detail,
+    },
+    {
+      question: "How fast can I get it?",
+      answer: category.turnaroundNote,
+      detail: "Rush timing still depends on file readiness, quantity, and live production capacity.",
+    },
+    {
+      question: "Order now or request a quote?",
+      answer: instantReadyCount > 0 ? `${instantReadyCount} orderable, ${quoteFirstCount} quote-first` : `${quoteFirstCount} quote-first paths`,
+      detail: "Category cards below show which products can move straight into checkout and which ones need review first.",
+    },
+  ];
 
   return (
     <>
@@ -77,20 +142,60 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
       <CategoryHero category={navigationCategory} />
 
       <section className="bg-white section-tight">
-        <div className="container-shell grid gap-4 md:grid-cols-3">
-          {[
-            { label: "Visible product paths", value: String(groupedPathCount || categoryProducts.length), detail: "Grouped product, support, and quote paths shown directly inside this category hub." },
-            { label: "Dedicated product pages", value: String(categoryProducts.length), detail: "Important products already have their own detail pages for specs, order flow, and related options." },
-            { label: "Custom service support", value: String((category.supportLinks?.length ?? 0) + (category.featuredLinks?.length ?? 0)), detail: "Quote-first, design-first, and help-first shortcuts keep complex jobs visible." },
-          ].map((item) => (
-            <article key={item.label} className="premium-surface p-5">
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-slate">{item.label}</p>
-              <p className="mt-3 text-3xl font-black text-ink">{item.value}</p>
-              <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
-            </article>
-          ))}
+        <div className="container-shell">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="editorial-kicker">Fast buying answers</p>
+              <h2 className="mt-2 text-3xl font-black text-ink">Scan this category like a storefront, not a brochure page.</h2>
+            </div>
+            <Button href="/quote-request" variant="secondary">Need a custom path?</Button>
+          </div>
+          <div className="grid gap-4 xl:grid-cols-5">
+            {buyerAnswers.map((item) => (
+              <article key={item.question} className="premium-surface p-5">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate">{item.question}</p>
+                <p className="mt-3 text-sm font-black leading-6 text-ink">{item.answer}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {[
+              { label: "Visible product paths", value: String(groupedPathCount || categoryProducts.length), detail: "Grouped product, support, and quote paths shown directly inside this category hub." },
+              { label: "Dedicated product pages", value: String(categoryProducts.length), detail: "Important products already have their own detail pages for specs, order flow, and related options." },
+              { label: "Custom service support", value: String((category.supportLinks?.length ?? 0) + (category.featuredLinks?.length ?? 0)), detail: "Quote-first, design-first, and help-first shortcuts keep complex jobs visible." },
+            ].map((item) => (
+              <article key={item.label} className="premium-surface p-5">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-slate">{item.label}</p>
+                <p className="mt-3 text-3xl font-black text-ink">{item.value}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
+
+      {previewProducts.length > 0 ? (
+        <section className="bg-white section-space">
+          <div className="container-shell">
+            <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="editorial-kicker">Shop the family</p>
+                <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Standard products, exposed specs, and clear quote-first paths</h2>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
+                  Each card shows the practical buying signals first: standard options, starting price, timing, and whether the job can move straight into checkout.
+                </p>
+              </div>
+              <Button href="/products" variant="secondary">Browse all products</Button>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {previewProducts.map((product) => (
+                <ProductCard key={product.slug} product={product} />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {navigationCategory.subcategoryGroups?.length ? (
         <section className="border-y border-line bg-canvas section-space">
@@ -100,7 +205,7 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
                 <p className="editorial-kicker">Grouped browse paths</p>
                 <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">{category.title} product map</h2>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-                  Browse the family by subcategory, use case, and buying intent instead of relying on one long flat list.
+                  Start with the most commercially clear path: standard products, premium formats, support shortcuts, or custom quote entries.
                 </p>
               </div>
               <Button href="/quote-request" variant="secondary">Need guidance first?</Button>
@@ -130,33 +235,14 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
         </section>
       ) : null}
 
-      {previewProducts.length > 0 ? (
-        <section className="bg-white section-space">
-          <div className="container-shell">
-            <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="editorial-kicker">Dedicated product pages</p>
-                <h2 className="display-title mt-3 text-[2.15rem] font-black leading-[0.96]">Major products inside this family</h2>
-              </div>
-              <Button href="/products" variant="secondary">Browse all products</Button>
-            </div>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {previewProducts.map((product) => (
-                <ProductCard key={product.slug} product={product} />
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       {discoveryFacets.length > 0 ? (
         <section className="border-y border-line bg-canvas section-space">
           <div className="container-shell grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
             <div className="surface-card p-6">
               <p className="editorial-kicker">Category-aware discovery</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">How customers usually narrow {category.shortTitle.toLowerCase()}</h2>
+              <h2 className="mt-2 text-3xl font-black text-ink">How customers narrow {category.shortTitle.toLowerCase()} without getting lost</h2>
               <p className="mt-3 text-sm leading-7 text-slate">
-                This family now has discovery logic based on real decision points instead of generic ecommerce filters. Customers can start with the right format, material, finish, environment, or ordering path faster.
+                These filters reflect real buying decisions instead of generic brochure sorting, so customers can move toward the right standard product or quote path faster.
               </p>
               <div className="mt-5 grid gap-3">
                 {discoveryFacets.map((facet) => (
@@ -178,7 +264,7 @@ export default async function ProductCategoryPage({ params }: { params: Promise<
             </div>
             <div className="surface-card p-6">
               <p className="editorial-kicker">Recommended next paths</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">Show products, premium options, and support shortcuts together</h2>
+              <h2 className="mt-2 text-3xl font-black text-ink">Keep standard, premium, and support routes visible together</h2>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <div className="rounded-[1.2rem] border border-line bg-canvas p-4">
                   <p className="text-sm font-black text-ink">Premium or strategic picks</p>

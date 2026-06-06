@@ -1,5 +1,6 @@
 import {
   defaultPricingRule,
+  ExactPriceConfiguration,
   pricingRules,
   ProductPricingRule,
   QuantityTierRule,
@@ -41,6 +42,20 @@ export function getConfiguredQuantity(product: PrintProduct, selectedOptions: Re
   const quantityValue = quantityOption ? selectedOptions[quantityOption.name] : undefined;
   const parsed = Number(quantityValue);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function getQuantityOption(product: PrintProduct) {
+  return product.options.find((option) => option.group === "quantity" || option.name === "quantity");
+}
+
+function hasExactNumericQuantityChoices(product: PrintProduct) {
+  const quantityOption = getQuantityOption(product);
+  if (!quantityOption?.choices?.length) return false;
+
+  return quantityOption.choices.every((choice) => {
+    const parsed = Number(choice.value);
+    return Number.isFinite(parsed) && parsed > 0;
+  });
 }
 
 function inferOrderMethod(selectedOptions: Record<string, string>, requestedMethod?: ProductOrderMethod): ProductOrderMethod {
@@ -139,6 +154,78 @@ function getTurnaroundRule(rule: ProductPricingRule, selectedOptions: Record<str
   return rule.turnaroundRules.choices.find((choice) => choice.choiceValue === value) ?? null;
 }
 
+function getExactPriceConfiguration(rule: ProductPricingRule, selectedOptions: Record<string, string>) {
+  if (!rule.exactPricing) return null;
+  return rule.exactPricing.configurations.find((configuration) => matchCombo(configuration.when, selectedOptions)) ?? null;
+}
+
+function buildExactPriceResult(params: {
+  product: PrintProduct;
+  rule: ProductPricingRule;
+  quantity: number;
+  orderMethod: ProductOrderMethod;
+  exactConfiguration: ExactPriceConfiguration;
+  turnaroundRule: TurnaroundRule | null;
+  paymentPathNote: string;
+  pricingFactors: string[];
+  guardrails: string[];
+  businessNotes: string[];
+}) {
+  const adjustments: PricingAdjustmentLine[] = [
+    {
+      label: params.exactConfiguration.label,
+      amount: params.exactConfiguration.total,
+      kind: "base",
+      note: params.exactConfiguration.note,
+    },
+  ];
+  const pricingState: PriceResult["pricingState"] = "instant-price";
+  const summaries = summarizeRuleLines({
+    rule: params.rule,
+    tierRule: null,
+    turnaroundRule: params.turnaroundRule,
+    orderMethod: params.orderMethod,
+    requiredReview: false,
+    pricingState,
+    quoteReasons: [],
+  });
+
+  return {
+    unitPrice: params.exactConfiguration.total,
+    estimatedTotal: params.exactConfiguration.total,
+    optionPrice: 0,
+    quantity: params.quantity,
+    pricingMode: "fixed-estimate" as const,
+    pricingPath: "instant" as const,
+    pricingState,
+    pricingLabel: `Exact listed price $${params.exactConfiguration.total.toFixed(2)}`,
+    pricingExplanation: "This configuration matches an exact PrintMe standard tier and can move directly into checkout.",
+    minimumCharge: params.rule.minimumCharge,
+    basePrice: params.exactConfiguration.total,
+    methodFee: 0,
+    serviceFeeTotal: 0,
+    adjustments,
+    quoteReasons: [],
+    businessNotes: params.businessNotes,
+    guardrails: params.guardrails,
+    paymentPathNote: params.paymentPathNote,
+    pricingFactors: params.pricingFactors,
+    businessRuleSummary: [
+      ...summaries.businessRuleSummary,
+      "This price came from an exact listed tier, not an estimated interpolation.",
+    ],
+    customerSummary: [
+      "This configuration matches PrintMe's standard listed pricing.",
+      "The price shown is tied to an exact supported quantity, size, and print-side combination.",
+    ],
+    staffSummary: summaries.staffSummary,
+    quantityLabel: undefined,
+    turnaroundLabel: params.turnaroundRule?.label,
+    canCheckoutDirectly: params.product.ctaMode !== "contact",
+    requiredReview: false,
+  };
+}
+
 function summarizeRuleLines(params: {
   rule: ProductPricingRule;
   tierRule: QuantityTierRule | null;
@@ -181,11 +268,11 @@ export function calculateProductPrice(
   context?: { orderMethod?: ProductOrderMethod },
 ): PriceResult {
   const quantity = getConfiguredQuantity(product, selectedOptions);
+  const usesNumericQuantityChoices = hasExactNumericQuantityChoices(product);
   const rule = getPricingRule(product);
   const orderMethod = inferOrderMethod(selectedOptions, context?.orderMethod);
   const basePrice = product.startingPrice ?? rule.minimumCharge ?? 0;
   const minimumCharge = rule.minimumCharge ?? basePrice;
-  const adjustments: PricingAdjustmentLine[] = [];
   const quoteReasons = new Set<string>();
   const guardrails: string[] = [];
   const pricingFactors = rule.pricingFactors;
@@ -208,12 +295,70 @@ export function calculateProductPrice(
     }
   }
 
-  adjustments.push({
-    label: "Base production setup",
-    amount: basePrice,
-    kind: "base",
-    note: "Starting point for the standard product setup.",
-  });
+  const turnaroundRule = getTurnaroundRule(rule, selectedOptions);
+  if (turnaroundRule) {
+    if (turnaroundRule.forceQuote) {
+      quoteReasons.add(turnaroundRule.note);
+    }
+    if (turnaroundRule.forceEstimate) {
+      guardrails.push(turnaroundRule.note);
+    }
+  }
+
+  if (selectedOptions.artwork === "file-check") {
+    guardrails.push("File review may adjust the final production path if artwork needs correction or proof handling.");
+  }
+
+  if (selectedOptions.artwork === "design-help") {
+    quoteReasons.add("Design support requires staff review before pricing is finalized.");
+  }
+
+  const exactPriceConfiguration = getExactPriceConfiguration(rule, selectedOptions);
+  if (rule.exactPricing) {
+    if (quantity > rule.exactPricing.maxQuantity) {
+      const reason = `Quantities above ${rule.exactPricing.maxQuantity} require a custom quote.`;
+      quoteReasons.add(reason);
+      guardrails.push(reason);
+    }
+
+    if (!exactPriceConfiguration) {
+      quoteReasons.add(rule.exactPricing.noMatchReason);
+    }
+  } else if (usesNumericQuantityChoices) {
+    quoteReasons.add("This product does not have an exact listed tier for the selected quantity and configuration, so it must move to a custom quote.");
+  }
+
+  if (selectedOptions.fulfillment === "delivery" && !rule.exactPricing) {
+    guardrails.push("Delivery cost is confirmed separately and is not included in this price.");
+  }
+
+  if (quoteReasons.size > 0 && (rule.exactPricing || usesNumericQuantityChoices)) {
+    return buildQuoteOnlyResult(product, quantity, minimumCharge, [...quoteReasons], rule.businessNotes, rule.paymentPathNote, guardrails, pricingFactors);
+  }
+
+  if (exactPriceConfiguration) {
+    return buildExactPriceResult({
+      product,
+      rule,
+      quantity,
+      orderMethod,
+      exactConfiguration: exactPriceConfiguration,
+      turnaroundRule,
+      paymentPathNote: rule.paymentPathNote,
+      pricingFactors,
+      guardrails,
+      businessNotes: rule.businessNotes,
+    });
+  }
+
+  const adjustments: PricingAdjustmentLine[] = [
+    {
+      label: "Base production setup",
+      amount: basePrice,
+      kind: "base",
+      note: "Starting point for the standard product setup.",
+    },
+  ];
 
   let optionPrice = 0;
   for (const option of product.options) {
@@ -255,16 +400,9 @@ export function calculateProductPrice(
     }
   }
 
-  const turnaroundRule = getTurnaroundRule(rule, selectedOptions);
   if (turnaroundRule) {
     addAdjustment(adjustments, turnaroundRule.label, turnaroundRule.amount, "turnaround", turnaroundRule.note);
     optionPrice += turnaroundRule.amount;
-    if (turnaroundRule.forceQuote) {
-      quoteReasons.add(turnaroundRule.note);
-    }
-    if (turnaroundRule.forceEstimate) {
-      guardrails.push(turnaroundRule.note);
-    }
   }
 
   const methodFeeRule = rule.methodFees[orderMethod];
@@ -280,18 +418,6 @@ export function calculateProductPrice(
 
   if (rule.maxInstantQuantity && quantity > rule.maxInstantQuantity) {
     quoteReasons.add(`Quantity above ${rule.maxInstantQuantity} requires staff review before final pricing is confirmed.`);
-  }
-
-  if (selectedOptions.fulfillment === "delivery") {
-    guardrails.push("Delivery cost is confirmed separately and is not included in this price.");
-  }
-
-  if (selectedOptions.artwork === "file-check") {
-    guardrails.push("File review may adjust the final production path if artwork needs correction or proof handling.");
-  }
-
-  if (selectedOptions.artwork === "design-help") {
-    quoteReasons.add("Design support requires staff review before pricing is finalized.");
   }
 
   const subtotal = basePrice + optionPrice + methodFee;
@@ -311,7 +437,7 @@ export function calculateProductPrice(
   const pricingState =
     requiredReview
       ? "custom-quote"
-      : rule.behavior === "instant" && product.mode === "direct-order" && !forcedEstimate
+      : rule.behavior === "instant" && !forcedEstimate
         ? "instant-price"
         : "estimated-price";
 

@@ -417,10 +417,18 @@ const commonFileRequirements = [
 ];
 
 const quantityChoices = [
-  { label: "100", value: "100", priceDelta: 0, description: "Good for small batches" },
-  { label: "250", value: "250", priceDelta: 35, description: "Popular starter quantity" },
-  { label: "500", value: "500", priceDelta: 65, description: "Better unit value" },
-  { label: "1000", value: "1000", priceDelta: 115, description: "Best for repeat use" },
+  { label: "100", value: "100", description: "Good for small batches" },
+  { label: "250", value: "250", description: "Popular starter quantity" },
+  { label: "500", value: "500", description: "Better unit value" },
+  { label: "1000", value: "1000", description: "Best for repeat use" },
+];
+
+const exactTierQuantityChoices = [
+  { label: "50", value: "50", description: "Entry listed tier" },
+  { label: "100", value: "100", description: "Small batch" },
+  { label: "250", value: "250", description: "Popular standard tier" },
+  { label: "500", value: "500", description: "Better unit value" },
+  { label: "1000", value: "1000", description: "Largest listed standard tier" },
 ];
 
 const turnaroundChoices = [
@@ -455,7 +463,7 @@ export const products: PrintProduct[] = [
     icon: "card",
     mode: "direct-order",
     ctaMode: "direct-order",
-    startingPrice: 39,
+    startingPrice: 30,
     turnaround: "Standard 2-4 business days.",
     rushNote: "Rush available when artwork is ready and stock is available.",
     pickupDeliveryNote: "Pickup at 1585 Markham Road. Local delivery can be discussed for larger orders.",
@@ -463,7 +471,7 @@ export const products: PrintProduct[] = [
     specs: ["Standard 3.5 x 2 in", "Single or double sided", "Matte, gloss, or uncoated options", "Custom stock and specialty finishes by quote"],
     fileRequirements: commonFileRequirements,
     options: [
-      { name: "quantity", label: "Quantity", type: "radio", group: "quantity", helperText: "Choose a common business card quantity.", choices: quantityChoices, defaultValue: "250", required: true },
+      { name: "quantity", label: "Quantity", type: "radio", group: "quantity", helperText: "Choose a listed business card quantity. Unlisted stock and finish combinations go to quote.", choices: quantityChoices, defaultValue: "250", required: true },
       {
         name: "sides",
         label: "Print sides",
@@ -472,8 +480,8 @@ export const products: PrintProduct[] = [
         helperText: "Double-sided cards are useful when you need appointments, services, or QR codes on the back.",
         defaultValue: "single",
         choices: [
-          { label: "Single sided", value: "single", priceDelta: 0 },
-          { label: "Double sided", value: "double", priceDelta: 15 },
+          { label: "Single sided", value: "single" },
+          { label: "Double sided", value: "double" },
         ],
         required: true,
       },
@@ -485,9 +493,9 @@ export const products: PrintProduct[] = [
         helperText: "Matte is a clean all-purpose choice. Gloss adds more shine.",
         defaultValue: "matte",
         choices: [
-          { label: "Matte", value: "matte", priceDelta: 0 },
-          { label: "Gloss", value: "gloss", priceDelta: 0 },
-          { label: "Uncoated", value: "uncoated", priceDelta: 5 },
+          { label: "Matte", value: "matte" },
+          { label: "Gloss", value: "gloss" },
+          { label: "Uncoated", value: "uncoated" },
         ],
       },
       { name: "turnaround", label: "Turnaround", type: "radio", group: "turnaround", choices: turnaroundChoices, defaultValue: "standard" },
@@ -515,7 +523,7 @@ export const products: PrintProduct[] = [
     icon: "flyer",
     mode: "hybrid",
     ctaMode: "upload-first",
-    startingPrice: 49,
+    startingPrice: 30,
     turnaround: "Standard 2-5 business days.",
     rushNote: "Rush and same-day review may be available for common sizes and ready files.",
     pickupDeliveryNote: "Pickup is available in Scarborough. Delivery can be quoted for larger campaign quantities.",
@@ -523,7 +531,7 @@ export const products: PrintProduct[] = [
     specs: ["Common sizes: 5.5 x 8.5, 8.5 x 11, 11 x 17", "Colour or black-and-white", "Single or double sided", "Folding and specialty paper by quote"],
     fileRequirements: commonFileRequirements,
     options: [
-      { name: "quantity", label: "Quantity", type: "radio", group: "quantity", choices: quantityChoices, defaultValue: "250", required: true },
+      { name: "quantity", label: "Quantity", type: "radio", group: "quantity", helperText: "Only exact listed flyer tiers can price directly. Anything outside these tiers moves to quote.", choices: exactTierQuantityChoices, defaultValue: "250", required: true },
       {
         name: "size",
         label: "Size",
@@ -532,9 +540,9 @@ export const products: PrintProduct[] = [
         helperText: "Common flyer sizes are easier to quote and turn around quickly.",
         defaultValue: "letter",
         choices: [
-          { label: "5.5 x 8.5", value: "half-letter", priceDelta: 0 },
-          { label: "8.5 x 11", value: "letter", priceDelta: 20 },
-          { label: "11 x 17", value: "tabloid", priceDelta: 45 },
+          { label: "5.5 x 8.5", value: "half-letter" },
+          { label: "8.5 x 11", value: "letter" },
+          { label: "11 x 17", value: "tabloid" },
         ],
       },
       {
@@ -544,8 +552,8 @@ export const products: PrintProduct[] = [
         group: "print",
         defaultValue: "single",
         choices: [
-          { label: "Single sided", value: "single", priceDelta: 0 },
-          { label: "Double sided", value: "double", priceDelta: 25 },
+          { label: "Single sided", value: "single" },
+          { label: "Double sided", value: "double" },
         ],
       },
       { name: "turnaround", label: "Turnaround", type: "radio", group: "turnaround", choices: turnaroundChoices, defaultValue: "standard" },
@@ -617,7 +625,7 @@ export const products: PrintProduct[] = [
     icon: "flyer",
     mode: "hybrid",
     ctaMode: "upload-first",
-    startingPrice: 45,
+    startingPrice: 50,
     turnaround: "Standard 2-5 business days.",
     rushNote: "Rush review may be available for common sizes and print-ready artwork.",
     pickupDeliveryNote: "Pickup is available in Scarborough. Mailing or delivery coordination can be discussed for campaign orders.",

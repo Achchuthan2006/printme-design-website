@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductEngagementActions } from "@/components/catalog/product-engagement-actions";
+import { getCommercialOptions, getOrderCue, getPriceCue } from "@/components/catalog/product-buying-blocks";
 import { ServiceProductVisual } from "@/components/sections/print-product-visual";
 import { Icon } from "@/components/ui/icon";
 import { getTemplatesForProduct } from "@/data/templates";
@@ -11,6 +12,9 @@ import { PrintProduct } from "@/types";
 
 export function ProductCard({ product }: { product: PrintProduct }) {
   const hasTemplates = getTemplatesForProduct(product.slug).length > 0;
+  const priceCue = getPriceCue(product);
+  const orderCue = getOrderCue(product);
+  const optionGroups = getCommercialOptions(product, 2);
 
   return (
     <article className="premium-card premium-surface group flex h-full flex-col overflow-hidden p-3 hover:border-brand/25 hover:shadow-card">
@@ -30,24 +34,48 @@ export function ProductCard({ product }: { product: PrintProduct }) {
         </p>
         <h2 className="mt-2 text-[1.32rem] font-black leading-[1.04] text-ink">{product.title}</h2>
         <p className="mt-3 flex-1 text-sm leading-6 text-slate">{product.description}</p>
+        {optionGroups.length > 0 ? (
+          <div className="mt-4 grid gap-2">
+            {optionGroups.map((option) => (
+              <div key={option.name} className="rounded-[1rem] border border-line/75 bg-canvas/72 px-3 py-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-brand">{option.label}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {option.choices?.slice(0, 3).map((choice) => (
+                    <span key={choice.value} className="value-chip">
+                      {choice.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <div className="mt-4">
           <ProductEngagementActions slug={product.slug} compact />
         </div>
-        <div className="focus-band mt-4 flex items-start gap-2 p-3">
-          <Icon name={product.ctaMode === "upload-first" ? "document" : product.ctaMode === "contact" ? "store" : "clock"} className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-          <p className="text-xs leading-5 text-slate">
-            {product.turnaround}
-          </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[1.25rem] border border-white/80 bg-white/82 p-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_16px_rgba(18,17,16,0.04)]">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate">Standard price</p>
+            <p className="mt-2 text-base font-black text-ink">{priceCue.label}</p>
+            <p className="mt-1">{priceCue.detail}</p>
+          </div>
+          <div className="focus-band flex items-start gap-2 p-3">
+            <Icon name={product.ctaMode === "upload-first" ? "document" : product.ctaMode === "contact" ? "store" : "clock"} className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate">Turnaround</p>
+              <p className="mt-1 text-xs leading-5 text-slate">{product.turnaround}</p>
+            </div>
+          </div>
         </div>
         <div className="mt-3 rounded-[1.25rem] border border-brand/12 bg-brand-soft/45 p-3 text-xs leading-5 text-slate">
-          <span className="font-black text-ink">Payment path:</span> {product.mode === "direct-order" ? "secure checkout available" : "review first, pay after confirmation"}
+          <span className="font-black text-ink">Order path:</span> {orderCue.label}. {orderCue.detail}
         </div>
         <div className="mt-3 rounded-[1.25rem] border border-white/80 bg-white/82 p-3 text-xs leading-5 text-slate shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_16px_rgba(18,17,16,0.04)]">
           {product.pickupDeliveryNote}
         </div>
         <div className="mt-5 flex items-center justify-between gap-4 border-t border-black/5 pt-4">
           <p className="text-sm font-black text-ink">
-            {product.startingPrice ? `Starts at $${product.startingPrice}` : "Quote first"}
+            {priceCue.label}
           </p>
           <Button
             href={`/products/${product.slug}`}

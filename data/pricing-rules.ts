@@ -17,6 +17,13 @@ export interface TurnaroundRule {
   forceEstimate?: boolean;
 }
 
+export interface ExactPriceConfiguration {
+  when: Record<string, string>;
+  total: number;
+  label: string;
+  note: string;
+}
+
 export interface ProductPricingRule {
   behavior: "instant" | "estimate" | "quote";
   minimumCharge: number;
@@ -43,6 +50,11 @@ export interface ProductPricingRule {
   turnaroundRules?: {
     optionName: string;
     choices: TurnaroundRule[];
+  };
+  exactPricing?: {
+    maxQuantity: number;
+    noMatchReason: string;
+    configurations: ExactPriceConfiguration[];
   };
   methodFees: Partial<Record<ProductOrderMethod, { amount: number; label: string; note: string }>>;
   maxInstantQuantity?: number;
@@ -72,19 +84,86 @@ export const defaultPricingRule: ProductPricingRule = {
   },
 };
 
+const standardArtworkStatuses = ["print-ready", "file-check"] as const;
+
+function createFlyerExactConfigurations(
+  sizeValue: "half-letter" | "letter",
+  sizeLabel: string,
+  prices: Array<{
+    quantity: "50" | "100" | "250" | "500" | "1000";
+    oneSide: number;
+    twoSide: number;
+  }>,
+): ExactPriceConfiguration[] {
+  return prices.flatMap(({ quantity, oneSide, twoSide }) =>
+    standardArtworkStatuses.flatMap((artwork) => [
+      {
+        when: {
+          quantity,
+          size: sizeValue,
+          sides: "single",
+          turnaround: "standard",
+          fulfillment: "pickup",
+          artwork,
+        },
+        total: oneSide,
+        label: `${sizeLabel} - ${quantity} - One Side`,
+        note: `Exact listed flyer tier for ${sizeLabel}, quantity ${quantity}, one side.`,
+      },
+      {
+        when: {
+          quantity,
+          size: sizeValue,
+          sides: "double",
+          turnaround: "standard",
+          fulfillment: "pickup",
+          artwork,
+        },
+        total: twoSide,
+        label: `${sizeLabel} - ${quantity} - Two Side`,
+        note: `Exact listed flyer tier for ${sizeLabel}, quantity ${quantity}, two side.`,
+      },
+    ]),
+  );
+}
+
+const flyerExactConfigurations: ExactPriceConfiguration[] = [
+  ...createFlyerExactConfigurations("half-letter", "5.5 x 8.5", [
+    { quantity: "50", oneSide: 50, twoSide: 60 },
+    { quantity: "100", oneSide: 70, twoSide: 85 },
+    { quantity: "250", oneSide: 105, twoSide: 120 },
+    { quantity: "500", oneSide: 135, twoSide: 145 },
+    { quantity: "1000", oneSide: 195, twoSide: 215 },
+  ]),
+  ...createFlyerExactConfigurations("letter", "8.5 x 11", [
+    { quantity: "50", oneSide: 65, twoSide: 75 },
+    { quantity: "100", oneSide: 80, twoSide: 95 },
+    { quantity: "250", oneSide: 120, twoSide: 175 },
+    { quantity: "500", oneSide: 185, twoSide: 235 },
+    { quantity: "1000", oneSide: 255, twoSide: 295 },
+  ]),
+];
+
 export const pricingRules: Record<string, ProductPricingRule> = {
   "business-cards": {
     ...defaultPricingRule,
-    behavior: "instant",
-    minimumCharge: 39,
-    quoteTriggers: ["Business card setup may need review if artwork or finish is outside the standard path."],
-    maxInstantQuantity: 5000,
+    behavior: "quote",
+    minimumCharge: 30,
+    quoteTriggers: [
+      "Business cards currently require a custom quote because the storefront options do not yet map exactly to the printed standard tier sheet.",
+    ],
   },
   flyers: {
     ...defaultPricingRule,
     behavior: "instant",
-    minimumCharge: 49,
-    maxInstantQuantity: 5000,
+    minimumCharge: 30,
+    quoteTriggers: ["Unlisted flyer sizes, rush jobs, delivery, design support, and non-standard quantities require a custom quote."],
+    exactPricing: {
+      maxQuantity: 1000,
+      noMatchReason: "This flyer configuration is not on PrintMe's exact standard price list, so it must move to a custom quote.",
+      configurations: flyerExactConfigurations,
+    },
+    maxInstantQuantity: 1000,
   },
   "document-printing": {
     ...defaultPricingRule,

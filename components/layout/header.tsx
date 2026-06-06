@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { useAuth } from "@/components/account/auth-provider";
@@ -118,10 +118,12 @@ function SearchResults({
   query,
   entries,
   onNavigate,
+  className,
 }: {
   query: string;
   entries: CatalogSearchEntry[];
   onNavigate: () => void;
+  className?: string;
 }) {
   const normalizedQuery = query.trim();
   const search = runCatalogSearch(normalizedQuery, 8);
@@ -129,7 +131,7 @@ function SearchResults({
   const recovery = normalizedQuery ? search.recovery.slice(0, 2) : [];
 
   return (
-    <div className="rounded-[1.55rem] border border-white/75 bg-white/95 p-3 shadow-[0_28px_70px_rgba(18,17,16,0.14)] backdrop-blur-[16px]">
+    <div className={cn("rounded-[1.55rem] border border-white/75 bg-white/95 p-3 shadow-[0_28px_70px_rgba(18,17,16,0.14)] backdrop-blur-[16px]", className)}>
       <div className="mb-2 flex items-center justify-between px-1">
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">
           {normalizedQuery ? `Best matches (${matches.length})` : "Popular shortcuts"}
@@ -226,6 +228,7 @@ function CategoryButton({
 
 export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) {
   const pathname = usePathname();
+  const router = useRouter();
   const headerRef = useRef<HTMLElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
@@ -305,6 +308,16 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
   const handleDesktopPanel = (panel: DesktopPanel) => {
     setDesktopPanel(panel);
     setSearchOpen(false);
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalizedQuery = searchQuery.trim();
+
+    router.push(normalizedQuery ? `/products?query=${encodeURIComponent(normalizedQuery)}` : "/products");
+    setSearchOpen(false);
+    setDesktopPanel(null);
+    setOpen(false);
   };
 
   const renderPublicDesktopPanel = () => {
@@ -515,11 +528,11 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
       <div className="container-shell">
         <div
           className={cn(
-            "grid grid-cols-[auto_auto] items-center gap-x-3 gap-y-4 py-4 transition-[padding] duration-300 lg:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-cols-[auto_minmax(18rem,22rem)_auto] 2xl:grid-cols-[auto_minmax(21rem,28rem)_auto]",
+            "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-4 py-4 transition-[padding] duration-300 lg:grid-cols-[auto_minmax(0,1fr)_auto] xl:gap-x-6",
             scrolled ? "lg:py-3" : "lg:py-4.5",
           )}
         >
-          <div className="flex min-w-0 items-center gap-4 xl:gap-5">
+          <div className="flex min-w-0 items-center gap-4 xl:gap-6">
             <BrandLogo
               className="mr-1 lg:mr-2"
               size="header"
@@ -527,73 +540,75 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
               src={site.logoSrc}
               alt={site.logoAlt ?? site.brandName}
             />
-            {!isPrivatePortal ? (
-              <nav aria-label="Primary" className="hidden items-center gap-0.5 xl:flex 2xl:gap-1">
-                {publicNavItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onMouseEnter={() => handleDesktopPanel(item.id)}
-                    onFocus={() => handleDesktopPanel(item.id)}
-                    onClick={() => setDesktopPanel((current) => (current === item.id ? null : item.id))}
-                    className={cn(
-                      "rounded-full px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.16em] transition 2xl:px-4",
-                      desktopPanel === item.id
-                        ? "bg-brand-soft/80 text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]"
-                        : "text-ink/80 hover:bg-white hover:text-brand",
-                    )}
-                    aria-expanded={desktopPanel === item.id}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
-            ) : renderPrivateDesktopNav}
+            {isPrivatePortal ? renderPrivateDesktopNav : null}
           </div>
 
-          <div className="hidden min-w-0 lg:flex lg:flex-1 lg:justify-center">
+          <div className="hidden min-w-0 items-center justify-center gap-4 lg:flex xl:gap-5 2xl:gap-7">
             {!isPrivatePortal ? (
-              <div ref={searchRef} className="relative w-full max-w-[18rem] xl:max-w-[20rem] 2xl:max-w-[28rem]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchOpen((current) => !current);
-                    setDesktopPanel(null);
-                  }}
-                  className="premium-input flex min-h-[52px] w-full items-center justify-between gap-3 rounded-full border border-white/80 bg-white/88 px-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_14px_28px_rgba(22,19,17,0.05)] xl:px-5"
-                  aria-expanded={searchOpen}
-                >
-                  <span className="flex min-w-0 items-center gap-3 text-sm font-semibold text-slate">
-                    <Icon name="inspect" className="h-4.5 w-4.5 text-brand" />
-                    <span className="truncate">Search products, services, packaging, signage, apparel...</span>
-                  </span>
-                  <span className="hidden shrink-0 rounded-full border border-line bg-canvas px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate 2xl:inline-flex">
-                    Search
-                  </span>
-                </button>
-                {searchOpen ? (
-                  <div className="absolute left-1/2 top-[calc(100%+0.9rem)] z-[90] w-[min(34rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 xl:left-0 xl:w-[32rem] xl:max-w-[32rem] xl:translate-x-0 2xl:w-[36rem] 2xl:max-w-[36rem]">
-                    <div className="rounded-[1.6rem] border border-white/75 bg-white/96 p-3 shadow-[0_28px_70px_rgba(18,17,16,0.14)] backdrop-blur-[16px]">
-                      <div className="mb-3 flex items-center gap-3 rounded-[1.2rem] border border-line/70 bg-canvas/70 px-4 py-3">
-                        <Icon name="inspect" className="h-4.5 w-4.5 text-brand" />
-                        <input
-                          value={searchQuery}
-                          onChange={(event) => setSearchQuery(event.target.value)}
-                          placeholder="Search products, services, support shortcuts"
-                          className="w-full bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-slate/60"
-                        />
-                      </div>
-                      <SearchResults query={searchQuery} entries={searchEntries} onNavigate={() => setSearchOpen(false)} />
+              <>
+                <nav aria-label="Primary" className="hidden shrink-0 items-center gap-0.5 xl:flex 2xl:gap-1">
+                  {publicNavItems.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onMouseEnter={() => handleDesktopPanel(item.id)}
+                      onFocus={() => handleDesktopPanel(item.id)}
+                      onClick={() => setDesktopPanel((current) => (current === item.id ? null : item.id))}
+                      className={cn(
+                        "rounded-full px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.16em] transition 2xl:px-4",
+                        desktopPanel === item.id
+                          ? "bg-brand-soft/80 text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]"
+                          : "text-ink/80 hover:bg-white hover:text-brand",
+                      )}
+                      aria-expanded={desktopPanel === item.id}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+                <div ref={searchRef} className="relative min-w-0 flex-1 lg:max-w-[20rem] xl:max-w-[22rem] 2xl:max-w-[25rem]">
+                  <form onSubmit={handleSearchSubmit} className="relative">
+                    <label htmlFor="printme-desktop-search" className="sr-only">
+                      Search PrintMe products and services
+                    </label>
+                    <Icon name="inspect" className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-brand" />
+                    <input
+                      id="printme-desktop-search"
+                      type="search"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      onFocus={() => {
+                        setSearchOpen(true);
+                        setDesktopPanel(null);
+                      }}
+                      placeholder="Search products, services, or materials"
+                      className="premium-input premium-focus h-[52px] rounded-full border-white/80 bg-white/90 pl-11 pr-[6.85rem] text-[0.95rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_14px_28px_rgba(22,19,17,0.05)] placeholder:text-slate/58"
+                    />
+                    <button
+                      type="submit"
+                      className="premium-focus absolute right-1.5 top-1/2 inline-flex h-[41px] -translate-y-1/2 items-center justify-center rounded-full border border-line/80 bg-[linear-gradient(180deg,rgba(252,248,242,0.98),rgba(244,237,230,0.98))] px-4 text-[10px] font-black uppercase tracking-[0.16em] text-slate transition hover:border-brand/25 hover:text-brand"
+                    >
+                      Search
+                    </button>
+                  </form>
+                  {searchOpen ? (
+                    <div className="absolute left-0 top-[calc(100%+0.75rem)] z-[90] w-full min-w-[20rem] max-w-[min(28rem,calc(100vw-2rem))]">
+                      <SearchResults
+                        query={searchQuery}
+                        entries={searchEntries}
+                        onNavigate={() => setSearchOpen(false)}
+                        className="rounded-[1.45rem] border-white/80 bg-white/97 p-2.5 shadow-[0_22px_54px_rgba(18,17,16,0.12)]"
+                      />
                     </div>
-                  </div>
-                ) : null}
-              </div>
+                  ) : null}
+                </div>
+              </>
             ) : null}
           </div>
 
           <div className="col-start-2 row-start-1 flex items-center justify-end gap-2.5 lg:col-start-3 lg:gap-3">
             <CartDrawer compact />
-            <div className="hidden items-center gap-2 xl:flex 2xl:gap-2.5">
+            <div className="hidden items-center gap-2.5 xl:flex 2xl:gap-3">
               {!loading ? (
                 user ? (
                   <div ref={accountRef} className="relative">
@@ -641,7 +656,7 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                 )
               ) : null}
               {!isPrivatePortal ? (
-                <div className="hidden 2xl:flex liquid-glass h-[52px] min-w-[176px] items-center justify-center gap-3 rounded-[1.35rem] px-4 text-left">
+                <div className="hidden xl:flex liquid-glass h-[52px] min-w-[164px] items-center justify-center gap-3 rounded-[1.35rem] px-4 text-left 2xl:min-w-[176px]">
                   <div className="min-w-0">
                     <p className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.16em] text-slate">Custom or urgent?</p>
                     <a href={site.phoneHref} className="block whitespace-nowrap text-sm font-extrabold text-ink transition hover:text-brand">
@@ -698,16 +713,21 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                     <div className="flex items-center gap-3 rounded-[1.1rem] border border-line/70 bg-canvas/70 px-4 py-3">
                       <Icon name="inspect" className="h-4.5 w-4.5 text-brand" />
                       <input
+                        type="search"
                         value={searchQuery}
                         onChange={(event) => {
                           setSearchQuery(event.target.value);
                           setSearchOpen(true);
                         }}
-                        placeholder="Search products, services, support"
+                        onFocus={() => setSearchOpen(true)}
+                        placeholder="Search products, services, or materials"
                         className="w-full bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-slate/60"
                       />
                     </div>
-                    {searchOpen ? <div className="mt-3"><SearchResults query={searchQuery} entries={searchEntries} onNavigate={() => setOpen(false)} /></div> : null}
+                    {searchOpen ? <div className="mt-3"><SearchResults query={searchQuery} entries={searchEntries} onNavigate={() => {
+                      setSearchOpen(false);
+                      setOpen(false);
+                    }} /></div> : null}
                   </div>
 
                   {mobileSection === "root" ? (

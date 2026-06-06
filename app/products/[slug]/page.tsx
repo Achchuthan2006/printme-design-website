@@ -19,6 +19,7 @@ import { ProductEngagementActions } from "@/components/catalog/product-engagemen
 import { ProductPageBridge } from "@/components/catalog/product-page-bridge";
 import { ProductPricingSystemPanel } from "@/components/catalog/product-pricing-system-panel";
 import { ProductActions } from "@/components/catalog/product-actions";
+import { ProductBuyingAnswers, ProductOptionOverview } from "@/components/catalog/product-buying-blocks";
 import { RelatedServices } from "@/components/catalog/related-services";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SpecList } from "@/components/catalog/spec-list";
@@ -66,34 +67,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const category = getCategoryBySlug(product.categorySlug);
   const related = getRelatedProducts(product.related);
-  const highlightedOptions = product.options
-    .filter((option) => option.choices && option.choices.length > 1)
-    .slice(0, 3);
   const pricingRule = pricingRules[product.slug] ?? defaultPricingRule;
   const faqSchema = buildFaqSchema(product.faqs);
   const serviceHref = getServicePageHrefByServiceSlug(product.slug);
-  const supportPathCopy =
-    product.ctaMode === "direct-order"
-      ? "Best when the size, quantity, and basic finish are already clear and you want the fastest route into cart."
-      : product.ctaMode === "upload-first"
-        ? "Best when the artwork is ready and you want PrintMe to review the file early before the job moves forward."
-        : product.ctaMode === "contact"
-          ? "Best when this is mainly an in-store or call-first service and timing or requirements should be confirmed directly."
-          : "Best when this job still needs advice on specs, stock, finish, delivery, mailing, or design support before production.";
-  const serviceFitGuides = [
-    {
-      title: "Best for",
-      detail: `Customers who need ${product.idealFor.slice(0, 3).join(", ").toLowerCase()}.`,
-    },
-    {
-      title: "Most useful when",
-      detail: product.overview,
-    },
-    {
-      title: "Safest next step",
-      detail: supportPathCopy,
-    },
-  ];
 
   return (
     <>
@@ -137,14 +113,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <div className="mt-4">
                   <ProductEngagementActions slug={product.slug} />
                 </div>
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  {serviceFitGuides.map((item) => (
-                    <div key={item.title} className="rounded-[1.2rem] border border-line/80 bg-canvas/75 p-4">
-                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">{item.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate">{item.detail}</p>
-                    </div>
-                  ))}
-                </div>
+                <ProductBuyingAnswers product={product} className="mt-6" />
               </div>
               <ServiceProductVisual slug={product.slug} />
             </div>
@@ -155,21 +124,35 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <section className="border-y border-line bg-canvas section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[1fr_420px]">
           <div className="space-y-8">
-            <TrustStrip items={["Local Scarborough pickup", "Clear file guidance", "Quote support for custom specs"]} />
-            <LocalTrustStrip />
+            <div className="surface-card p-6">
+              <p className="editorial-kicker">Buy this product</p>
+              <h2 className="mt-2 text-3xl font-black text-ink">See the standard setup before you decide whether to order or request a quote.</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
+                Start with the listed standard options here. If your quantity, size, finishing, timing, or artwork falls outside these lanes, PrintMe shifts you into the quote path instead of showing a fake price.
+              </p>
+              <ProductOptionOverview product={product} className="mt-6" />
+            </div>
             <div className="grid gap-5 md:grid-cols-3">
               <article className="premium-surface p-5">
-                <p className="text-sm font-bold text-slate">Pricing path</p>
+                <p className="text-sm font-bold text-slate">Standard price path</p>
                 <p className="mt-3 text-3xl font-black text-ink">
                   {pricingRule.behavior === "instant" ? `From $${pricingRule.minimumCharge}` : pricingRule.behavior === "estimate" ? `Est. $${pricingRule.minimumCharge}+` : "Custom quote"}
                 </p>
+                <p className="mt-2 text-xs leading-5 text-slate">
+                  {pricingRule.behavior === "instant"
+                    ? "Listed combinations can price immediately."
+                    : pricingRule.behavior === "estimate"
+                      ? "You get a structured estimate before anything unusual moves to review."
+                      : "This product needs staff review before price is locked in."}
+                </p>
               </article>
               <article className="premium-surface p-5">
-                <p className="text-sm font-bold text-slate">Turnaround</p>
+                <p className="text-sm font-bold text-slate">Fastest useful timing</p>
                 <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.turnaround}</p>
+                <p className="mt-2 text-xs leading-5 text-slate">{product.rushNote ?? "Rush and same-day requests are reviewed against file readiness and live production capacity."}</p>
               </article>
               <article className="premium-surface p-5">
-                <p className="text-sm font-bold text-slate">Order path</p>
+                <p className="text-sm font-bold text-slate">Best next step</p>
                 <p className="mt-3 text-sm font-bold leading-6 text-ink">
                   {product.ctaMode === "direct-order"
                     ? "Direct order online"
@@ -188,6 +171,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </p>
               </article>
             </div>
+            <TrustStrip items={["Local Scarborough pickup", "Clear file guidance", "Quote support for custom specs"]} />
+            <LocalTrustStrip />
           </div>
           <div id="order-builder" className="lg:sticky lg:top-24 lg:self-start">
             <ProductConfigurator product={product} />
@@ -196,11 +181,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </section>
 
       <section className="bg-white section-space">
-        <div className="container-shell grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
-          <div>
-            <p className="editorial-kicker">Overview</p>
-            <h2 className="mt-2 text-3xl font-black text-ink">What this service is for</h2>
-            <p className="mt-5 text-sm leading-7 text-slate">{product.overview}</p>
+        <div className="container-shell grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="surface-card p-6">
+            <p className="editorial-kicker">What you can order</p>
+            <h2 className="mt-2 text-3xl font-black text-ink">Use this page when you need a real buying decision, not a brochure overview.</h2>
+            <p className="mt-4 text-sm leading-7 text-slate">{product.overview}</p>
             <div className="mt-6 grid gap-3">
               {product.idealFor.map((item) => (
                 <div key={item} className="flex items-center gap-3 rounded-[1.2rem] border border-line bg-canvas p-3">
@@ -210,9 +195,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ))}
             </div>
           </div>
-          <div className="grid gap-8 md:grid-cols-2">
-            <SpecList title="Specifications and options" items={product.specs} />
-            <SpecList title="Artwork requirements" items={product.fileRequirements} icon="document" muted />
+          <div className="grid gap-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <SpecList title="Standard specs" items={product.specs} />
+              <SpecList title="Artwork requirements" items={product.fileRequirements} icon="document" muted />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <article className="premium-surface p-5">
+                <p className="text-sm font-bold text-slate">Turnaround</p>
+                <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.turnaround}</p>
+              </article>
+              <article className="premium-surface p-5">
+                <p className="text-sm font-bold text-slate">Rush policy</p>
+                <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.rushNote ?? "Rush timing is reviewed after artwork, quantity, and finishing are confirmed."}</p>
+              </article>
+              <article className="premium-surface p-5">
+                <p className="text-sm font-bold text-slate">Pickup or delivery</p>
+                <p className="mt-3 text-sm font-bold leading-6 text-ink">{product.pickupDeliveryNote}</p>
+              </article>
+            </div>
           </div>
         </div>
         <div className="container-shell mt-8">
@@ -262,29 +263,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         ) : null}
-        {highlightedOptions.length > 0 ? (
-          <div className="container-shell mt-8">
-            <div className="surface-card p-6">
-              <p className="editorial-kicker">Common decisions</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">What customers usually compare before they order</h2>
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {highlightedOptions.map((option) => (
-                  <article key={option.name} className="rounded-[1.2rem] border border-line bg-canvas p-4">
-                    <p className="text-sm font-black text-ink">{option.label}</p>
-                    {option.helperText ? <p className="mt-2 text-sm leading-6 text-slate">{option.helperText}</p> : null}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {option.choices?.slice(0, 4).map((choice) => (
-                        <span key={choice.value} className="value-chip">
-                          {choice.label}
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : null}
         <div className="container-shell mt-8">
           <ProductOrderStudio product={product} />
         </div>
@@ -295,27 +273,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <TimelineRulesPanel />
           <PaymentClarityPanel />
         </div>
-        <div className="container-shell mt-6 grid gap-4 lg:grid-cols-3">
-          <article className="premium-surface p-6">
-            <h2 className="text-2xl font-black text-ink">This product usually runs on</h2>
-            <p className="mt-3 text-sm leading-7 text-slate">{product.turnaround}</p>
-          </article>
-          <article className="premium-surface p-6">
-            <h2 className="text-2xl font-black text-ink">Rush policy</h2>
-            <p className="mt-3 text-sm leading-7 text-slate">{product.rushNote ?? "Rush timing is reviewed after artwork, quantity, and finishing are confirmed."}</p>
-          </article>
-          <article className="premium-surface p-6">
-            <h2 className="text-2xl font-black text-ink">Pickup or delivery</h2>
-            <p className="mt-3 text-sm leading-7 text-slate">{product.pickupDeliveryNote}</p>
-          </article>
-        </div>
       </section>
 
       <section className="bg-white section-space">
         <div className="container-shell grid gap-8 lg:grid-cols-[1fr_0.95fr]">
           <section className="surface-card p-6">
-            <p className="editorial-kicker">How customers usually use this service</p>
-            <h2 className="mt-2 text-3xl font-black text-ink">Common order scenarios</h2>
+            <p className="editorial-kicker">Edge cases and related help</p>
+            <h2 className="mt-2 text-3xl font-black text-ink">When this standard product page is not enough</h2>
             <div className="mt-6 grid gap-4">
               {product.idealFor.map((item, index) => (
                 <article key={item} className="rounded-[1.2rem] border border-line bg-canvas p-4">
@@ -323,10 +287,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <p className="mt-2 text-sm font-black text-ink">{item}</p>
                   <p className="mt-2 text-sm leading-6 text-slate">
                     {index === 0
-                      ? "Best when the job needs to look polished and move forward with fewer production questions."
+                      ? "Use the standard order path when the listed specs already fit the job."
                       : index === 1
-                        ? "Helpful when the format, message, or finish should match a specific business or campaign goal."
-                        : "A strong fit when local support, file review, or timing guidance matters before the order is locked in."}
+                        ? "Move to quote when the piece still needs finishing, stock, mailing, or custom size review."
+                        : "Ask PrintMe directly when timing, files, or use-case fit still needs a human recommendation."}
                   </p>
                 </article>
               ))}
