@@ -1,12 +1,5 @@
 import { notFound } from "next/navigation";
-import dynamic from "next/dynamic";
 import { PaymentClarityPanel } from "@/components/catalog/payment-clarity-panel";
-import { AiDesignStarter } from "@/components/ai/ai-design-starter";
-import { FileReadinessAssistant } from "@/components/ai/file-readiness-assistant";
-import { IntelligentOrderPath } from "@/components/ai/intelligent-order-path";
-import { SmartProductRecommendations } from "@/components/ai/smart-product-recommendations";
-import { SmartTemplateRecommendations } from "@/components/ai/smart-template-recommendations";
-import { ContextualHelpPanel } from "@/components/support/contextual-help-panel";
 import { InteractiveProductExperience } from "@/components/catalog/interactive-product-experience";
 import { ProductSizePreview } from "@/components/catalog/product-size-preview";
 import { ProductConfigurator } from "@/components/commerce/product-configurator";
@@ -14,16 +7,13 @@ import { TimelineRulesPanel } from "@/components/catalog/timeline-rules-panel";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { FaqAccordion } from "@/components/catalog/faq-accordion";
 import { FinalCta } from "@/components/catalog/final-cta";
-import { ProductDecisionTools } from "@/components/catalog/product-decision-tools";
 import { ProductEngagementActions } from "@/components/catalog/product-engagement-actions";
 import { ProductPageBridge } from "@/components/catalog/product-page-bridge";
-import { ProductPricingSystemPanel } from "@/components/catalog/product-pricing-system-panel";
 import { ProductActions } from "@/components/catalog/product-actions";
 import { ProductBuyingAnswers, ProductOptionOverview } from "@/components/catalog/product-buying-blocks";
 import { RelatedServices } from "@/components/catalog/related-services";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SpecList } from "@/components/catalog/spec-list";
-import { ServiceSupportPanel } from "@/components/catalog/service-support-panel";
 import { TrustStrip } from "@/components/catalog/trust-strip";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +26,6 @@ import { buildBreadcrumbSchema, buildFaqSchema, buildProductSchema } from "@/lib
 import { defaultPricingRule, pricingRules } from "@/data/pricing-rules";
 import { catalogProductPages, getCategoryBySlug, getProductBySlug, getRelatedProducts } from "@/data/products";
 import { getServicePageHrefByServiceSlug } from "@/data/services";
-
-const ProductOrderStudio = dynamic(
-  () => import("@/components/catalog/product-order-studio").then((module) => module.ProductOrderStudio),
-  {
-    loading: () => <div className="surface-card h-80 animate-pulse p-6" />,
-  },
-);
 
 export function generateStaticParams() {
   return catalogProductPages.map((product) => ({ slug: product.slug }));
@@ -184,7 +167,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="container-shell grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="surface-card p-6">
             <p className="editorial-kicker">What you can order</p>
-            <h2 className="mt-2 text-3xl font-black text-ink">Use this page when you need a real buying decision, not a brochure overview.</h2>
+            <h2 className="mt-2 text-3xl font-black text-ink">Everything you need to decide before you order.</h2>
             <p className="mt-4 text-sm leading-7 text-slate">{product.overview}</p>
             <div className="mt-6 grid gap-3">
               {product.idealFor.map((item) => (
@@ -225,37 +208,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="container-shell mt-8">
           <ProductSizePreview slug={product.slug} title={product.title} />
         </div>
-        <div className="container-shell mt-8">
-          <ProductDecisionTools product={product} />
-        </div>
-        <div className="container-shell mt-8 grid gap-8 xl:grid-cols-2">
-          <IntelligentOrderPath product={product} />
-          <FileReadinessAssistant product={product} />
-        </div>
-        <div className="container-shell mt-8">
-          <ContextualHelpPanel context="product" title={`Support for choosing the right ${product.title.toLowerCase()} path`} />
-        </div>
-        <div className="container-shell mt-8">
-          <SmartTemplateRecommendations product={product} />
-        </div>
-        <div className="container-shell mt-8">
-          <AiDesignStarter product={product} />
-        </div>
-        <div className="container-shell mt-8">
-          <SmartProductRecommendations product={product} />
-        </div>
-        <div className="container-shell mt-8">
-          <ProductPricingSystemPanel product={product} />
-        </div>
         {serviceHref ? (
           <div className="container-shell mt-8">
             <div className="surface-card p-6">
-              <p className="editorial-kicker">Need guidance first?</p>
+              <p className="editorial-kicker">Need the service path?</p>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                  <h2 className="mt-2 text-3xl font-black text-ink">Use the matching service page when the job still needs a conversation.</h2>
+                  <h2 className="mt-2 text-3xl font-black text-ink">Open the matching service page when the job still needs review.</h2>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-                    This product page is built for specifications and ordering. The service page is better when stock, finish, timing, or use-case fit still needs advice before you lock the job in.
+                    This product page is for choosing specs and placing an order. Use the service page if stock, finish, timing, or use-case fit still needs a conversation first.
                   </p>
                 </div>
                 <Button href={serviceHref} variant="secondary">Open Service Page</Button>
@@ -263,40 +224,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         ) : null}
-        <div className="container-shell mt-8">
-          <ProductOrderStudio product={product} />
-        </div>
       </section>
 
       <section className="border-y border-line bg-canvas section-space">
         <div className="container-shell grid gap-6 lg:grid-cols-2">
           <TimelineRulesPanel />
           <PaymentClarityPanel />
-        </div>
-      </section>
-
-      <section className="bg-white section-space">
-        <div className="container-shell grid gap-8 lg:grid-cols-[1fr_0.95fr]">
-          <section className="surface-card p-6">
-            <p className="editorial-kicker">Edge cases and related help</p>
-            <h2 className="mt-2 text-3xl font-black text-ink">When this standard product page is not enough</h2>
-            <div className="mt-6 grid gap-4">
-              {product.idealFor.map((item, index) => (
-                <article key={item} className="rounded-[1.2rem] border border-line bg-canvas p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Scenario {index + 1}</p>
-                  <p className="mt-2 text-sm font-black text-ink">{item}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate">
-                    {index === 0
-                      ? "Use the standard order path when the listed specs already fit the job."
-                      : index === 1
-                        ? "Move to quote when the piece still needs finishing, stock, mailing, or custom size review."
-                        : "Ask PrintMe directly when timing, files, or use-case fit still needs a human recommendation."}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
-          <ServiceSupportPanel product={product} />
         </div>
       </section>
 

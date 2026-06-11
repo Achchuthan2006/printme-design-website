@@ -81,14 +81,14 @@ export function AccountShell() {
     { title: "Open Orders", value: String(liveOrders.filter((order) => order.status !== "completed").length), description: "Track active jobs and know what needs review next." },
     { title: "Proofs Waiting", value: String(liveProofs.filter((proof) => proof.status !== "approved_for_production").length), description: "Approve proofs or request changes before production starts." },
     { title: "Saved Quotes", value: String(liveQuotes.length), description: "Keep quote requests organized for faster approvals." },
-    { title: "Uploaded Files", value: String(liveFiles.length), description: "Keep artwork ready for quotes, orders, and reorders." },
-    { title: "Invoices", value: String(liveInvoices.length), description: "Access billing records as the order system grows." },
+    { title: "Uploaded Files", value: String(liveFiles.length), description: "Reuse artwork across quotes, orders, and repeat jobs." },
+    { title: "Invoices", value: String(liveInvoices.length), description: "Keep billing records tied to the same order history." },
   ];
   const quickActions = [
     { title: "Start a reorder-friendly quote", detail: "Use the quote flow when you want a familiar job priced again with updated timing or quantity.", href: "/quote-request", icon: "document" },
     { title: "Review proofs and approvals", detail: "Open your proof portal to compare versions, request changes, or approve final artwork.", href: "/account/proofs", icon: "inspect" },
-    { title: "Upload or organize artwork", detail: "Keep files attached to the right order, quote, or future repeat job.", href: "/account/files", icon: "upload" },
-    { title: "Reuse a saved design starter", detail: "Jump back into a template-led or uploaded design path without starting from zero.", href: "/products", icon: "spark" },
+    { title: "Upload or organize artwork", detail: "Keep files attached to the right order, quote, or repeat-ready job.", href: "/account/files", icon: "upload" },
+    { title: "Start from a previous product", detail: "Jump back into the catalog and rebuild a familiar order faster.", href: "/products", icon: "spark" },
     { title: "Talk to support", detail: "Ask about pickup timing, status, invoices, or the next production step.", href: "/support", icon: "chat" },
   ];
   const featuredOrder = liveOrders[0] ?? (previewMode ? demoOrders[0] : null);
@@ -102,7 +102,7 @@ export function AccountShell() {
             <p className="editorial-kicker">Welcome back</p>
             <h1 className="display-title mt-2 text-[2.6rem] font-black">{displayName}</h1>
             <p className="mt-3 text-sm leading-6 text-slate">
-              Keep your quotes, orders, artwork files, invoices, and future reorders organized in one place.
+              Keep your quotes, orders, artwork files, invoices, and repeat-ready jobs in one place.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {liveProfile.companyName ? <span className="value-chip">{liveProfile.companyName}</span> : null}
@@ -113,9 +113,9 @@ export function AccountShell() {
               <span className="font-black text-ink">Current dashboard state:</span>{" "}
               {configured
                 ? liveDashboard
-                  ? "this account is now reading persisted customer profile, order, quote, file, and invoice data when available from the backend."
-                  : "account access is live. Empty sections stay empty until real orders, quotes, files, invoices, and reorders exist for this customer."
-                : "this is a preview dashboard until Supabase auth and persisted customer data are fully configured."}
+                  ? "live account details, orders, quotes, files, and invoices are shown here when available."
+                  : "your account is live. Empty sections will fill in as orders, quotes, files, invoices, and reorders are created."
+                : "this dashboard is showing preview data until account storage is fully connected."}
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -215,14 +215,14 @@ export function AccountShell() {
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-brand">Current focus</p>
                 <h2 className="mt-2 text-xl font-black text-ink">Most time-sensitive job in your account</h2>
-                <p className="mt-2 text-sm leading-6 text-slate">{featuredOrder?.nextStep ?? "Once the first live order or quote lands here, this area will highlight the next action that matters most."}</p>
+                <p className="mt-2 text-sm leading-6 text-slate">{featuredOrder?.nextStep ?? "As soon as you place an order or submit a quote, this area highlights the next action that matters most."}</p>
               </div>
               {featuredOrder ? <StatusBadge status={featuredOrder.status} /> : null}
             </div>
           </div>
           <AccountSupportHub
             title="Everything needed to keep the job moving"
-            description="This account view is structured around the real jobs customers come back to: reorders, file reuse, proofs, invoices, and quick support."
+            description="Use this account area for reorders, file reuse, proofs, invoices, and quick support without starting from scratch."
             shortcuts={accountSupportShortcuts.map((item, index) => ({
               ...item,
               icon: index === 0 ? "clock" : index === 1 ? "upload" : "bag",
@@ -286,7 +286,7 @@ export function AccountShell() {
           <div>
             <h2 className="text-2xl font-black">Next time should be faster.</h2>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              Saved files, previous order details, invoice downloads, and reorder actions are structured so repeat jobs can become easier over time.
+              Saved files, previous order details, invoice downloads, and reorder actions help repeat jobs move faster over time.
             </p>
           </div>
           <Button href="/support">Get Support</Button>

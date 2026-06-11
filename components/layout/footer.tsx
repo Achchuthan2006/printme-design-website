@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { servicePages } from "@/data/services";
-import { catalogUtilityLinks, getCatalogNavigationFamilies } from "@/data/catalog";
+import { getCatalogNavigationFamilies } from "@/data/catalog";
 import { ResolvedTenantContext } from "@/types";
 
 export function Footer({ siteContext }: { siteContext: ResolvedTenantContext }) {
@@ -18,16 +18,6 @@ export function Footer({ siteContext }: { siteContext: ResolvedTenantContext }) 
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/55 to-transparent" aria-hidden="true" />
       <div className="container-shell py-16">
         <div className="liquid-glass-dark rounded-[2.15rem] p-6 sm:p-8">
-          <div className="mb-8 grid gap-4 xl:grid-cols-2">
-            {[
-              isPrivatePortal ? "Portal-safe ordering, governed templates, and centralized workflow control" : "Business printing, document printing, banners, passport photos, and custom jobs",
-              isPrivatePortal ? "Built from one shared PrintMe platform with tenant-level branding and controls" : "Pickup confidence from a real Scarborough print shop",
-            ].map((item) => (
-              <div key={item} className="rounded-[1.4rem] border border-white/10 bg-white/[0.07] px-4 py-3 text-sm font-bold text-white/82 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                {item}
-              </div>
-            ))}
-          </div>
           <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-[1.15fr_0.78fr_0.9fr_0.95fr_1fr]">
             <div className="space-y-5">
               <div>
@@ -40,8 +30,8 @@ export function Footer({ siteContext }: { siteContext: ResolvedTenantContext }) 
                 />
                 <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
                   {isPrivatePortal
-                    ? `${tenant.name} is powered by PrintMe core infrastructure, with tenant-specific branding, product controls, and operational governance layered on top.`
-                    : "PrintMe Design helps businesses, schools, community groups, and walk-in customers order print with clearer quotes, practical file review, and dependable local follow-through."}
+                    ? `${tenant.name} runs on PrintMe infrastructure with tenant-specific branding, controls, and approval flow.`
+                    : "PrintMe helps businesses, schools, community groups, and walk-in customers order print with clearer quote rules, practical file review, and dependable local follow-through."}
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -85,7 +75,7 @@ export function Footer({ siteContext }: { siteContext: ResolvedTenantContext }) 
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Catalog families</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Shop products</p>
               <div className="mt-4 flex flex-col gap-3">
                 {catalogFamilies.map((family) => (
                   <Link key={family.slug} href={`/products/category/${family.slug}`} className="link-underline w-fit text-sm text-white/70 transition hover:text-white">
@@ -96,7 +86,7 @@ export function Footer({ siteContext }: { siteContext: ResolvedTenantContext }) 
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Popular services</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Quote-first services</p>
               <div className="mt-4 flex flex-col gap-3">
                 {servicePages.slice(0, 6).map((service) => (
                   <Link key={service.slug} href={`/services/${service.slug}`} className="link-underline w-fit text-sm text-white/70 transition hover:text-white">
@@ -107,23 +97,14 @@ export function Footer({ siteContext }: { siteContext: ResolvedTenantContext }) 
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Local support</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Pickup and support</p>
               <div className="mt-4 space-y-3 text-sm text-white/70">
-                <p>{site.experience ?? "Centralized print operations"} helping customers avoid print guesswork with clearer files, timing, and production guidance.</p>
-                <p>{isPrivatePortal ? "This portal can be governed by tenant, location, franchise, or reseller rules while still running on the same shared platform core." : `Pickup available at ${site.shortAddress}. Ask about delivery for qualifying ${site.cityRegion} orders.`}</p>
+                <p>{site.experience ?? "Local print ordering"} with clearer files, timing, and production guidance.</p>
+                <p>{isPrivatePortal ? "Use this account area to manage approved products, files, and repeat ordering with the controls tied to your organization." : `Pickup available at ${site.shortAddress}. Ask about delivery for qualifying ${site.cityRegion} orders.`}</p>
               </div>
-              {!isPrivatePortal ? (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {catalogUtilityLinks.slice(0, 3).map((item) => (
-                    <Link key={item.title} href={item.href} className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white/78 transition hover:bg-white/[0.1] hover:text-white">
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
               <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-white/[0.07] p-4 text-sm text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.12)]">
-                <p className="font-semibold text-white">{isPrivatePortal ? "Managed print ordering without brand drift." : "Professional print help without the production guesswork."}</p>
-                <p className="mt-2">{isPrivatePortal ? "Central teams control templates, catalogs, and governance while local or client users still get a clean ordering experience." : "One local stop for document printing, marketing materials, stationery, technical prints, passport photos, and custom orders."}</p>
+                <p className="font-semibold text-white">{isPrivatePortal ? "Ordering, approvals, and repeat jobs in one place." : "Local print ordering with clearer next steps."}</p>
+                <p className="mt-2">{isPrivatePortal ? "Keep approved products, uploads, proofs, and repeat orders organized without sending customers through disconnected tools." : "Order standard products online, request quotes for custom work, and keep artwork, pickup, and production details tied to the same workflow."}</p>
               </div>
             </div>
           </div>

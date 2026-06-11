@@ -14,6 +14,7 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
   const quoteReviewCount = items.filter((item) => item.quoteOnly).length;
   const directCheckoutCount = items.length - quoteReviewCount;
   const titleId = useId();
+  const descriptionId = useId();
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -24,6 +25,27 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
     const opener = openButtonRef.current;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeCart();
+      if (event.key !== "Tab") return;
+
+      const focusable = closeButtonRef.current
+        ?.closest("aside")
+        ?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+
+      if (!focusable || focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey && activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     document.body.style.overflow = "hidden";
@@ -46,6 +68,7 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
         aria-expanded={isDrawerOpen}
         aria-controls="printme-cart-drawer"
         aria-label={itemCount > 0 ? `Open cart with ${itemCount} item${itemCount > 1 ? "s" : ""}` : "Open cart"}
+        data-surface="mini-cart-trigger"
         className={cn(
           "group relative inline-flex items-center text-xs font-extrabold uppercase tracking-[0.08em] text-ink transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
           compact
@@ -82,18 +105,21 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         className={cn(
           "fixed right-0 top-0 z-[80] flex h-dvh w-full max-w-md flex-col border-l border-line/80 bg-white shadow-card transition-transform duration-300",
           isDrawerOpen ? "translate-x-0" : "translate-x-full",
         )}
         aria-label="Mini cart"
+        data-surface="mini-cart"
+        data-cart-state={items.length === 0 ? "empty" : quoteReviewCount > 0 ? "mixed" : "ready"}
       >
         <div className="border-b border-line bg-[linear-gradient(180deg,rgba(255,241,236,0.72),rgba(255,255,255,0))] p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="editorial-kicker">Print cart</p>
               <h2 id={titleId} className="mt-2 text-2xl font-black text-ink">{itemCount} item(s)</h2>
-              <p className="mt-2 text-sm leading-6 text-slate">Review the order, keep shopping, or move into secure checkout when you are ready.</p>
+              <p id={descriptionId} className="mt-2 text-sm leading-6 text-slate">Review what is ready for checkout, what still needs review, and the fastest next step for the job.</p>
             </div>
             <div className="flex items-center gap-3">
               <BrandLogo size="compact" className="hidden sm:inline-flex" />
@@ -121,7 +147,12 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
           ) : null}
           {items.length === 0 ? (
             <div className="rounded-[1.3rem] border border-dashed border-line bg-canvas p-5 text-sm text-slate">
-              Your cart is empty. Start with a product, or request a quote if your job needs custom sizing, finishing, or file review.
+              <p className="font-black text-ink">Your cart is empty.</p>
+              <p className="mt-2">Start with a product, or request a quote if your job needs custom sizing, finishing, or file review.</p>
+              <div className="mt-4 grid gap-3">
+                <Button href="/products" onClick={closeCart}>Browse Products</Button>
+                <Button href="/quote-request" variant="secondary" onClick={closeCart}>Request a Custom Quote</Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -161,8 +192,8 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
               {quoteReviewCount} item{quoteReviewCount === 1 ? "" : "s"} still need PrintMe review before final pricing or production approval.
             </div>
           ) : null}
-          <div className="mb-4 rounded-[1.25rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
-            Files can be uploaded during checkout. If the artwork is not final yet, you can still continue and add notes for the team.
+            <div className="mb-4 rounded-[1.25rem] border border-line/80 bg-white/90 px-4 py-3 text-xs leading-5 text-slate">
+            Upload files during checkout, or continue without them if the artwork is still being finalized.
           </div>
           <div className="mb-4 rounded-[1.3rem] border border-line/80 bg-canvas p-4 text-sm">
             <div className="flex justify-between">
@@ -176,7 +207,7 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
               </div>
               <div className="flex items-center gap-2">
                 <Icon name="clock" className="h-4 w-4 text-brand" />
-                <span>Turnaround and pickup details confirmed before production</span>
+                <span>Turnaround and pickup or delivery confirmed before production</span>
               </div>
               <div className="flex items-center gap-2">
                 <Icon name="upload" className="h-4 w-4 text-brand" />
@@ -193,9 +224,11 @@ export function CartDrawer({ compact = false }: { compact?: boolean }) {
           <Button href="/quote-request" variant="secondary" className="mt-3 w-full" onClick={closeCart}>
             Request a Custom Quote
           </Button>
-          <Link href="/checkout" onClick={closeCart} className="mt-4 block text-center text-sm font-bold text-brand">
-            Go to Secure Checkout
-          </Link>
+          {items.length > 0 ? (
+            <Link href="/checkout" onClick={closeCart} className="mt-4 block text-center text-sm font-bold text-brand">
+              Continue to Checkout
+            </Link>
+          ) : null}
         </div>
       </aside>
     </div>

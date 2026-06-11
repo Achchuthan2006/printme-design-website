@@ -210,36 +210,11 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
         <p className="editorial-kicker">Build your order</p>
         <h2 className="mt-2 text-2xl font-black text-ink">Configure {product.title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate">
-          Start with the standard storefront options. This section is where buyers decide whether the job fits direct ordering or should move into quote review.
+          Start with the standard storefront options and confirm whether this job stays in direct order or needs quote review.
         </p>
         <p className="mt-4 rounded-[1.2rem] border border-brand/15 bg-brand-soft px-4 py-3 text-sm leading-6 text-brand">
           <span className="font-black text-ink">Best next step:</span> {nextStepCopy}
         </p>
-        <p className="mt-4 rounded-[1.2rem] border border-line bg-white/90 px-4 py-3 text-sm leading-6 text-slate">
-          <span className="font-black text-ink">Pricing path:</span> PrintMe shows instant pricing, structured estimates, or quote review depending on the selected specs, turnaround, artwork path, and production risk.
-        </p>
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <Button
-            href="#order-studio"
-            variant="secondary"
-            className="px-4 py-2.5 text-xs"
-            onClick={() =>
-              trackPrintMeEvent({
-                eventName: "order_method_selected",
-                pageType: "product",
-                funnelName: "storefront_discovery",
-                funnelStage: "order_method",
-                isMicroConversion: true,
-                properties: {
-                  productSlug: product.slug,
-                  orderMethod: "review-order-methods",
-                },
-              })
-            }
-          >
-            Step 2: Choose Order Method
-          </Button>
-        </div>
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[1fr_330px]">
@@ -305,7 +280,7 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
             </div>
 
             <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Pricing logic</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">What changes price</p>
               <p className="mt-2 text-sm font-bold text-ink">{price.pricingLabel}</p>
               <div className="mt-3 space-y-2 text-xs leading-5 text-slate">
                 {price.adjustments.slice(0, 4).map((item) => (
@@ -316,29 +291,13 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
                 ))}
                 {price.quoteReasons.length > 0 ? (
                   <p className="rounded-[1rem] border border-brand/15 bg-brand-soft px-3 py-2 text-brand">
-                    Staff review trigger: {price.quoteReasons[0]}
+                    Quote trigger: {price.quoteReasons[0]}
                   </p>
                 ) : null}
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4 text-xs leading-5 text-slate">
-              <p className="font-black text-ink">Order and payment guardrails</p>
-              <p className="mt-1">{price.paymentPathNote}</p>
-              {price.guardrails.length > 0 ? <p className="mt-2">{price.guardrails[0]}</p> : null}
-            </div>
-
-            <div className="mt-4 rounded-[1.35rem] border border-line/80 bg-white/85 p-4 text-xs leading-5 text-slate">
-              <p className="font-black text-ink">What affects price</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {price.pricingFactors.map((factor) => (
-                  <span key={factor} className="value-chip">{factor}</span>
-                ))}
-              </div>
-              <div className="mt-3 space-y-2">
                 {price.customerSummary.slice(0, 2).map((item) => (
                   <p key={item}>{item}</p>
                 ))}
+                {price.guardrails.length > 0 ? <p>{price.guardrails[0]}</p> : null}
               </div>
             </div>
 
@@ -352,9 +311,6 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
             <div className="mt-5 grid gap-3">
               <Button type="button" onClick={addToCart} disabled={!canAddToCart}>
                 {canAddToCart ? "Add Standard Order to Cart" : "Quote Required"}
-              </Button>
-              <Button href="#order-studio" variant="secondary">
-                Review Order Methods
               </Button>
               {status === "added" ? (
                 <>
@@ -386,14 +342,14 @@ export function ProductConfigurator({ product }: { product: PrintProduct }) {
               >
                 Request a Quote Instead
               </Button>
-              <Button type="button" variant="ghost" onClick={openSupportChat}>
-                Ask Before Ordering
-              </Button>
             </div>
-
-            <p className="mt-4 text-xs leading-5 text-slate">
-              Need help? PrintMe can review files, confirm stock, and recommend the best production path before payment.
-            </p>
+            <button
+              type="button"
+              onClick={openSupportChat}
+              className="mt-4 text-left text-xs font-bold text-slate transition hover:text-brand"
+            >
+              Need help deciding? Ask PrintMe before ordering.
+            </button>
           </div>
         </aside>
       </div>

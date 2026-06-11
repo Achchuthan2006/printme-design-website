@@ -134,6 +134,9 @@ export function QuoteRequestForm({
       });
       setFieldErrors(nextErrors);
       setStatus({ type: "error", message: "Please fix the highlighted fields so we can quote accurately." });
+      window.requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
       trackPrintMeEvent({
         eventName: "quote_validation_failed",
         pageType: "quote_request",
@@ -213,6 +216,16 @@ export function QuoteRequestForm({
           type: "error",
           message: error instanceof Error ? error.message : "Unable to submit the form right now.",
         });
+        trackPrintMeEvent({
+          eventName: "quote_submission_failed",
+          pageType: "quote_request",
+          funnelName: "quote_to_cash",
+          funnelStage: "quote_request",
+          properties: {
+            serviceNeeded: form.serviceNeeded || prefillingService || null,
+            reason: error instanceof Error ? error.message : "Unable to submit the form right now.",
+          },
+        });
       }
     });
   }
@@ -234,7 +247,13 @@ export function QuoteRequestForm({
 
   return (
     <div className="surface-card p-6 sm:p-8">
-      <form onSubmit={onSubmit} className="space-y-6" noValidate>
+      <form
+        onSubmit={onSubmit}
+        className="space-y-6"
+        noValidate
+        data-surface="quote-request"
+        data-flow="quote-to-cash"
+      >
         <input
           tabIndex={-1}
           autoComplete="off"
@@ -257,28 +276,14 @@ export function QuoteRequestForm({
           <div className="rounded-[1.4rem] border border-brand/15 bg-brand-soft px-4 py-4 text-sm leading-6 text-brand">
             <p className="font-black text-ink">Order method already selected: {methodLabel}</p>
             <p className="mt-1">
-              This request started from the product order studio, so the team will receive a clearer structured brief instead of a generic message.
+              This request started from a product page, so the team will receive the selected order path with the quote details.
               {initialTemplate ? ` Template selected: ${initialTemplate}.` : ""}
             </p>
           </div>
         ) : null}
 
-        <div className="grid gap-3 md:grid-cols-3">
-            {[
-            { label: "Step 1", title: "Tell us the job", detail: normalizedMethod ? "Product, order method, quantity, and turnaround window." : "Service, quantity, and turnaround window." },
-            { label: "Step 2", title: "Upload files if ready", detail: "Helpful for more accurate review, but optional." },
-            { label: "Step 3", title: "Get the next step", detail: "Quote, clarification, proof path, or the safest production route." },
-          ].map((item) => (
-            <div key={item.title} className="signal-card">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{item.label}</p>
-              <p className="mt-2 text-sm font-black text-ink">{item.title}</p>
-              <p className="mt-1 text-xs leading-5 text-slate">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-
         <div className="rounded-[1.5rem] border border-brand/15 bg-brand-soft px-4 py-4 text-sm leading-6 text-brand">
-          <span className="font-black text-ink">Fastest path to an accurate quote:</span> include the quantity, turnaround window, pickup or delivery preference, and artwork if you have it. More clarity here means fewer follow-up messages later.
+          <span className="font-black text-ink">Fastest path to an accurate quote:</span> include the quantity, turnaround window, pickup or delivery preference, and artwork status. That gives PrintMe enough to respond with fewer follow-up questions.
         </div>
 
         {configured && !user ? (
@@ -294,19 +299,8 @@ export function QuoteRequestForm({
           </div>
         ) : null}
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
-            <p className="font-black text-ink">Best for custom, rush, or not-quite-standard jobs</p>
-            <p className="mt-1">
-              Use this form when the specs are still taking shape, the product needs review, or you want PrintMe to confirm the safest path before payment is requested.
-            </p>
-          </div>
-          <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
-            <p className="font-black text-ink">Need a quick answer before you submit?</p>
-            <p className="mt-1">
-              Call {siteConfig.phone} if the deadline is close, the service choice is unclear, or you want help deciding whether to quote, upload, or order online.
-            </p>
-          </div>
+        <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-4 text-sm leading-6 text-slate">
+          Use this form when the specs are still taking shape, the job needs review, or you want PrintMe to confirm the safest path before payment is requested. If the deadline is tight, call {siteConfig.phone}.
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -397,18 +391,11 @@ export function QuoteRequestForm({
         </div>
 
         <div className="rounded-[1.35rem] border border-line/80 bg-canvas px-4 py-3 text-xs leading-5 text-slate">
-          Files upload separately from the form so PrintMe can start reviewing artwork right away. If you are still waiting on final files, submit the request now and mention that in the project details.
+          Files upload separately from the form so PrintMe can start reviewing artwork right away. If the files are not final yet, submit the request now and mention what is still coming.
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
-            <p className="font-black text-ink">What helps the team reply faster</p>
-            <p className="mt-1">Tell us the quantity, turnaround window, whether pickup or delivery matters, and whether the artwork is final or still in progress.</p>
-          </div>
-          <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
-            <p className="font-black text-ink">What happens after you send this</p>
-            <p className="mt-1">PrintMe reviews the request first, then replies with pricing, timing, file questions, or the clearest next action.</p>
-          </div>
+        <div className="rounded-[1.35rem] border border-line/80 bg-white/90 px-4 py-4 text-sm leading-6 text-slate">
+          PrintMe reviews the request first, then replies with pricing, timing, file questions, or the clearest next step.
         </div>
 
         {uploadedFiles.length > 0 ? (
@@ -428,7 +415,7 @@ export function QuoteRequestForm({
             {[
               "We review the service, quantity, timing, and fulfillment details.",
               "If files were attached, we check size, quality, bleed, and production fit.",
-              "You get a quote, clarification, or the cleanest next step instead of vague back-and-forth.",
+              "You get pricing, clarification, or the cleanest next step instead of guesswork.",
             ].map((item, index) => (
               <div key={item} className="rounded-[1rem] bg-white/80 px-3 py-3 text-sm leading-6 text-slate">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Next {index + 1}</p>
@@ -443,12 +430,7 @@ export function QuoteRequestForm({
             No payment is taken here. This form is only used to review your request, confirm pricing and timing, and guide you to the right next step.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            {status.type === "success" ? (
-              <Button href="/support" variant="secondary" className="min-w-44">
-                Get Help With My Project
-              </Button>
-            ) : null}
-            <Button type="submit" disabled={isPending} className="min-w-44 disabled:cursor-not-allowed disabled:opacity-70">
+            <Button type="submit" disabled={isPending} className="min-w-44 disabled:cursor-not-allowed disabled:opacity-70" data-cta="quote-submit">
               {isPending ? "Sending..." : "Send Quote Request"}
             </Button>
           </div>

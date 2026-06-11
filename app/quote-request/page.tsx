@@ -1,6 +1,5 @@
 import { QuoteRequestForm } from "@/components/forms/quote-request-form";
 import { QuotePricingGuidance } from "@/components/forms/quote-pricing-guidance";
-import { LeadCtaPanel } from "@/components/conversion/lead-cta-panel";
 import { LocalTrustStrip } from "@/components/conversion/local-trust-strip";
 import { ContextualHelpPanel } from "@/components/support/contextual-help-panel";
 import { PageHero } from "@/components/ui/page-hero";
@@ -19,9 +18,9 @@ export default async function QuoteRequestPage({
 }) {
   const { service, method, template, brief } = await searchParams;
   const quoteExpectations = [
-    "A clearer request helps us reply with fewer follow-up questions.",
-    "Artwork is helpful but not required. You can still send the project first.",
-    "Rush timing, pickup, delivery, and production fit are reviewed before the next step is confirmed.",
+    "Product, size, quantity, and deadline",
+    "Artwork status and whether files are ready",
+    "Pickup or delivery preference",
   ];
 
   return (
@@ -44,8 +43,8 @@ export default async function QuoteRequestPage({
           />
           <aside className="space-y-6">
             <div className="surface-card p-6">
-              <p className="editorial-kicker">Quote quality</p>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-ink">Help us quote it right the first time.</h2>
+              <p className="editorial-kicker">What to include</p>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-ink">Give us the details that decide price and timing.</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {quoteExpectations.map((item) => (
                   <span key={item} className="value-chip">
@@ -67,12 +66,12 @@ export default async function QuoteRequestPage({
             </div>
             <div className="surface-card p-6">
               <p className="editorial-kicker">What happens next</p>
-              <h3 className="mt-2 text-xl font-extrabold tracking-tight text-ink">What happens after you send it</h3>
+              <h3 className="mt-2 text-xl font-extrabold tracking-tight text-ink">How PrintMe handles the request after you send it</h3>
               <div className="mt-4 space-y-3">
                 {[
-                  "We review the service, quantity, timeline, and whether the job fits a direct order or custom path.",
+                  "We review the service, quantity, timeline, and whether the job fits a standard product or custom path.",
                   "If files are attached, we check size, quality, and production notes before quoting.",
-                  "You get a clearer next step instead of vague back-and-forth.",
+                  "You get pricing, clarification, or the cleanest next step instead of guesswork.",
                 ].map((item, index) => (
                   <div key={item} className="signal-card">
                     <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand">Step {index + 1}</p>
@@ -94,15 +93,15 @@ export default async function QuoteRequestPage({
           <div className="mb-8 grid gap-4 md:grid-cols-3">
             {[
               {
-                title: "Best for custom work",
+                title: "Custom or non-standard work",
                 detail: "Use quote-first for banners, signs, postcards, promotional print, print-and-mail, and any specialty job.",
               },
               {
-                title: "Best for design help",
+                title: "Design support",
                 detail: "If the idea is ready but the artwork is not, the quote path is the cleanest place to scope layout or print-setup support.",
               },
               {
-                title: "Best for rush questions",
+                title: "Rush questions",
                 detail: "Tell us the real deadline, file status, and quantity so PrintMe can confirm what is realistic before you commit.",
               },
             ].map((item) => (
@@ -112,12 +111,6 @@ export default async function QuoteRequestPage({
               </article>
             ))}
           </div>
-          <LeadCtaPanel
-            title="Need help shaping the request before you send it?"
-            description="If the specs are still fuzzy, call PrintMe first or send the rough version now. We can help turn it into a cleaner, more accurate quote."
-            primaryLabel="Request a Quote"
-            secondaryLabel="Call PrintMe"
-          />
         </div>
       </section>
     </>

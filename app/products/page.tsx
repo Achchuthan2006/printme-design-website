@@ -70,24 +70,24 @@ export default async function ProductsPage({
           <div className="hero-panel mt-8 px-6 py-7 sm:px-8 lg:px-10 lg:py-10">
             <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
-                <Badge>Large-catalog PrintMe</Badge>
+                <Badge>Print storefront</Badge>
                 <h1 className="display-title mt-4 text-balance text-[3rem] font-black leading-[0.92] sm:text-[4.5rem]">
-                  A serious print catalog with cleaner browsing and faster next steps.
+                  Find the right print product, then order or quote it with confidence.
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-slate">
-                  Explore product families, custom-service paths, support shortcuts, and dedicated product pages that show the full scale of what PrintMe can handle.
+                  Browse product families, compare bestsellers, and move into direct order or quote-first paths without guessing how PrintMe wants the job submitted.
                 </p>
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                   <Button href="/quote-request">Request a Custom Quote</Button>
-                  <Button href="/services" variant="secondary">Browse Service Pages</Button>
+                  <Button href="/account/reorders" variant="secondary">Open Reorders</Button>
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {[
-                  "Business cards, stationery, and office essentials",
-                  "Marketing materials, direct mail, and promo print",
-                  "Packaging, labels, signage, apparel, and merch",
-                  "Design help, custom orders, and rush-aware support",
+                  "See standard sizes, options, and price-from cues earlier",
+                  "Know when a job can go straight to checkout",
+                  "Switch to quote-first when the specs go custom",
+                  "Keep upload, support, and reorder paths close by",
                 ].map((item) => (
                   <div key={item} className="signal-card p-4 text-sm leading-6 text-slate">
                     <div className="flex items-start gap-3">
@@ -99,7 +99,7 @@ export default async function ProductsPage({
               </div>
             </div>
             <div className="mt-8">
-              <TrustStrip items={["Full family-based catalog browsing", "Quote, upload, design, and custom-order paths", "Local pickup, delivery discussion, and white-glove support"]} />
+              <TrustStrip items={["Price cues and quote logic shown earlier", "Scarborough pickup and delivery guidance", "Upload, proof, and support paths tied to the same order flow"]} />
             </div>
           </div>
         </div>
@@ -110,12 +110,12 @@ export default async function ProductsPage({
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="editorial-kicker">Catalog families</p>
-              <h2 className="display-title mt-3 text-[2.35rem] font-black leading-[0.96]">Browse PrintMe like a full platform, not a small product list.</h2>
+              <h2 className="display-title mt-3 text-[2.35rem] font-black leading-[0.96]">Start with the product family that matches the job.</h2>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-                Every major print family gets its own hub, deeper subcategory structure, and support shortcuts so users can find standard products, premium options, and custom services from more than one angle.
+                Every major print family leads into clearer category pages, stronger product cards, and the right order-vs-quote path for the work.
               </p>
             </div>
-            <Button href="/quote-request?service=White-Glove%20Project%20Intake" variant="secondary">Need a white-glove intake?</Button>
+            <Button href="/quote-request?service=White-Glove%20Project%20Intake" variant="secondary">Need a complex project quoted?</Button>
           </div>
           <CatalogFamilyGrid categories={productCategories} />
         </div>
@@ -123,17 +123,17 @@ export default async function ProductsPage({
 
       <section className="bg-white section-space">
         <div className="container-shell grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-          <div className="surface-card p-6">
-            <p className="editorial-kicker">Multiple discovery paths</p>
-            <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Customers can find the right job from product, industry, or support intent.</h2>
-            <div className="mt-5 grid gap-3">
-              {[
-                "Browse by product family when the format is already clear.",
-                "Use industry paths when the use case matters more than the product name.",
-                "Use quote, rush, design, or custom-order shortcuts when the job still needs help first.",
-              ].map((item) => (
-                <div key={item} className="signal-card p-4 text-sm leading-6 text-slate">
-                  {item}
+            <div className="surface-card p-6">
+              <p className="editorial-kicker">Multiple discovery paths</p>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Start from the product, the use case, or the support question.</h2>
+              <div className="mt-5 grid gap-3">
+                {[
+                "Browse by product family when you already know the format.",
+                "Use industry paths when you know the campaign or business use first.",
+                "Use quote, rush, design, or custom-order shortcuts when the job still needs review.",
+                ].map((item) => (
+                  <div key={item} className="signal-card p-4 text-sm leading-6 text-slate">
+                    {item}
                 </div>
               ))}
             </div>
@@ -154,9 +154,9 @@ export default async function ProductsPage({
 
       <section className="bg-canvas section-space">
         <div className="container-shell grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <div className="surface-card p-6">
-            <p className="editorial-kicker">Fast shortcuts</p>
-            <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">High-intent actions stay visible everywhere in the system.</h2>
+            <div className="surface-card p-6">
+              <p className="editorial-kicker">Fast shortcuts</p>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Keep high-intent actions one click away.</h2>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {catalogUtilityLinks.map((item) => (
                 <a key={item.title} href={item.href} className="rounded-[1.25rem] border border-line/70 bg-canvas/75 p-4 transition hover:border-brand/20 hover:bg-white">
@@ -173,9 +173,9 @@ export default async function ProductsPage({
               ))}
             </div>
           </div>
-          <div className="surface-card p-6">
-            <p className="editorial-kicker">Featured collections</p>
-            <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Show breadth without overwhelming the catalog.</h2>
+            <div className="surface-card p-6">
+              <p className="editorial-kicker">Featured collections</p>
+              <h2 className="mt-2 text-[2rem] font-black leading-[0.98] text-ink">Browse common multi-product jobs without getting lost.</h2>
             <div className="mt-5 grid gap-3">
               {featuredCatalogCollections.map((item) => (
                 <a key={item.title} href={item.href} className="rounded-[1.25rem] border border-line/70 bg-canvas/75 p-4 transition hover:border-brand/20 hover:bg-white">

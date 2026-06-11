@@ -108,10 +108,22 @@ export function CheckoutPanel() {
 
   function updateCustomer(field: keyof CheckoutCustomer, value: string) {
     setCustomer((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   }
 
   function updateAddress(field: keyof CheckoutAddress, value: string) {
     setDeliveryAddress((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   }
 
   function validate() {
@@ -139,6 +151,9 @@ export function CheckoutPanel() {
     if (validation.message) {
       setFieldErrors(validation.errors);
       setError(validation.message);
+      window.requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
       trackPrintMeEvent({
         eventName: "checkout_validation_failed",
         pageType: "checkout",
@@ -203,6 +218,17 @@ export function CheckoutPanel() {
         window.location.href = result.checkoutUrl;
       } catch (checkoutError) {
         setError(checkoutError instanceof Error ? checkoutError.message : "Unable to start checkout.");
+        trackPrintMeEvent({
+          eventName: "checkout_submission_failed",
+          pageType: "checkout",
+          funnelName: "direct_checkout",
+          funnelStage: "checkout",
+          properties: {
+            itemCount: items.length,
+            paymentMode: paymentPlan.checkoutMode,
+            reason: checkoutError instanceof Error ? checkoutError.message : "Unable to start checkout.",
+          },
+        });
       }
     });
   }
@@ -211,7 +237,7 @@ export function CheckoutPanel() {
     return (
       <div className="hero-panel p-8 text-center">
         <p className="editorial-kicker">Secure checkout</p>
-        <h1 className="display-title mt-2 text-[2.5rem] font-black">Your checkout is waiting for a print item.</h1>
+        <h1 className="display-title mt-2 text-[2.5rem] font-black">Checkout starts after you add a print item.</h1>
         <p className="mt-3 text-sm leading-6 text-slate">Add an online-order item or request a quote if your project needs review first.</p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button href="/products">Start My Order</Button>
@@ -243,16 +269,22 @@ export function CheckoutPanel() {
   ];
 
   return (
-    <form onSubmit={submitCheckout} className="grid gap-8 lg:grid-cols-[1fr_390px]" noValidate>
+    <form
+      onSubmit={submitCheckout}
+      className="grid gap-8 lg:grid-cols-[1fr_390px]"
+      noValidate
+      data-surface="checkout"
+      data-flow="direct-checkout"
+    >
       <div className="space-y-6">
         <CartSupportPanel />
 
         <section className="grid gap-3 md:grid-cols-4">
-          {[
-            { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, questions, invoices, and pickup updates." },
-            { label: "Step 2", title: "Fulfillment choice", detail: "Pickup or delivery affects timing, handling, and final release." },
-            { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or flag what still needs attention." },
-            { label: "Step 4", title: "Payment path", detail: "Checkout, deposit, or review-first billing is shown clearly before you continue." },
+            {[
+            { label: "Step 1", title: "Contact details", detail: "Where to send confirmations, proof questions, invoices, and pickup updates." },
+            { label: "Step 2", title: "Fulfillment choice", detail: "Pickup or delivery affects release timing and final handoff." },
+            { label: "Step 3", title: "Files and notes", detail: "Upload artwork now or tell PrintMe what is still coming." },
+            { label: "Step 4", title: "Payment path", detail: "See whether this order is pay-now, deposit, or review-first before you continue." },
           ].map((item) => (
             <div key={item.title} className="signal-card">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">{item.label}</p>
@@ -262,7 +294,7 @@ export function CheckoutPanel() {
           ))}
         </section>
 
-        <section className="section-frame p-6">
+        <section className="section-frame p-6" data-surface="checkout-contact">
           <p className="editorial-kicker">Step 1</p>
           <h1 className="display-title mt-2 text-[2.3rem] font-black leading-[0.95] text-ink">Where should we send updates?</h1>
           <p className="mt-3 text-sm leading-6 text-slate">We use these details for confirmations, proof questions, billing follow-up, and pickup or delivery updates.</p>
@@ -288,7 +320,7 @@ export function CheckoutPanel() {
           </div>
         </section>
 
-        <section className="surface-card p-6">
+        <section className="surface-card p-6" data-surface="checkout-fulfillment">
           <p className="editorial-kicker">Step 2</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Choose pickup or delivery</h2>
           <p className="mt-3 text-sm leading-6 text-slate">Pickup is fastest for most orders. Delivery is confirmed after print details and release conditions are cleared.</p>
@@ -335,9 +367,9 @@ export function CheckoutPanel() {
           ) : null}
         </section>
 
-        <section className="surface-card p-6">
+        <section className="surface-card p-6" data-surface="checkout-turnaround">
           <p className="editorial-kicker">Turnaround rules</p>
-          <h2 className="mt-2 text-2xl font-black text-ink">Production windows are confirmed by PrintMe</h2>
+          <h2 className="mt-2 text-2xl font-black text-ink">Turnaround is confirmed before the job is released</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {timelineRules.map((rule) => (
               <div key={rule.title} className="rounded-[1.2rem] border border-line bg-canvas p-4">
@@ -349,7 +381,7 @@ export function CheckoutPanel() {
           </div>
         </section>
 
-        <section className="surface-card p-6">
+        <section className="surface-card p-6" data-surface="checkout-artwork">
           <p className="editorial-kicker">Step 3</p>
           <h2 className="mt-2 text-2xl font-black text-ink">Artwork and production notes</h2>
           <Field label="Anything we should confirm before print?" hint="Use this for deadlines, colour notes, file naming, packaging details, invoice references, or any other instruction." className="mt-5">
@@ -379,10 +411,10 @@ export function CheckoutPanel() {
         </section>
       </div>
 
-      <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
+      <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24" data-surface="checkout-summary">
         <p className="editorial-kicker">Payment and checkout</p>
-        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Know exactly what you are paying now</h2>
-        <p className="mt-2 text-sm leading-6 text-slate">This order adapts between direct checkout, deposit collection, and review-first billing depending on product complexity, files, proofing, and quote needs.</p>
+        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Know what you are paying now and what happens next</h2>
+        <p className="mt-2 text-sm leading-6 text-slate">This order can move through direct checkout, deposit collection, or review-first billing depending on product complexity, files, proofing, and quote needs.</p>
 
         <div className="mt-5 max-h-[300px] space-y-4 overflow-y-auto pr-1">
           {items.map((item) => (
@@ -398,7 +430,7 @@ export function CheckoutPanel() {
           ))}
         </div>
 
-        <div className="mt-5 space-y-3 border-t border-line pt-5 text-sm">
+        <div className="mt-5 space-y-3 border-t border-line pt-5 text-sm" aria-live="polite">
           <div className="flex justify-between"><span>Estimated subtotal</span><span className="font-black text-ink">${subtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Direct-pay items</span><span>${payableSubtotal.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate"><span>Quote review items</span><span>{quoteItems.length}</span></div>
@@ -485,7 +517,7 @@ export function CheckoutPanel() {
           </FeedbackMessage>
         ) : null}
 
-        <Button type="submit" disabled={isPending} className="mt-6 w-full">
+        <Button type="submit" disabled={isPending} className="mt-6 w-full" data-cta="checkout-submit">
           {isPending ? "Starting secure checkout..." : paymentPlan.paymentCtaLabel}
         </Button>
         <p className="mt-3 text-xs leading-5 text-slate">

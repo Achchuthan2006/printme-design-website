@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { useAuth } from "@/components/account/auth-provider";
@@ -29,16 +29,16 @@ type MobileSection = "root" | "products" | "industries" | "services" | "help" | 
 
 const publicNavItems = [
   { id: "products" as const, label: "Products" },
-  { id: "services" as const, label: "Solutions" },
+  { id: "services" as const, label: "Services" },
   { id: "industries" as const, label: "Industries" },
-  { id: "help" as const, label: "Resources" },
+  { id: "help" as const, label: "Help" },
 ];
 
-const utilityHighlights = ["Premium Quality", "Exceptional Service", "Fast, Reliable Delivery"];
+const utilityHighlights = ["Order online or quote first", "Scarborough pickup available", "File review before production"];
 const utilityLinks = [
-  { label: "Trade & Volume Pricing", href: "/quote-request", icon: "bag" },
-  { label: "Help & Resources", href: "/support", icon: "chat" },
-  { label: "About PrintMe", href: "/about", icon: "check" },
+  { label: "Request a Quote", href: "/quote-request", icon: "bag" },
+  { label: "Artwork Help", href: "/artwork-guidelines", icon: "chat" },
+  { label: "Reorder & Account", href: "/account", icon: "check" },
 ];
 
 function getVisualSlugFromHref(href: string) {
@@ -118,11 +118,13 @@ function SearchResults({
   query,
   entries,
   onNavigate,
+  resultsId,
   className,
 }: {
   query: string;
   entries: CatalogSearchEntry[];
   onNavigate: () => void;
+  resultsId: string;
   className?: string;
 }) {
   const normalizedQuery = query.trim();
@@ -131,7 +133,13 @@ function SearchResults({
   const recovery = normalizedQuery ? search.recovery.slice(0, 2) : [];
 
   return (
-    <div className={cn("rounded-[1.55rem] border border-white/75 bg-white/95 p-3 shadow-[0_28px_70px_rgba(18,17,16,0.14)] backdrop-blur-[16px]", className)}>
+    <div
+      id={resultsId}
+      role="listbox"
+      aria-label={normalizedQuery ? "Search results" : "Popular search shortcuts"}
+      className={cn("rounded-[1.55rem] border border-white/75 bg-white/95 p-3 shadow-[0_28px_70px_rgba(18,17,16,0.14)] backdrop-blur-[16px]", className)}
+      data-surface="catalog-search-results"
+    >
       <div className="mb-2 flex items-center justify-between px-1">
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate">
           {normalizedQuery ? `Best matches (${matches.length})` : "Popular shortcuts"}
@@ -140,28 +148,37 @@ function SearchResults({
           View all results
         </Link>
       </div>
-      <div className="grid gap-2">
-        {matches.map((entry) => (
-          <Link
-            key={`${entry.type}-${entry.href}`}
-            href={entry.href}
-            onClick={onNavigate}
-            className="rounded-[1.2rem] border border-line/70 bg-canvas/60 px-4 py-3 transition hover:border-brand/25 hover:bg-white"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-black text-ink">{entry.title}</p>
-                <p className="mt-1 text-sm leading-6 text-slate">{entry.description}</p>
+      {matches.length > 0 ? (
+        <div className="grid gap-2">
+          {matches.map((entry) => (
+            <Link
+              key={`${entry.type}-${entry.href}`}
+              href={entry.href}
+              onClick={onNavigate}
+              role="option"
+              aria-selected="false"
+              className="rounded-[1.2rem] border border-line/70 bg-canvas/60 px-4 py-3 transition hover:border-brand/25 hover:bg-white"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-black text-ink">{entry.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate">{entry.description}</p>
+                </div>
+                {entry.badge ? (
+                  <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate">
+                    {entry.badge}
+                  </span>
+                ) : null}
               </div>
-              {entry.badge ? (
-                <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate">
-                  {entry.badge}
-                </span>
-              ) : null}
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[1.2rem] border border-dashed border-line/80 bg-canvas/70 px-4 py-4 text-sm leading-6 text-slate">
+          <p className="font-black text-ink">No direct matches for &quot;{normalizedQuery}&quot;.</p>
+          <p className="mt-1">Try a product family, material, or service type, or use the recovery shortcuts below.</p>
+        </div>
+      )}
       {normalizedQuery && search.suggestions.length > 0 ? (
         <div className="mt-3 rounded-[1.2rem] border border-line/70 bg-canvas/70 px-4 py-3">
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate">Suggested searches</p>
@@ -241,6 +258,8 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<MobileSection>("root");
   const [mobileFamilySlug, setMobileFamilySlug] = useState(getCatalogNavigationFamilies()[0]?.slug ?? "");
+  const desktopSearchResultsId = useId();
+  const mobileSearchResultsId = useId();
   const { itemCount } = useCart();
   const { user, profile, loading, isAdmin, signOut } = useAuth();
   const accountLabel = profile?.fullName ?? user?.email?.split("@")[0] ?? "Account";
@@ -567,7 +586,7 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                   ))}
                 </nav>
                 <div ref={searchRef} className="relative min-w-0 flex-1 lg:max-w-[20rem] xl:max-w-[22rem] 2xl:max-w-[25rem]">
-                  <form onSubmit={handleSearchSubmit} className="relative">
+                  <form onSubmit={handleSearchSubmit} className="relative" role="search" aria-label="Site search" data-surface="header-search">
                     <label htmlFor="printme-desktop-search" className="sr-only">
                       Search PrintMe products and services
                     </label>
@@ -582,6 +601,9 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                         setDesktopPanel(null);
                       }}
                       placeholder="Search products, services, or materials"
+                      aria-autocomplete="list"
+                      aria-controls={desktopSearchResultsId}
+                      aria-haspopup="listbox"
                       className="premium-input premium-focus h-[52px] rounded-full border-white/80 bg-white/90 pl-11 pr-[6.85rem] text-[0.95rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_14px_28px_rgba(22,19,17,0.05)] placeholder:text-slate/58"
                     />
                     <button
@@ -597,6 +619,7 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                         query={searchQuery}
                         entries={searchEntries}
                         onNavigate={() => setSearchOpen(false)}
+                        resultsId={desktopSearchResultsId}
                         className="rounded-[1.45rem] border-white/80 bg-white/97 p-2.5 shadow-[0_22px_54px_rgba(18,17,16,0.12)]"
                       />
                     </div>
@@ -710,7 +733,7 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
               {!isPrivatePortal ? (
                 <>
                   <div className="rounded-[1.45rem] border border-line/70 bg-white/80 p-3">
-                    <div className="flex items-center gap-3 rounded-[1.1rem] border border-line/70 bg-canvas/70 px-4 py-3">
+                    <div className="flex items-center gap-3 rounded-[1.1rem] border border-line/70 bg-canvas/70 px-4 py-3" role="search" aria-label="Mobile site search" data-surface="mobile-header-search">
                       <Icon name="inspect" className="h-4.5 w-4.5 text-brand" />
                       <input
                         type="search"
@@ -721,10 +744,13 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                         }}
                         onFocus={() => setSearchOpen(true)}
                         placeholder="Search products, services, or materials"
+                        aria-autocomplete="list"
+                        aria-controls={mobileSearchResultsId}
+                        aria-haspopup="listbox"
                         className="w-full bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-slate/60"
                       />
                     </div>
-                    {searchOpen ? <div className="mt-3"><SearchResults query={searchQuery} entries={searchEntries} onNavigate={() => {
+                    {searchOpen ? <div className="mt-3"><SearchResults query={searchQuery} entries={searchEntries} resultsId={mobileSearchResultsId} onNavigate={() => {
                       setSearchOpen(false);
                       setOpen(false);
                     }} /></div> : null}
@@ -733,10 +759,10 @@ export function Header({ siteContext }: { siteContext: ResolvedTenantContext }) 
                   {mobileSection === "root" ? (
                     <div className="space-y-3">
                       {[
-                        { id: "products" as const, label: "Browse Products", description: "Open the full large-catalog family system." },
-                        { id: "services" as const, label: "Solutions and Services", description: "Explore consultative service pages and guided paths." },
+                        { id: "products" as const, label: "Browse Products", description: "Shop the main print families, bestsellers, and standard order paths." },
+                        { id: "services" as const, label: "Services", description: "Open quote-first, design, rush, and production-support services." },
                         { id: "industries" as const, label: "Browse by Industry", description: "Jump in by use case, business type, or campaign need." },
-                        { id: "help" as const, label: "Resources and Help", description: "Use shortcuts for custom jobs, urgent timelines, and artwork help." },
+                        { id: "help" as const, label: "Help and Resources", description: "Find artwork guidance, tracking help, and support shortcuts." },
                       ].map((item) => (
                         <button
                           key={item.id}

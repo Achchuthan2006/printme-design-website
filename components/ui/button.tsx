@@ -52,7 +52,7 @@ export function buttonVariants({
   className?: string;
 }) {
   return cn(
-    "premium-focus inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-bold transition-all duration-300 disabled:pointer-events-none disabled:opacity-50",
+    "premium-focus inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-bold transition-all duration-300 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none",
     buttonVariantClassNames[variant],
     variant !== "link" && buttonSizeClassNames[size],
     size === "icon" && "p-0",
@@ -89,11 +89,19 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
     if (href) {
       const linkProps = props as Omit<ButtonAsLinkProps, "href">;
       if (isExternalHref(href)) {
+        const externalRel =
+          linkProps.target === "_blank"
+            ? linkProps.rel ?? "noreferrer noopener"
+            : linkProps.rel;
         return (
           <a
             ref={ref as React.Ref<HTMLAnchorElement>}
             href={href}
             className={buttonVariants({ variant, size, className })}
+            data-button="true"
+            data-size={size}
+            data-variant={variant}
+            rel={externalRel}
             {...linkProps}
           >
             {content}
@@ -106,6 +114,9 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
           ref={ref as React.Ref<HTMLAnchorElement>}
           href={href}
           className={buttonVariants({ variant, size, className })}
+          data-button="true"
+          data-size={size}
+          data-variant={variant}
           {...linkProps}
         >
           {content}
@@ -117,6 +128,9 @@ export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, Bu
       <button
         ref={ref as React.Ref<HTMLButtonElement>}
         className={buttonVariants({ variant, size, className })}
+        data-button="true"
+        data-size={size}
+        data-variant={variant}
         {...(props as ButtonAsButtonProps)}
       >
         {content}

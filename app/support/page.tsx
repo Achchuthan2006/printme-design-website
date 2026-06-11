@@ -7,7 +7,7 @@ import { siteConfig } from "@/lib/site";
 
 export const metadata = buildMetadata({
   title: "Support Center",
-  description: "Get intelligent self-service help for PrintMe ordering, artwork files, quotes, proofs, checkout, tracking, payment, and custom printing.",
+  description: "Get practical help with PrintMe ordering, artwork files, quotes, proofs, checkout, tracking, payment, and custom printing.",
   path: "/support",
 });
 
@@ -15,12 +15,12 @@ export default function SupportPage() {
   return (
     <>
       <PageHero
-        title="Support that helps customers finish the job, not just ask questions."
-        description="Use PrintMe's help center for ordering guidance, artwork setup, quote and proof help, product support, tracking, billing, and direct escalation when self-service is not enough."
+        title="Get the answer that keeps the print job moving."
+        description="Use support for artwork setup, quote questions, proofs, checkout, tracking, billing, and anything that still needs a real PrintMe answer before production."
         ctaLabel="Call PrintMe"
         ctaHref={siteConfig.phoneHref}
-        eyebrow="Support center"
-        highlights={["Guided self-service", "Contextual support across the site", "Clear escalation when needed"]}
+        eyebrow="Help center"
+        highlights={["Artwork and file help", "Order and quote support", "Fast escalation when timing is tight"]}
       />
 
       <section className="section-space bg-canvas">

@@ -242,12 +242,26 @@ textarea {
   @apply transition duration-300 ease-out will-change-transform;
 }
 
-.premium-card:hover {
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .premium-card:hover {
+    transform: translateY(-3px);
+  }
 }
 
 .premium-focus {
   @apply outline-none transition duration-200 focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
+}
+
+[data-surface] {
+  scroll-margin-top: 7rem;
+}
+
+[data-state="error"] {
+  border-color: rgba(185, 28, 28, 0.18);
+}
+
+[data-state="success"] {
+  border-color: rgba(5, 150, 105, 0.16);
 }
 
 .premium-input {

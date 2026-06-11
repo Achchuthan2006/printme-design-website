@@ -1,9 +1,7 @@
 "use client";
 
-import { CartSupportPanel } from "@/components/commerce/cart-support-panel";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/features/cart/cart-context";
-import { openSupportChat } from "@/lib/chat";
 import { evaluateCartPaymentPlan, formatPaymentPlanCurrency } from "@/lib/payment-workflow";
 
 function formatLinePrice(value: number, quoteOnly?: boolean) {
@@ -17,7 +15,7 @@ export function CartView() {
     return (
       <div className="hero-panel p-8 text-center">
         <p className="editorial-kicker">Cart</p>
-        <h1 className="display-title mt-2 text-[2.5rem] font-black">Ready when your print job is.</h1>
+        <h1 className="display-title mt-2 text-[2.5rem] font-black">Your cart is ready for the next print job.</h1>
         <p className="mt-3 text-sm leading-6 text-slate">
           Browse orderable print products or request a quote if your job needs custom sizing, finishing, design help, or file review.
         </p>
@@ -38,22 +36,13 @@ export function CartView() {
       <div className="space-y-4">
         <div className="section-frame p-6">
           <p className="editorial-kicker">Cart review</p>
-          <h1 className="display-title mt-2 text-[2.4rem] font-black leading-[0.95] text-ink">Everything in one place before you check out.</h1>
+          <h1 className="display-title mt-2 text-[2.4rem] font-black leading-[0.95] text-ink">Confirm the order before you pay or send it for review.</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate">
-            Adjust quantities, confirm the right print setup, and use support whenever you want a fast answer on turnaround, artwork, pickup, delivery, or quote review.
+            Adjust quantities, confirm the print setup, and see right away which items can be paid now and which ones still need PrintMe review.
           </p>
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            {[
-              "Review quantities and options before secure checkout.",
-              "Upload files now or continue if the artwork still needs a final pass.",
-              "PrintMe rechecks payment, fulfillment, and production details before printing begins.",
-            ].map((item, index) => (
-              <div key={item} className="signal-card">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand">Step {index + 1}</p>
-                <p className="mt-2 text-sm leading-6 text-slate">{item}</p>
-              </div>
-            ))}
-          </div>
+          <p className="mt-5 rounded-[1.2rem] border border-line/80 bg-white/85 px-4 py-3 text-sm leading-6 text-slate">
+            Online-order items can move into checkout now. Quote-review items stay in the same cart, but PrintMe confirms the final details before production starts.
+          </p>
         </div>
 
         {items.map((item) => (
@@ -123,25 +112,12 @@ export function CartView() {
             </div>
           </article>
         ))}
-
-        <CartSupportPanel />
       </div>
 
       <aside className="hero-panel h-fit p-6 lg:sticky lg:top-24">
         <p className="editorial-kicker">Order review</p>
-        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Review before secure checkout</h2>
-        <p className="mt-2 text-sm leading-6 text-slate">Pay online for orderable items now. If any item needs quote review, PrintMe confirms the details before production begins.</p>
-        <div className="mt-4 grid gap-2">
-          {[
-            "Secure checkout for online-payable items",
-            "File upload available during checkout",
-            "Pickup, delivery, and review details confirmed before production",
-          ].map((item) => (
-            <div key={item} className="rounded-[1rem] border border-line/80 bg-white/88 px-3 py-2 text-xs font-bold leading-5 text-slate">
-              {item}
-            </div>
-          ))}
-        </div>
+        <h2 className="display-title mt-2 text-[2rem] font-black leading-[0.96] text-ink">Know what is due now and what still needs review.</h2>
+        <p className="mt-2 text-sm leading-6 text-slate">Pay online for orderable items now. If anything needs quote review, PrintMe confirms the details before production begins.</p>
         <div className="mt-5 space-y-3 text-sm">
           <div className="flex justify-between">
             <span>Estimated subtotal</span>
@@ -172,7 +148,6 @@ export function CartView() {
         <div className="mt-5 border-t border-line pt-5">
           <Button href="/checkout" className="w-full">Go to Secure Checkout</Button>
           <Button href="/products" variant="secondary" className="mt-3 w-full">Add More Print Items</Button>
-          <Button type="button" variant="ghost" className="mt-3 w-full" onClick={openSupportChat}>Ask a Print Question</Button>
           <button type="button" onClick={clearCart} className="mt-4 w-full text-center text-sm font-bold text-slate transition hover:text-brand">
             Clear cart
           </button>

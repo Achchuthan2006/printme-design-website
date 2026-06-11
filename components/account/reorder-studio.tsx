@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export function ReorderStudio({
   items,
-  title = "Repeat order studio",
+  title = "Reorder ready jobs",
 }: {
   items: AccountReorderTemplate[];
   title?: string;
@@ -49,7 +49,7 @@ export function ReorderStudio({
         ))}
         {items.length === 0 ? (
           <div className="rounded-[1.25rem] border border-dashed border-line/90 p-5 text-sm leading-6 text-slate">
-            Reorder shortcuts will appear here after the first completed order or approved quote creates a repeat-ready starting point.
+            Reorder shortcuts will appear here after the first completed order or approved quote creates a repeat-ready job.
           </div>
         ) : null}
       </div>
